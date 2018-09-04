@@ -1,0 +1,336 @@
+﻿using System;
+
+namespace ChessersEngine {
+    public class Move {
+        private Match match;
+        private Chessman chessman;
+        private Tile fromTile;
+        private Tile toTile;
+
+        private int delta;
+
+        private int fromRow;
+        private int toRow;
+
+        private int fromColumn;
+        private int toColumn;
+
+        private MoveResult moveResult;
+
+        private enum directionalities {
+            HORIZONTAL,
+            VERTICAL,
+            // Bottom-left <-> top-right
+            POSITIVE_DIAGONAL,
+            // Top-left <-> bottom-right
+            NEGATIVE_DIAGONAL
+        };
+
+        public Move (Match _match, Chessman _chessman, Tile _toTile) {
+            match = _match;
+            chessman = _chessman;
+            toTile = _toTile;
+
+            fromTile = chessman.underlyingTile;
+
+            delta = toTile.id - fromTile.id;
+
+            fromRow = Helpers.GetRow(fromTile.id);
+            toRow = Helpers.GetRow(toTile.id);
+
+            fromColumn = Helpers.GetColumn(fromTile.id);
+            toColumn = Helpers.GetColumn(toTile.id);
+
+            moveResult = new MoveResult {
+                pieceGuid = chessman.guid,
+                pieceId = chessman.id,
+                tileId = toTile.id
+            };
+        }
+
+        #region Move types
+
+        private bool IsHorizontalMove () {
+            return fromRow == toRow;
+        }
+
+        private bool IsPositiveDiagonalMove () {
+            if ((Math.Abs(delta) % 9) != 0) {
+                return false;
+            }
+
+            if (delta > 0) {
+                // Bottom-left to top-right; check that the "to" column is to the right of the "from" column
+                return toColumn > fromColumn;
+            } else {
+                // Top-right to bottom-left; check that the "to" column is to the left of the "from" column
+                return toColumn < fromColumn;
+            }
+        }
+
+        private bool IsNegativeDiagonalMove () {
+            if ((Math.Abs(delta) % 7) != 0) {
+                return false;
+            }
+
+            if (delta > 0) {
+                // Bottom-right to top-left; check that the "to" column is to the right of the "from" column
+                return toColumn < fromColumn;
+            } else {
+                // Top-left to bottom-right; check that the "to" column is to the left of the "from" column
+                return toColumn > fromColumn;
+            }
+        }
+
+        private bool IsVerticalMove () {
+            return fromColumn == toColumn;
+        }
+
+        #endregion
+
+        #region Chessman kind-specific move validations
+
+        private MoveResult IsValidBishopMove () {
+            // Bishops can move diagonally by any amount, as long as there
+            // is not a piece in between its current tile and its target tile
+
+            int directionality;
+
+            if (IsPositiveDiagonalMove()) {
+                directionality = (int) directionalities.POSITIVE_DIAGONAL;
+            } else if (IsNegativeDiagonalMove()) {
+                directionality = (int) directionalities.NEGATIVE_DIAGONAL;
+            } else {
+                return moveResult;
+            }
+
+            if (IsPathBlockedByChessman(directionality)) {
+                return moveResult;
+            }
+
+            if (toTile.IsOccupied()) {
+                moveResult.capturedPieceId = toTile.occupant.id;
+            }
+
+            moveResult.valid = true;
+
+            return moveResult;
+        }
+
+        private MoveResult IsValidCheckerMove () {
+            return moveResult;
+        }
+
+        private MoveResult IsValidKnightMove () {
+            // Knights move either by 2-columns 1-row OR 2-rows 1-column
+
+            int rowAbsDelta = Math.Abs(fromRow - toRow);
+            int columnAbsDelta = Math.Abs(fromColumn - toColumn);
+
+            if (!(
+                ((rowAbsDelta == 2) && (columnAbsDelta == 1)) ||
+                ((rowAbsDelta == 1) && (columnAbsDelta == 2))
+            )) {
+                return moveResult;
+            }
+
+            moveResult.valid = true;
+            if (toTile.IsOccupied()) {
+                moveResult.capturedPieceId = toTile.occupant.id;
+            }
+
+            return moveResult;
+        }
+
+        private MoveResult IsValidPawnMove () {
+            if (!toTile.IsOccupied()) {
+                // Validate regular movement
+                // If a pawn hasn't moved yet, it can move forward by 2 spaces for its first move
+                if (!chessman.hasMoved) {
+                    if (chessman.IsWhite()) {
+                        moveResult.valid = (delta == 8) || (delta == 16);
+                    } else {
+                        moveResult.valid = (delta == -8) || (delta == -16);
+                    }
+                } else {
+                    if (chessman.IsWhite()) {
+                        moveResult.valid = (delta == 8);
+                    } else {
+                        moveResult.valid = (delta == -8);
+                    }
+                }
+            } else {
+                // Validate capturing movement
+                if (chessman.IsWhite()) {
+                    moveResult.valid = ((delta == 7) || (delta == 9));
+                } else {
+                    moveResult.valid = ((delta == -7) || (delta == -9));
+                }
+
+                if (moveResult.valid) {
+                    moveResult.capturedPieceId = toTile.occupant.id;
+                }
+            }
+
+            return moveResult;
+        }
+
+        private MoveResult IsValidQueenMove () {
+            // Queens can move directly up/down by any amount, or left/right by any amount,
+            // or diagonally by any amount, as long as there is not a piece in between its
+            // current tile and its target tile
+
+            int directionality;
+
+            if (IsHorizontalMove()) {
+                directionality = (int) directionalities.HORIZONTAL;
+            } else if (IsVerticalMove()) {
+                directionality = (int) directionalities.VERTICAL;
+            } else if (IsPositiveDiagonalMove()) {
+                directionality = (int) directionalities.POSITIVE_DIAGONAL;
+            } else if (IsNegativeDiagonalMove()) {
+                directionality = (int) directionalities.NEGATIVE_DIAGONAL;
+            } else {
+                return moveResult;
+            }
+
+            if (IsPathBlockedByChessman(directionality)) {
+                return moveResult;
+            }
+
+            if (toTile.IsOccupied()) {
+                moveResult.capturedPieceId = toTile.occupant.id;
+            }
+
+            moveResult.valid = true;
+
+            return moveResult;
+        }
+
+        private MoveResult IsValidRookMove () {
+            // Rooks can move directly up/down by any amount, or left/right by any amount, as long as there
+            // is not a piece in between its current tile and its target tile
+
+            int directionality;
+
+            if (IsHorizontalMove()) {
+                directionality = (int) directionalities.HORIZONTAL;
+            } else if (IsVerticalMove()) {
+                directionality = (int) directionalities.VERTICAL;
+            } else {
+                return moveResult;
+            }
+
+            if (IsPathBlockedByChessman(directionality)) {
+                return moveResult;
+            }
+
+            if (toTile.IsOccupied()) {
+                moveResult.capturedPieceId = toTile.occupant.id;
+            }
+
+            moveResult.valid = true;
+
+            return moveResult;
+        }
+
+        #endregion
+
+        private bool IsPathBlockedByChessman (int directionality) {
+            int stepSize = 0;
+
+            if (directionality == (int) directionalities.HORIZONTAL) {
+                stepSize = 1;
+            } else if (directionality == (int) directionalities.VERTICAL) {
+                stepSize = 8;
+            } else if (directionality == (int) directionalities.POSITIVE_DIAGONAL) {
+                stepSize = 9;
+            } else if (directionality == (int) directionalities.NEGATIVE_DIAGONAL) {
+                stepSize = 7;
+            }
+
+            // Scenarios:
+            //  HORIZONTAL
+            //      - left-to-right: e.g. 1 --> 7. Need to check tiles 2 - 6.
+            //      - right-to-left: e.g. 6 --> 2. Need to check tiles 5 - 3.
+            //  VERTICAL
+            //      - top-to-bottom: e.g. 32 --> 8. Need to check tiles [24, 16].
+            //      - bottom-to-top: e.g. 16 --> 56. Need to check tiles [24, 32, 40, 48].
+            //  POSITIVE_DIAGONAL
+            //      - bottomleft-to-topright: e.g. 0 --> 27. Need to check tiles [9, 18]
+            //      - topright-to-bottomleft: e.g. 59 --> 32. Need to check tiles [41, 50]
+            //  NEGATIVE_DIAGONAL
+            //      - bottomright-to-topleft: e.g. 7 --> 21. Need to check tiles [14]
+            //      - topleft-to-bottomright: e.g. 60 --> 39. Need to check tiles [53, 46]
+
+            int start, stop;
+            if (delta > 0) {
+                start = fromTile.id;
+                stop = toTile.id;
+            } else {
+                start = toTile.id;
+                stop = fromTile.id;
+            }
+
+            for (int tileId = start + stepSize; tileId <= stop - stepSize; tileId += stepSize) {
+                if (match.GetTile(tileId).IsOccupied()) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public MoveResult GetMoveResult () {
+            Func<MoveResult> pieceSpecificValidator = null;
+
+            if (chessman.IsChecker()) {
+                pieceSpecificValidator = IsValidCheckerMove;
+            } else if (chessman.IsPawn()) {
+                pieceSpecificValidator = IsValidPawnMove;
+            } else if (chessman.IsRook()) {
+                pieceSpecificValidator = IsValidRookMove;
+            } else if (chessman.IsKnight()) {
+                pieceSpecificValidator = IsValidKnightMove;
+            } else if (chessman.IsBishop()) {
+                pieceSpecificValidator = IsValidBishopMove;
+            } else if (chessman.IsKing()) {
+                //pieceSpecificValidator = IsValidKingMove;
+            } else if (chessman.IsQueen()) {
+                pieceSpecificValidator = IsValidQueenMove;
+            }
+
+            if (pieceSpecificValidator == null) {
+                return null;
+            }
+
+            pieceSpecificValidator();
+
+            if (!moveResult.valid) {
+                return null;
+            }
+
+            // Handle promotion for pawn if not already promoted
+            if (!chessman.isPromoted && chessman.IsPawn()) {
+                if (chessman.IsWhite()) {
+                    moveResult.promotionOccurred = (toRow == Constants.RANK_8);
+                } else {
+                    moveResult.promotionOccurred = (toRow == Constants.RANK_1);
+                }
+            }
+
+            // Handle kinging for checker if not already kinged
+            if (!chessman.isKinged) {
+                if (chessman.IsWhite()) {
+                    moveResult.kinged = (toRow == Constants.RANK_8);
+                } else {
+                    moveResult.kinged = (toRow == Constants.RANK_1);
+                }
+            }
+
+            // TODO -- verify this move doesn't put in "check" state
+
+            return moveResult;
+        }
+    }
+}
