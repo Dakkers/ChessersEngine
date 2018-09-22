@@ -31,7 +31,7 @@ namespace ChessersEngine {
             chessman = _chessman;
             toTile = _toTile;
 
-            fromTile = chessman.underlyingTile;
+            fromTile = chessman.GetUnderlyingTile();
 
             delta = toTile.id - fromTile.id;
 

@@ -4,9 +4,20 @@
         public int id;
         public Chessman occupant;
 
+        public Tile Clone () {
+            return new Tile { id = id };
+        }
+
+        public void CopyFrom (Tile tile) {
+            this.id = tile.id;
+        }
+
+        public Chessman GetPiece () {
+            return occupant;
+        }
+
         public void SetPiece (Chessman chessman) {
             occupant = chessman;
-            occupant.underlyingTile = this;
         }
 
         public void RemovePiece () {

@@ -25,7 +25,7 @@
         public ChessmanKindEnum kind;
         private bool isChecker = false;
 
-        public Tile underlyingTile;
+        private Tile underlyingTile;
 
         public Chessman (ChessmanSchema cs) {
             colorId = ((cs.id % 2) == 0) ?
@@ -60,6 +60,21 @@
 
         public static Chessman CreateFromSchema (ChessmanSchema cs) {
             return new Chessman(cs);
+        }
+
+        public Chessman Clone () {
+            return new Chessman(CreateSchema());
+        }
+
+        public void CopyFrom (Chessman chessman) {
+            this.colorId = chessman.colorId;
+            this.guid = chessman.guid;
+            this.hasMoved = chessman.hasMoved;
+            this.id = chessman.id;
+            this.isActive = chessman.isActive;
+            this.isKinged = chessman.isKinged;
+            this.isPromoted = chessman.isPromoted;
+            this.kind = chessman.kind;
         }
 
         #region Color checks
@@ -110,14 +125,25 @@
             return isChecker;
         }
 
+        public Tile GetUnderlyingTile () {
+            return underlyingTile;
+        }
+
+        public void SetUnderlyingTile (Tile tile) {
+            underlyingTile = tile;
+        }
+
         public ChessmanSchema CreateSchema () {
             return new ChessmanSchema {
-                id = id,
+                colorId = colorId,
+                guid = guid,
                 hasMoved = hasMoved,
+                id = id,
                 isActive = isActive,
                 isKinged = isKinged,
                 isPromoted = isPromoted,
-                kind = (int) kind
+                kind = (int) kind,
+                location = underlyingTile.id
             };
         }
     }

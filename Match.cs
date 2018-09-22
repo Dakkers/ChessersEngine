@@ -6,7 +6,14 @@ using UnityEngine;
 namespace ChessersEngine {
     public class MatchData {
         public long blackPlayerId;
-        public int currentTurn;
+
+        /// <summary>
+        /// The ID of the user whose turn it is. (One of blackPlayerId, whitePlayerId)
+        /// </summary>
+        public long currentTurn;
+
+        public long matchId;
+
         public List<ChessmanSchema> pieces;
         public long whitePlayerId;
 
@@ -17,21 +24,33 @@ namespace ChessersEngine {
         private int turn;
 
         public Dictionary<int, Tile> tilesById;
-        public Dictionary<long, Chessman> chessmenById;
+        public Dictionary<int, Chessman> chessmenById;
+
+        public Dictionary<int, Tile> pendingTilesById;
+        public Dictionary<int, Chessman> pendingChessmenById;
 
         public List<string> moves = new List<string>();
 
         public long whitePlayerId = -1;
         public long blackPlayerId = -1;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="T:ChessersEngine.Match"/> class.
+        /// </summary>
+        /// <param name="data">The data to initialize the match with. If null, a new match is created.</param>
         public Match (MatchData data) {
             tilesById = new Dictionary<int, Tile>();
-            chessmenById = new Dictionary<long, Chessman>();
+            chessmenById = new Dictionary<int, Chessman>();
+
+            pendingTilesById = new Dictionary<int, Tile>();
+            pendingChessmenById = new Dictionary<int, Chessman>();
 
             for (int i = 0; i < 64; i++) {
                 tilesById[i] = new Tile {
                     id = i
                 };
+
+                pendingTilesById[i] = tilesById[i].Clone();
             }
 
             List<ChessmanSchema> pieces;
@@ -41,28 +60,36 @@ namespace ChessersEngine {
                 pieces = data.pieces;
                 whitePlayerId = data.whitePlayerId;
                 blackPlayerId = data.blackPlayerId;
+                if (data.currentTurn == whitePlayerId) {
+                    turn = Constants.ID_WHITE;
+                } else if (data.currentTurn == blackPlayerId) {
+                    turn = Constants.ID_BLACK;
+                }
             }
 
             foreach (ChessmanSchema cs in pieces) {
-                Chessman c = Chessman.CreateFromSchema(cs);
+                Chessman newChessman = Chessman.CreateFromSchema(cs);
                 Tile underlyingTile = GetTile(cs.location);
 
-                c.underlyingTile = underlyingTile;
-                underlyingTile.SetPiece(c);
+                newChessman.SetUnderlyingTile(underlyingTile);
+                underlyingTile.SetPiece(newChessman);
 
-                chessmenById[c.id] = c;
+                chessmenById[newChessman.id] = newChessman;
+            }
+
+            foreach (ChessmanSchema cs in pieces) {
+                Chessman newChessman = Chessman.CreateFromSchema(cs);
+                Tile underlyingTile = pendingTilesById[cs.location];
+
+                newChessman.SetUnderlyingTile(underlyingTile);
+                underlyingTile.SetPiece(newChessman);
+
+                pendingChessmenById[newChessman.id] = newChessman;
             }
         }
 
         // TODO
         public void Save () {
-            List<ChessmanSchema> chessmanSchemas = new List<ChessmanSchema>();
-
-            foreach (KeyValuePair<long, Chessman> pair in chessmenById) {
-                Chessman chessman = pair.Value;
-
-                chessmanSchemas.Add(chessman.CreateSchema());
-            }
         }
 
         private List<ChessmanSchema> CreateDefaultChessmen () {
@@ -204,12 +231,92 @@ namespace ChessersEngine {
             return chessmanSchemas;
         }
 
-        private void CreateChessman (ChessmanSchema cs) {
-            //Chessman c = new Chessman { id = id };
-            //chessmenById[id] = c;
+        private void CommitMatchState () {
+            // Update the states of the Chessmen
+            foreach (KeyValuePair<int, Chessman> pair in chessmenById) {
+                int chessmanId = pair.Key;
+                Chessman pendingChessman = pendingChessmenById[chessmanId];
+                Chessman committedChessman = chessmenById[chessmanId];
+
+                committedChessman.CopyFrom(pendingChessman);
+            }
+
+            // Update the states of the Tiles, and which Chessmen they reference
+            foreach (KeyValuePair<int, Tile> pair in tilesById) {
+                int tileId = pair.Key;
+                Tile pendingTile = pendingTilesById[tileId];
+                Tile committedTile = tilesById[tileId];
+
+                committedTile.CopyFrom(pendingTile);
+
+                if (pendingTile.IsOccupied()) {
+                    // If the tile became occupied, update the Chessman reference
+                    Chessman newlyCommittedChessman = chessmenById[pendingTile.GetPiece().id];
+
+                    committedTile.SetPiece(newlyCommittedChessman);
+                } else {
+                    // If the tile is no longer occupied, remove the Chessman reference
+                    committedTile.RemovePiece();
+                }
+            }
+
+            // Update the Tile references for the Chessmen
+            foreach (KeyValuePair<int, Chessman> pair in chessmenById) {
+                int chessmanId = pair.Key;
+                Chessman pendingChessman = pendingChessmenById[chessmanId];
+                Chessman committedChessman = chessmenById[chessmanId];
+
+                Tile committedTile = tilesById[pendingChessman.GetUnderlyingTile().id];
+                committedChessman.SetUnderlyingTile(committedTile);
+            }
         }
 
-        public Chessman GetChessman (long id) {
+        /// <summary>
+        /// Resets the state of the match (chessmen, tiles) to what they were at the beginning
+        /// of the turn. Identical to `CommitMatchState`, but the pending objects copy FROM the
+        /// committed objects, instead of vice versa.
+        /// </summary>
+        private void ResetMatchState () {
+            foreach (KeyValuePair<int, Chessman> pair in chessmenById) {
+                int chessmanId = pair.Key;
+                Chessman pendingChessman = pendingChessmenById[chessmanId];
+                Chessman committedChessman = chessmenById[chessmanId];
+
+                pendingChessman.CopyFrom(committedChessman);
+            }
+
+            foreach (KeyValuePair<int, Tile> pair in tilesById) {
+                int tileId = pair.Key;
+                Tile pendingTile = pendingTilesById[tileId];
+                Tile committedTile = tilesById[tileId];
+
+                pendingTile.CopyFrom(committedTile);
+
+                if (committedTile.IsOccupied()) {
+                    Chessman committedChessman = chessmenById[committedTile.GetPiece().id];
+
+                    pendingTile.SetPiece(committedChessman);
+                } else {
+                    // If the tile is no longer occupied, remove the Chessman reference
+                    pendingTile.RemovePiece();
+                }
+            }
+
+            foreach (KeyValuePair<int, Chessman> pair in chessmenById) {
+                int chessmanId = pair.Key;
+                Chessman pendingChessman = pendingChessmenById[chessmanId];
+                Chessman committedChessman = chessmenById[chessmanId];
+
+                Tile committedTile = tilesById[committedChessman.GetUnderlyingTile().id];
+                pendingChessman.SetUnderlyingTile(committedTile);
+            }
+        }
+
+        public void CommitTurn () {
+
+        }
+
+        public Chessman GetChessman (int id) {
             return chessmenById[id];
         }
 
@@ -277,7 +384,7 @@ namespace ChessersEngine {
             return moveResult;
         }
 
-        public MoveResult MoveChessman (long playerId, long chessmanId, int toTileId) {
+        public MoveResult MoveChessman (long playerId, int chessmanId, int toTileId) {
             return MoveChessman(playerId, GetChessman(chessmanId), GetTile(toTileId));
         }
 
@@ -296,21 +403,23 @@ namespace ChessersEngine {
 
             if (pieceToRemove != null) {
                 pieceToRemove.SetActive(false);
-                Tile tileWithRemovedPiece = pieceToRemove.underlyingTile;
+                Tile tileWithRemovedPiece = pieceToRemove.GetUnderlyingTile();
                 tileWithRemovedPiece?.RemovePiece();
             }
         }
 
         public void UpdateFromMoveResult (MoveResult moveResult) {
             Chessman chessman = GetChessman(moveResult.pieceId);
+            Tile fromTile = chessman.GetUnderlyingTile();
             Tile toTile = GetTile(moveResult.tileId);
 
             HandleJumpAndCapture(moveResult);
 
             // Valid move; remove piece from current tile, move it to new tile
             chessman.SetHasMoved(true);
-            chessman.underlyingTile.RemovePiece();
+            fromTile.RemovePiece();
             toTile.SetPiece(chessman);
+            chessman.SetUnderlyingTile(toTile);
 
             // Most moves result in a change of whose turn it is, EXCEPT for jumping
             bool shouldChangeTurns = !moveResult.WasPieceJumped();

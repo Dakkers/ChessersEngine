@@ -1,5 +1,8 @@
 ﻿namespace ChessersEngine {
     public class ChessmanSchema {
+        // NOTE -- keep in sync with Chessman.CreateSchema()
+
+        public int colorId = -1;
         public bool hasMoved = false;
         public long guid;
         // For games that do not use external global identifiers, guid == id
