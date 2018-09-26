@@ -1,10 +1,15 @@
 ﻿namespace ChessersEngine {
     public static class Constants {
+        public const int DEFAULT_WHITE_PLAYER_ID = 0;
+        public const int DEFAULT_BLACK_PLAYER_ID = 1;
+
         public const int TOP_ROW = 7;
         public const int BOTTOM_ROW = 0;
 
         public const int RIGHT_COLUMN = 7;
         public const int LEFT_COLUMN = 0;
+
+        #region Piece IDs
 
         public const int ID_WHITE = 0;
         public const int ID_BLACK = 1;
@@ -47,10 +52,16 @@
         public const int ID_WHITE_KING = 30;
         public const int ID_BLACK_KING = 31;
 
+        #endregion
+
+        #region Move Types
+
         public const int MOVE_TYPE_REGULAR = 0;
         public const int MOVE_TYPE_JUMP = 1;
         public const int MOVE_TYPE_TAKE = 2;
         public const int MOVE_TYPE_CASTLING = 3;
+
+        #endregion
 
         #region Chessman kinds
 

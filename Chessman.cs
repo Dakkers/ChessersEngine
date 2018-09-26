@@ -20,10 +20,10 @@
         public bool hasMoved = false;
         public bool isActive = true;
         public int id;
+        private bool isChecker = false;
         public bool isKinged = false;
         public bool isPromoted = false;
         public ChessmanKindEnum kind;
-        private bool isChecker = false;
 
         private Tile underlyingTile;
 
@@ -66,15 +66,19 @@
             return new Chessman(CreateSchema());
         }
 
+        public void CopyFrom (ChessmanSchema chessmanSchema) {
+            this.colorId = chessmanSchema.colorId;
+            this.guid = chessmanSchema.guid;
+            this.hasMoved = chessmanSchema.hasMoved;
+            this.id = chessmanSchema.id;
+            this.isActive = chessmanSchema.isActive;
+            this.isKinged = chessmanSchema.isKinged;
+            this.isPromoted = chessmanSchema.isPromoted;
+            this.kind = (ChessmanKindEnum) chessmanSchema.kind;
+        }
+
         public void CopyFrom (Chessman chessman) {
-            this.colorId = chessman.colorId;
-            this.guid = chessman.guid;
-            this.hasMoved = chessman.hasMoved;
-            this.id = chessman.id;
-            this.isActive = chessman.isActive;
-            this.isKinged = chessman.isKinged;
-            this.isPromoted = chessman.isPromoted;
-            this.kind = chessman.kind;
+            this.CopyFrom(chessman.CreateSchema());
         }
 
         #region Color checks
@@ -131,6 +135,10 @@
 
         public void SetUnderlyingTile (Tile tile) {
             underlyingTile = tile;
+        }
+
+        public void RemoveUnderlyingTileReference () {
+            underlyingTile = null;
         }
 
         public ChessmanSchema CreateSchema () {

@@ -33,7 +33,7 @@ namespace ChessersEngine {
         public bool valid { get; set; }
 
         public override string ToString () {
-            return $"{{ pieceId = {pieceId}, tileId = {tileId}, capturedPieceId = {capturedPieceId}, promotion = {promotionOccurred} }}";
+            return $"{{ pieceId = {pieceId}, tileId = {tileId}, capturedPieceId = {capturedPieceId}, promotion = {promotionOccurred}, turnChanged = {turnChanged} }}";
         }
 
         public bool IsRegular () {

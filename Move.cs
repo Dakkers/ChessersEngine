@@ -273,7 +273,7 @@ namespace ChessersEngine {
             }
 
             for (int tileId = start + stepSize; tileId <= stop - stepSize; tileId += stepSize) {
-                if (match.GetTile(tileId).IsOccupied()) {
+                if (match.GetPendingTile(tileId).IsOccupied()) {
                     return true;
                 }
             }
@@ -281,6 +281,11 @@ namespace ChessersEngine {
             return false;
         }
 
+        /// <summary>
+        /// Gets the result of the move that was confiugred. This does NOT modify the
+        /// match state in any way.
+        /// </summary>
+        /// <returns>The move result.</returns>
         public MoveResult GetMoveResult () {
             Func<MoveResult> pieceSpecificValidator = null;
 

@@ -21,13 +21,27 @@ namespace ChessersEngine {
     }
 
     public class Match {
-        private int turn;
+        /// <summary>
+        /// The "effective" turn color. When a player's turn begins and they make a move
+        /// ends their turn (i.e. a move where they cannot do a jump), this value switches.
+        /// The value must be switched while moves are being made instead of at the "commit"
+        /// step because otherwise the engine would never say the move is invalid based
+        /// solely on this value.
+        /// </summary>
+        private int turnColor;
+
+        /// <summary>
+        /// The color of the player currently making moves. Switches values when the "commit"
+        /// step occurs.
+        /// </summary>
+        private int committedTurnColor;
 
         public Dictionary<int, Tile> tilesById;
         public Dictionary<int, Chessman> chessmenById;
 
         public Dictionary<int, Tile> pendingTilesById;
         public Dictionary<int, Chessman> pendingChessmenById;
+        private List<MoveResult> pendingMoveResults = new List<MoveResult>();
 
         public List<string> moves = new List<string>();
 
@@ -56,16 +70,17 @@ namespace ChessersEngine {
             List<ChessmanSchema> pieces;
             if (data == null) {
                 pieces = CreateDefaultChessmen();
+                whitePlayerId = Constants.DEFAULT_WHITE_PLAYER_ID;
+                blackPlayerId = Constants.DEFAULT_BLACK_PLAYER_ID;
+                turnColor = Constants.ID_WHITE;
             } else {
                 pieces = data.pieces;
                 whitePlayerId = data.whitePlayerId;
                 blackPlayerId = data.blackPlayerId;
-                if (data.currentTurn == whitePlayerId) {
-                    turn = Constants.ID_WHITE;
-                } else if (data.currentTurn == blackPlayerId) {
-                    turn = Constants.ID_BLACK;
-                }
+                SetTurnColorFromPlayerId(data.currentTurn);
             }
+
+            committedTurnColor = turnColor;
 
             foreach (ChessmanSchema cs in pieces) {
                 Chessman newChessman = Chessman.CreateFromSchema(cs);
@@ -79,7 +94,7 @@ namespace ChessersEngine {
 
             foreach (ChessmanSchema cs in pieces) {
                 Chessman newChessman = Chessman.CreateFromSchema(cs);
-                Tile underlyingTile = pendingTilesById[cs.location];
+                Tile underlyingTile = GetPendingTile(cs.location);
 
                 newChessman.SetUnderlyingTile(underlyingTile);
                 underlyingTile.SetPiece(newChessman);
@@ -90,6 +105,14 @@ namespace ChessersEngine {
 
         // TODO
         public void Save () {
+        }
+
+        private void SetTurnColorFromPlayerId (long playerId) {
+            if (playerId == whitePlayerId) {
+                turnColor = Constants.ID_WHITE;
+            } else if (playerId == blackPlayerId) {
+                turnColor = Constants.ID_BLACK;
+            }
         }
 
         private List<ChessmanSchema> CreateDefaultChessmen () {
@@ -232,6 +255,8 @@ namespace ChessersEngine {
         }
 
         private void CommitMatchState () {
+            committedTurnColor = turnColor;
+
             // Update the states of the Chessmen
             foreach (KeyValuePair<int, Chessman> pair in chessmenById) {
                 int chessmanId = pair.Key;
@@ -269,6 +294,8 @@ namespace ChessersEngine {
                 Tile committedTile = tilesById[pendingChessman.GetUnderlyingTile().id];
                 committedChessman.SetUnderlyingTile(committedTile);
             }
+
+            pendingMoveResults.Clear();
         }
 
         /// <summary>
@@ -277,6 +304,8 @@ namespace ChessersEngine {
         /// committed objects, instead of vice versa.
         /// </summary>
         private void ResetMatchState () {
+            turnColor = committedTurnColor;
+
             foreach (KeyValuePair<int, Chessman> pair in chessmenById) {
                 int chessmanId = pair.Key;
                 Chessman pendingChessman = pendingChessmenById[chessmanId];
@@ -310,29 +339,49 @@ namespace ChessersEngine {
                 Tile committedTile = tilesById[committedChessman.GetUnderlyingTile().id];
                 pendingChessman.SetUnderlyingTile(committedTile);
             }
+
+            pendingMoveResults.Clear();
         }
 
         public void CommitTurn () {
-
+            CommitMatchState();
         }
 
-        public Chessman GetChessman (int id) {
+        public void ResetTurn () {
+            ResetMatchState();
+        }
+
+        #region Getters / Setters
+
+        public Chessman GetPendingChessman (int id) {
+            return pendingChessmenById[id];
+        }
+
+        public Chessman GetCommittedChessman (int id) {
             return chessmenById[id];
+        }
+
+        public Tile GetPendingTile (int id) {
+            return pendingTilesById[id];
         }
 
         public Tile GetTile (int id) {
             return tilesById[id];
         }
 
+        public int GetCommittedTurnColor () {
+            return committedTurnColor;
+        }
+
         public int GetTurn () {
-            return turn;
+            return turnColor;
         }
 
         public void ChangeTurn () {
-            if (turn == Constants.ID_WHITE) {
-                turn = Constants.ID_BLACK;
+            if (turnColor == Constants.ID_WHITE) {
+                turnColor = Constants.ID_BLACK;
             } else {
-                turn = Constants.ID_WHITE;
+                turnColor = Constants.ID_WHITE;
             }
         }
 
@@ -344,6 +393,24 @@ namespace ChessersEngine {
             return blackPlayerId != -1;
         }
 
+        public List<MoveResult> GetPendingMoveResults () {
+            return pendingMoveResults;
+        }
+
+        /// <summary>
+        /// Gets the ID of the player whose turn it is.
+        /// </summary>
+        /// <returns>The turn player identifier.</returns>
+        public long GetCommittedTurnPlayerId () {
+            if (committedTurnColor == Constants.ID_WHITE) {
+                return whitePlayerId;
+            } else {
+                return blackPlayerId;
+            }
+        }
+
+        #endregion
+
         #region Move-related
 
         public MoveResult GetMoveResult (Chessman chessman, Tile toTile) {
@@ -353,19 +420,19 @@ namespace ChessersEngine {
 
         public MoveResult MoveChessman (long playerId, Chessman chessman, Tile toTile) {
             // -- Base validation
-            if (turn == Constants.ID_WHITE) {
+            if (turnColor == Constants.ID_WHITE) {
                 if (playerId == blackPlayerId) {
                     return null;
                 }
             }
 
-            if (turn == Constants.ID_BLACK) {
+            if (turnColor == Constants.ID_BLACK) {
                 if (playerId == whitePlayerId) {
                     return null;
                 }
             }
 
-            if (chessman.colorId != turn) {
+            if (chessman.colorId != turnColor) {
                 return null;
             }
 
@@ -376,16 +443,15 @@ namespace ChessersEngine {
 
             // -- Check to see if this move is legal
             MoveResult moveResult = GetMoveResult(chessman, toTile);
+            moveResult.playerId = playerId;
 
             UpdateFromMoveResult(moveResult);
-
-            moveResult.playerId = playerId;
 
             return moveResult;
         }
 
         public MoveResult MoveChessman (long playerId, int chessmanId, int toTileId) {
-            return MoveChessman(playerId, GetChessman(chessmanId), GetTile(toTileId));
+            return MoveChessman(playerId, GetPendingChessman(chessmanId), GetPendingTile(toTileId));
         }
 
         public MoveResult MoveChessman (MoveAttempt moveAttempt) {
@@ -396,9 +462,9 @@ namespace ChessersEngine {
             Chessman pieceToRemove = null;
 
             if (moveResult.WasPieceJumped()) {
-                pieceToRemove = GetChessman(moveResult.jumpedPieceId);
+                pieceToRemove = GetPendingChessman(moveResult.jumpedPieceId);
             } else if (moveResult.WasPieceCaptured()) {
-                pieceToRemove = GetChessman(moveResult.capturedPieceId);
+                pieceToRemove = GetPendingChessman(moveResult.capturedPieceId);
             }
 
             if (pieceToRemove != null) {
@@ -409,13 +475,13 @@ namespace ChessersEngine {
         }
 
         public void UpdateFromMoveResult (MoveResult moveResult) {
-            Chessman chessman = GetChessman(moveResult.pieceId);
+            Chessman chessman = GetPendingChessman(moveResult.pieceId);
             Tile fromTile = chessman.GetUnderlyingTile();
-            Tile toTile = GetTile(moveResult.tileId);
+            Tile toTile = GetPendingTile(moveResult.tileId);
 
             HandleJumpAndCapture(moveResult);
 
-            // Valid move; remove piece from current tile, move it to new tile
+            // Remove piece from current tile, move it to new tile
             chessman.SetHasMoved(true);
             fromTile.RemovePiece();
             toTile.SetPiece(chessman);
@@ -439,8 +505,24 @@ namespace ChessersEngine {
         #endregion
 
         public void PromoteChessman (int chessmanId, ChessmanKindEnum promotionValue) {
-            Chessman chessman = GetChessman(chessmanId);
+            Chessman chessman = GetPendingChessman(chessmanId);
             chessman.Promote(promotionValue);
+        }
+
+        public void UpdateMatch (MatchData newMatchData) {
+            foreach (ChessmanSchema cs in newMatchData.pieces) {
+                Chessman chessman = chessmenById[cs.id];
+                chessman.CopyFrom(cs);
+
+                if (!chessman.isActive) {
+                    chessman.RemoveUnderlyingTileReference();
+                } else {
+                    chessman.SetUnderlyingTile(tilesById[cs.location]);
+                }
+            }
+
+            SetTurnColorFromPlayerId(newMatchData.currentTurn);
+            committedTurnColor = turnColor;
         }
 
         public static void Log (object s) {
