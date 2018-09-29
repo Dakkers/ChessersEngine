@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace ChessersEngine {
     public class Move {
@@ -17,7 +19,7 @@ namespace ChessersEngine {
 
         private MoveResult moveResult;
 
-        private enum directionalities {
+        private enum Directionalities {
             HORIZONTAL,
             VERTICAL,
             // Bottom-left <-> top-right
@@ -34,6 +36,7 @@ namespace ChessersEngine {
             fromTile = chessman.GetUnderlyingTile();
 
             delta = toTile.id - fromTile.id;
+            Match.Log($"delta = {delta}");
 
             fromRow = Helpers.GetRow(fromTile.id);
             toRow = Helpers.GetRow(toTile.id);
@@ -111,15 +114,15 @@ namespace ChessersEngine {
             int directionality;
 
             if (IsPositiveDiagonalMove()) {
-                directionality = (int) directionalities.POSITIVE_DIAGONAL;
+                directionality = (int) Directionalities.POSITIVE_DIAGONAL;
             } else if (IsNegativeDiagonalMove()) {
-                directionality = (int) directionalities.NEGATIVE_DIAGONAL;
+                directionality = (int) Directionalities.NEGATIVE_DIAGONAL;
             } else {
-                return moveResult;
+                return null;
             }
 
             if (IsPathBlockedByChessman(directionality)) {
-                return moveResult;
+                return null;
             }
 
             if (toTile.IsOccupied()) {
@@ -127,7 +130,6 @@ namespace ChessersEngine {
             }
 
             moveResult.valid = true;
-
             return moveResult;
         }
 
@@ -176,7 +178,7 @@ namespace ChessersEngine {
                     return null;
                 }
 
-                moveResult.capturedPieceId = tileJumpingOver.GetPiece().id;
+                moveResult.jumpedPieceId = tileJumpingOver.GetPiece().id;
             } else {
                 return null;
             }
@@ -187,6 +189,7 @@ namespace ChessersEngine {
 
         private MoveResult IsValidKnightMove () {
             // Knights move either by 2-columns 1-row OR 2-rows 1-column
+            // Additionally, they can jump over pieces
 
             int rowAbsDelta = Math.Abs(fromRow - toRow);
             int columnAbsDelta = Math.Abs(fromColumn - toColumn);
@@ -195,47 +198,57 @@ namespace ChessersEngine {
                 ((rowAbsDelta == 2) && (columnAbsDelta == 1)) ||
                 ((rowAbsDelta == 1) && (columnAbsDelta == 2))
             )) {
-                return moveResult;
+                return null;
             }
 
-            moveResult.valid = true;
             if (toTile.IsOccupied()) {
                 moveResult.capturedPieceId = toTile.occupant.id;
             }
 
+            moveResult.valid = true;
             return moveResult;
         }
 
         private MoveResult IsValidPawnMove () {
+            List<int> validDeltas = new List<int>();
+            bool checkPath = false;
+
             if (!toTile.IsOccupied()) {
                 // Validate regular movement
                 // If a pawn hasn't moved yet, it can move forward by 2 spaces for its first move
+                validDeltas.Add(8);
+
                 if (!chessman.hasMoved) {
-                    if (chessman.IsWhite()) {
-                        moveResult.valid = (delta == 8) || (delta == 16);
-                    } else {
-                        moveResult.valid = (delta == -8) || (delta == -16);
-                    }
-                } else {
-                    if (chessman.IsWhite()) {
-                        moveResult.valid = (delta == 8);
-                    } else {
-                        moveResult.valid = (delta == -8);
-                    }
+                    validDeltas.Add(16);
+                    checkPath = true;
                 }
             } else {
                 // Validate capturing movement
-                if (chessman.IsWhite()) {
-                    moveResult.valid = ((delta == 7) || (delta == 9));
-                } else {
-                    moveResult.valid = ((delta == -7) || (delta == -9));
+                validDeltas.Add(7);
+                validDeltas.Add(9);
+
+                if (!IsPositiveDiagonalMove() && !IsNegativeDiagonalMove()) {
+                    return null;
                 }
 
-                if (moveResult.valid) {
-                    moveResult.capturedPieceId = toTile.occupant.id;
+                moveResult.capturedPieceId = toTile.occupant.id;
+            }
+
+            if (chessman.IsBlack()) {
+                validDeltas = validDeltas.Select((deltaVal) => -deltaVal).ToList();
+            }
+
+            if (!validDeltas.Contains(delta)) {
+                return null;
+            }
+
+            if (checkPath) {
+                if (IsPathBlockedByChessman((int) Directionalities.VERTICAL)) {
+                    return null;
                 }
             }
 
+            moveResult.valid = true;
             return moveResult;
         }
 
@@ -247,19 +260,19 @@ namespace ChessersEngine {
             int directionality;
 
             if (IsHorizontalMove()) {
-                directionality = (int) directionalities.HORIZONTAL;
+                directionality = (int) Directionalities.HORIZONTAL;
             } else if (IsVerticalMove()) {
-                directionality = (int) directionalities.VERTICAL;
+                directionality = (int) Directionalities.VERTICAL;
             } else if (IsPositiveDiagonalMove()) {
-                directionality = (int) directionalities.POSITIVE_DIAGONAL;
+                directionality = (int) Directionalities.POSITIVE_DIAGONAL;
             } else if (IsNegativeDiagonalMove()) {
-                directionality = (int) directionalities.NEGATIVE_DIAGONAL;
+                directionality = (int) Directionalities.NEGATIVE_DIAGONAL;
             } else {
-                return moveResult;
+                return null;
             }
 
             if (IsPathBlockedByChessman(directionality)) {
-                return moveResult;
+                return null;
             }
 
             if (toTile.IsOccupied()) {
@@ -267,7 +280,6 @@ namespace ChessersEngine {
             }
 
             moveResult.valid = true;
-
             return moveResult;
         }
 
@@ -278,15 +290,15 @@ namespace ChessersEngine {
             int directionality;
 
             if (IsHorizontalMove()) {
-                directionality = (int) directionalities.HORIZONTAL;
+                directionality = (int) Directionalities.HORIZONTAL;
             } else if (IsVerticalMove()) {
-                directionality = (int) directionalities.VERTICAL;
+                directionality = (int) Directionalities.VERTICAL;
             } else {
-                return moveResult;
+                return null;
             }
 
             if (IsPathBlockedByChessman(directionality)) {
-                return moveResult;
+                return null;
             }
 
             if (toTile.IsOccupied()) {
@@ -294,7 +306,33 @@ namespace ChessersEngine {
             }
 
             moveResult.valid = true;
+            return moveResult;
+        }
 
+        /// <summary>
+        /// Determines if the move is a valid move for a king.
+        ///
+        /// Kings can only move forward or diagonally forward. They are able to
+        /// capture pieces in the same manner.
+        /// </summary>
+        /// <returns>The valid king move.</returns>
+        private MoveResult IsValidKingMove () {
+            Match.Log("IsValidKingMove()");
+            if (!IsVerticalMove() && !IsPositiveDiagonalMove() && !IsNegativeDiagonalMove()) {
+                return null;
+            }
+
+            List<int> validDeltas = new List<int> { 7, 8, 9 };
+
+            if (chessman.IsBlack()) {
+                validDeltas = validDeltas.Select((deltaVal) => -deltaVal).ToList();
+            }
+
+            if (!validDeltas.Contains(delta)) {
+                return null;
+            }
+
+            moveResult.valid = true;
             return moveResult;
         }
 
@@ -303,13 +341,13 @@ namespace ChessersEngine {
         private bool IsPathBlockedByChessman (int directionality) {
             int stepSize = 0;
 
-            if (directionality == (int) directionalities.HORIZONTAL) {
+            if (directionality == (int) Directionalities.HORIZONTAL) {
                 stepSize = 1;
-            } else if (directionality == (int) directionalities.VERTICAL) {
+            } else if (directionality == (int) Directionalities.VERTICAL) {
                 stepSize = 8;
-            } else if (directionality == (int) directionalities.POSITIVE_DIAGONAL) {
+            } else if (directionality == (int) Directionalities.POSITIVE_DIAGONAL) {
                 stepSize = 9;
-            } else if (directionality == (int) directionalities.NEGATIVE_DIAGONAL) {
+            } else if (directionality == (int) Directionalities.NEGATIVE_DIAGONAL) {
                 stepSize = 7;
             }
 
@@ -364,7 +402,7 @@ namespace ChessersEngine {
             } else if (chessman.IsBishop()) {
                 pieceSpecificValidator = IsValidBishopMove;
             } else if (chessman.IsKing()) {
-                //pieceSpecificValidator = IsValidKingMove;
+                pieceSpecificValidator = IsValidKingMove;
             } else if (chessman.IsQueen()) {
                 pieceSpecificValidator = IsValidQueenMove;
             }

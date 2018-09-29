@@ -116,7 +116,7 @@ namespace ChessersEngine {
         }
 
         private List<ChessmanSchema> CreateDefaultChessmen () {
-            List<ChessmanSchema> chessmanSchemas = new List<ChessmanSchema>() {
+            List<ChessmanSchema> chessmanSchemas = new List<ChessmanSchema> {
                 new ChessmanSchema () {
                     location = 0,
                     id = Constants.ID_WHITE_ROOK_1
