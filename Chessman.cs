@@ -20,7 +20,7 @@
         public bool hasMoved = false;
         public bool isActive = true;
         public int id;
-        private bool isChecker = false;
+        public bool isChecker = false;
         public bool isKinged = false;
         public bool isPromoted = false;
         public ChessmanKindEnum kind;
@@ -39,6 +39,7 @@
             hasMoved = cs.hasMoved;
             id = cs.id;
             isActive = cs.isActive;
+            isChecker = cs.isChecker;
             isKinged = cs.isKinged;
             isPromoted = cs.isPromoted;
 
@@ -72,6 +73,7 @@
             this.hasMoved = chessmanSchema.hasMoved;
             this.id = chessmanSchema.id;
             this.isActive = chessmanSchema.isActive;
+            this.isChecker = chessmanSchema.isChecker;
             this.isKinged = chessmanSchema.isKinged;
             this.isPromoted = chessmanSchema.isPromoted;
             this.kind = (ChessmanKindEnum) chessmanSchema.kind;
@@ -141,6 +143,10 @@
             underlyingTile = null;
         }
 
+        public void TogglePolarity () {
+            isChecker = !isChecker;
+        }
+
         public ChessmanSchema CreateSchema () {
             return new ChessmanSchema {
                 colorId = colorId,
@@ -148,6 +154,7 @@
                 hasMoved = hasMoved,
                 id = id,
                 isActive = isActive,
+                isChecker = isChecker,
                 isKinged = isKinged,
                 isPromoted = isPromoted,
                 kind = (int) kind,

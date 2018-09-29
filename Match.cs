@@ -84,7 +84,7 @@ namespace ChessersEngine {
 
             foreach (ChessmanSchema cs in pieces) {
                 Chessman newChessman = Chessman.CreateFromSchema(cs);
-                Tile underlyingTile = GetTile(cs.location);
+                Tile underlyingTile = GetCommittedTile(cs.location);
 
                 newChessman.SetUnderlyingTile(underlyingTile);
                 underlyingTile.SetPiece(newChessman);
@@ -269,14 +269,14 @@ namespace ChessersEngine {
             // Update the states of the Tiles, and which Chessmen they reference
             foreach (KeyValuePair<int, Tile> pair in tilesById) {
                 int tileId = pair.Key;
-                Tile pendingTile = pendingTilesById[tileId];
-                Tile committedTile = tilesById[tileId];
+                Tile pendingTile = GetPendingTile(tileId);
+                Tile committedTile = GetCommittedTile(tileId);
 
                 committedTile.CopyFrom(pendingTile);
 
                 if (pendingTile.IsOccupied()) {
                     // If the tile became occupied, update the Chessman reference
-                    Chessman newlyCommittedChessman = chessmenById[pendingTile.GetPiece().id];
+                    Chessman newlyCommittedChessman = GetCommittedChessman(pendingTile.GetPiece().id);
 
                     committedTile.SetPiece(newlyCommittedChessman);
                 } else {
@@ -288,10 +288,10 @@ namespace ChessersEngine {
             // Update the Tile references for the Chessmen
             foreach (KeyValuePair<int, Chessman> pair in chessmenById) {
                 int chessmanId = pair.Key;
-                Chessman pendingChessman = pendingChessmenById[chessmanId];
-                Chessman committedChessman = chessmenById[chessmanId];
+                Chessman pendingChessman = GetPendingChessman(chessmanId);
+                Chessman committedChessman = GetCommittedChessman(chessmanId);
 
-                Tile committedTile = tilesById[pendingChessman.GetUnderlyingTile().id];
+                Tile committedTile = GetCommittedTile(pendingChessman.GetUnderlyingTile().id);
                 committedChessman.SetUnderlyingTile(committedTile);
             }
 
@@ -308,23 +308,24 @@ namespace ChessersEngine {
 
             foreach (KeyValuePair<int, Chessman> pair in chessmenById) {
                 int chessmanId = pair.Key;
-                Chessman pendingChessman = pendingChessmenById[chessmanId];
-                Chessman committedChessman = chessmenById[chessmanId];
+                Chessman pendingChessman = GetPendingChessman(chessmanId);
+                Chessman committedChessman = GetCommittedChessman(chessmanId);
 
                 pendingChessman.CopyFrom(committedChessman);
             }
 
             foreach (KeyValuePair<int, Tile> pair in tilesById) {
                 int tileId = pair.Key;
-                Tile pendingTile = pendingTilesById[tileId];
-                Tile committedTile = tilesById[tileId];
+                Tile pendingTile = GetPendingTile(tileId);
+                Tile committedTile = GetCommittedTile(tileId);
 
                 pendingTile.CopyFrom(committedTile);
 
                 if (committedTile.IsOccupied()) {
-                    Chessman committedChessman = chessmenById[committedTile.GetPiece().id];
+                    // If the tile was occupied at the beginning, set the Chessman reference
+                    Chessman pendingChessman = GetPendingChessman(committedTile.GetPiece().id);
 
-                    pendingTile.SetPiece(committedChessman);
+                    pendingTile.SetPiece(pendingChessman);
                 } else {
                     // If the tile is no longer occupied, remove the Chessman reference
                     pendingTile.RemovePiece();
@@ -333,11 +334,11 @@ namespace ChessersEngine {
 
             foreach (KeyValuePair<int, Chessman> pair in chessmenById) {
                 int chessmanId = pair.Key;
-                Chessman pendingChessman = pendingChessmenById[chessmanId];
-                Chessman committedChessman = chessmenById[chessmanId];
+                Chessman pendingChessman = GetPendingChessman(chessmanId);
+                Chessman committedChessman = GetCommittedChessman(chessmanId);
 
-                Tile committedTile = tilesById[committedChessman.GetUnderlyingTile().id];
-                pendingChessman.SetUnderlyingTile(committedTile);
+                Tile pendingTile = GetPendingTile(committedChessman.GetUnderlyingTile().id);
+                pendingChessman.SetUnderlyingTile(pendingTile);
             }
 
             pendingMoveResults.Clear();
@@ -365,7 +366,7 @@ namespace ChessersEngine {
             return pendingTilesById[id];
         }
 
-        public Tile GetTile (int id) {
+        public Tile GetCommittedTile (int id) {
             return tilesById[id];
         }
 
@@ -441,11 +442,16 @@ namespace ChessersEngine {
                 return null;
             }
 
-            // -- Check to see if this move is legal
             MoveResult moveResult = GetMoveResult(chessman, toTile);
+            if (moveResult == null || !moveResult.valid) {
+                return null;
+            }
+
+
             moveResult.playerId = playerId;
 
             UpdateFromMoveResult(moveResult);
+            pendingMoveResults.Add(moveResult);
 
             return moveResult;
         }
@@ -500,6 +506,10 @@ namespace ChessersEngine {
             if (moveResult.promotionOccurred && Helpers.IsValidPromotion(moveResult.promotionRank)) {
                 PromoteChessman(chessman.id, moveResult.promotionRank);
             }
+
+            if (moveResult.polarityChanged) {
+                chessman.TogglePolarity();
+            }
         }
 
         #endregion
@@ -511,13 +521,13 @@ namespace ChessersEngine {
 
         public void UpdateMatch (MatchData newMatchData) {
             foreach (ChessmanSchema cs in newMatchData.pieces) {
-                Chessman chessman = chessmenById[cs.id];
+                Chessman chessman = GetCommittedChessman(cs.id);
                 chessman.CopyFrom(cs);
 
                 if (!chessman.isActive) {
                     chessman.RemoveUnderlyingTileReference();
                 } else {
-                    chessman.SetUnderlyingTile(tilesById[cs.location]);
+                    chessman.SetUnderlyingTile(GetCommittedTile(cs.location));
                 }
             }
 

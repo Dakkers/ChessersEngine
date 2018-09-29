@@ -54,6 +54,12 @@ namespace ChessersEngine {
             return fromRow == toRow;
         }
 
+        /// <summary>
+        /// Determines if the move is a "positive diagonal" move. Positive Diagonal
+        /// is the diagonal line from the bottom-left towards the top-right, or
+        /// vice versa.
+        /// </summary>
+        /// <returns><c>true</c>, if positive diagonal move was ised, <c>false</c> otherwise.</returns>
         private bool IsPositiveDiagonalMove () {
             if ((Math.Abs(delta) % 9) != 0) {
                 return false;
@@ -84,6 +90,14 @@ namespace ChessersEngine {
 
         private bool IsVerticalMove () {
             return fromColumn == toColumn;
+        }
+
+        private bool IsRankIncreasing () {
+            return (toRow - fromRow) > 0;
+        }
+
+        private bool IsRankDecreasing () {
+            return !IsRankIncreasing();
         }
 
         #endregion
@@ -118,6 +132,56 @@ namespace ChessersEngine {
         }
 
         private MoveResult IsValidCheckerMove () {
+            // Spacing represents how many tiles the piece is attempting to move
+            // diagonally. When jumping, this value will be 2. When moving regularly,
+            // this value will be 1.
+            int stepSize = 0;
+
+            // If the piece is not kinged, it can only move in a specific direction.
+            // White pieces can move in increasing rank (from bottom to top) whereas
+            // black pieces can move in decreasing rank (from top to bottom) only.
+            if (!chessman.isKinged) {
+                if (chessman.IsWhite()) {
+                    if (IsRankDecreasing()) {
+                        return null;
+                    }
+                } else {
+                    if (IsRankIncreasing()) {
+                        return null;
+                    }
+                }
+            }
+
+            if (IsNegativeDiagonalMove()) {
+                stepSize = 7;
+            } else if (IsPositiveDiagonalMove()) {
+                stepSize = 9;
+            } else {
+                return null;
+            }
+
+            int spacing = (Math.Abs(delta) / stepSize);
+
+            if (spacing == 1) {
+                if (toTile.IsOccupied()) {
+                    return null;
+                }
+            } else if (spacing == 2) {
+                Tile tileJumpingOver = match.GetCommittedTile(fromTile.id + stepSize);
+                if (!tileJumpingOver.IsOccupied()) {
+                    return null;
+                }
+
+                if (tileJumpingOver.GetPiece().colorId == chessman.colorId) {
+                    return null;
+                }
+
+                moveResult.capturedPieceId = tileJumpingOver.GetPiece().id;
+            } else {
+                return null;
+            }
+
+            moveResult.valid = true;
             return moveResult;
         }
 
@@ -313,6 +377,23 @@ namespace ChessersEngine {
 
             if (!moveResult.valid) {
                 return null;
+            }
+
+            // Handle polarity changes, if applicable
+            if (chessman.IsWhite()) {
+                if (!chessman.IsChecker() && toRow >= Constants.RANK_5) {
+                    moveResult.polarityChanged = true;
+                }
+                if (chessman.IsChecker() && toRow <= Constants.RANK_4) {
+                    moveResult.polarityChanged = true;
+                }
+            } else {
+                if (!chessman.IsChecker() && toRow <= Constants.RANK_4) {
+                    moveResult.polarityChanged = true;
+                }
+                if (chessman.IsChecker() && toRow >= Constants.RANK_5) {
+                    moveResult.polarityChanged = true;
+                }
             }
 
             // Handle promotion for pawn if not already promoted

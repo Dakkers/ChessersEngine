@@ -8,6 +8,7 @@
         // For games that do not use external global identifiers, guid == id
         public int id;
         public bool isActive = true;
+        public bool isChecker = false;
         public bool isKinged = false;
         public bool isPromoted = false;
         public int kind;
