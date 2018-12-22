@@ -74,7 +74,7 @@
 
         #endregion
 
-        #region Ranks, Files
+        #region Ranks (rows), Files (columns)
 
         public const int RANK_1 = 0;
         public const int RANK_2 = 1;

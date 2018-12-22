@@ -3,11 +3,22 @@ using System.Collections.Generic;
 using System.Linq;
 
 namespace ChessersEngine {
+    public enum Directionalities {
+        HORIZONTAL,
+        VERTICAL,
+        // Bottom-left <-> top-right
+        POSITIVE_DIAGONAL,
+        // Top-left <-> bottom-right
+        NEGATIVE_DIAGONAL
+    };
+
     public class Move {
-        private Match match;
+        private Board board;
+
         private Chessman chessman;
         private Tile fromTile;
         private Tile toTile;
+        private int movingColor;
 
         private int delta;
 
@@ -19,24 +30,16 @@ namespace ChessersEngine {
 
         private MoveResult moveResult;
 
-        private enum Directionalities {
-            HORIZONTAL,
-            VERTICAL,
-            // Bottom-left <-> top-right
-            POSITIVE_DIAGONAL,
-            // Top-left <-> bottom-right
-            NEGATIVE_DIAGONAL
-        };
+        public Move (Board _board, MoveAttempt moveAttempt) {
+            board = _board;
 
-        public Move (Match _match, Chessman _chessman, Tile _toTile) {
-            match = _match;
-            chessman = _chessman;
-            toTile = _toTile;
-
+            chessman = board.GetChessman(moveAttempt.pieceId);
+            toTile = board.GetTile(moveAttempt.tileId);
             fromTile = chessman.GetUnderlyingTile();
+            movingColor = chessman.colorId;
 
             delta = toTile.id - fromTile.id;
-            Match.Log($"delta = {delta}");
+            //Match.Log($"delta = {delta}");
 
             fromRow = Helpers.GetRow(fromTile.id);
             toRow = Helpers.GetRow(toTile.id);
@@ -169,7 +172,7 @@ namespace ChessersEngine {
                     return null;
                 }
             } else if (spacing == 2) {
-                Tile tileJumpingOver = match.GetCommittedTile(fromTile.id + stepSize);
+                Tile tileJumpingOver = board.GetTile(fromTile.id + stepSize);
                 if (!tileJumpingOver.IsOccupied()) {
                     return null;
                 }
@@ -375,12 +378,94 @@ namespace ChessersEngine {
             }
 
             for (int tileId = start + stepSize; tileId <= stop - stepSize; tileId += stepSize) {
-                if (match.GetPendingTile(tileId).IsOccupied()) {
+                if (board.GetTile(tileId).IsOccupied()) {
                     return true;
                 }
             }
 
             return false;
+        }
+
+        private bool IsNotInCheck () {
+            // -- DIRECT ATTACK
+            // Check that the king cannot be attacked directly.
+
+            Chessman kingChessman = (chessman.IsWhite()) ?
+                board.GetWhiteKing() :
+                     board.GetBlackKing();
+
+            if (
+                board.CanChessmanBeCapturedVertically(kingChessman) ||
+                board.CanChessmanBeCapturedHorizontally(kingChessman) ||
+                board.CanChessmanBeJumped(kingChessman)
+            ) {
+                return false;
+            }
+
+            // -- Validate jumping...
+            Tile kingTile = kingChessman.GetUnderlyingTile();
+
+            Queue<Tile> tilesToCheckForLanding = new Queue<Tile>();
+            Dictionary<int, bool> checkedTilesForLanding = new Dictionary<int, bool>();
+            Dictionary<int, bool> checkedTilesForJumpingOver = new Dictionary<int, bool>();
+
+            //checkedTiles.Add(kingTile.id, true);
+
+            // Note... the tiles we initially search are the diagonally adjacent tiles to the
+            // king, but they must be unoccupied OR if they are, they must be of the same colour
+            // as the king. We ignored diagonally adjacent tiles with the opposite colour pieces
+            // because if they are able to attack the king in any way, the validation would fail
+            // above. However, if the validation above passed and we are at this point in the
+            // code, those pieces cannot attack the king directly. Due to the mechanics of the
+            // game, they also cannot be used in multi-jumps or capture-multi-jump below.
+            foreach (var tile in board.GetDiagonallyAdjacentTiles(kingTile)) {
+                if (!tile.IsOccupied() || tile.GetPiece().colorId != kingChessman.colorId) {
+                    tilesToCheckForLanding.Enqueue(tile);
+                    checkedTilesForLanding.Add(tile.id, true);
+                }
+            }
+
+            while (tilesToCheckForLanding.Count > 0) {
+                Tile tileToCheck = tilesToCheckForLanding.Dequeue();
+                Match.Log($"Checking tile: {tileToCheck.id}");
+
+                if (tileToCheck.IsOccupied()) {
+                    Chessman occupant = tileToCheck.GetPiece();
+
+                    // We found a piece that is of the opposite colour.
+                    // 
+                    if (occupant.colorId != kingChessman.colorId) {
+                        return false;
+                    }
+
+                    // If the tile is occupied by a piece of the same colour, then
+                    // we have to check if it can be captured.
+                    // If it can, then a capture-jump can occur.
+
+                    //TODO -- check direct attack...
+                    if (board.CanChessmanBeCaptured(occupant)) {
+                        return false;
+                    }
+
+                    continue;
+                }
+
+
+                List<Tile> potentialJumpLocations = board.GetPotentialJumpLocationsForTile(tileToCheck);
+                foreach (Tile potentialJumpTile in potentialJumpLocations) {
+                    if (checkedTilesForLanding.ContainsKey(potentialJumpTile.id)) {
+                        continue;
+                    }
+
+                    Match.Log($"    Potential jump location: {potentialJumpTile.id}");
+
+                    tilesToCheckForLanding.Enqueue(potentialJumpTile);
+                    checkedTilesForLanding.Add(potentialJumpTile.id, true);
+                }
+
+            }
+
+            return true;
         }
 
         /// <summary>
@@ -416,6 +501,21 @@ namespace ChessersEngine {
             if (!moveResult.valid) {
                 return null;
             }
+
+            // -- Move the piece in a copy of the match's board.
+            // We can then check for the Check status.
+
+            chessman.SetHasMoved(true);
+            fromTile.RemovePiece();
+            toTile.SetPiece(chessman);
+            chessman.SetUnderlyingTile(toTile);
+
+            if (!IsNotInCheck()) {
+                return null;
+            }
+
+
+            // -- Completely valid!
 
             // Handle polarity changes, if applicable
             if (chessman.IsWhite()) {

@@ -20,6 +20,11 @@ namespace ChessersEngine {
         // TODO -- specify check status for players
     }
 
+    public struct MatchCloningResult {
+        public Dictionary<int, Tile> tilesById;
+        public Dictionary<int, Chessman> chessmenById;
+    }
+
     public class Match {
         /// <summary>
         /// The "effective" turn color. When a player's turn begins and they make a move
@@ -36,12 +41,10 @@ namespace ChessersEngine {
         /// </summary>
         private int committedTurnColor;
 
-        public Dictionary<int, Tile> tilesById;
-        public Dictionary<int, Chessman> chessmenById;
-
-        public Dictionary<int, Tile> pendingTilesById;
-        public Dictionary<int, Chessman> pendingChessmenById;
         private List<MoveResult> pendingMoveResults = new List<MoveResult>();
+
+        private Board pendingBoard;
+        private Board committedBoard;
 
         public List<string> moves = new List<string>();
 
@@ -53,23 +56,8 @@ namespace ChessersEngine {
         /// </summary>
         /// <param name="data">The data to initialize the match with. If null, a new match is created.</param>
         public Match (MatchData data) {
-            tilesById = new Dictionary<int, Tile>();
-            chessmenById = new Dictionary<int, Chessman>();
-
-            pendingTilesById = new Dictionary<int, Tile>();
-            pendingChessmenById = new Dictionary<int, Chessman>();
-
-            for (int i = 0; i < 64; i++) {
-                tilesById[i] = new Tile {
-                    id = i
-                };
-
-                pendingTilesById[i] = tilesById[i].Clone();
-            }
-
-            List<ChessmanSchema> pieces;
+            List<ChessmanSchema> pieces = null;
             if (data == null) {
-                pieces = CreateDefaultChessmen();
                 whitePlayerId = Constants.DEFAULT_WHITE_PLAYER_ID;
                 blackPlayerId = Constants.DEFAULT_BLACK_PLAYER_ID;
                 turnColor = Constants.ID_WHITE;
@@ -82,25 +70,8 @@ namespace ChessersEngine {
 
             committedTurnColor = turnColor;
 
-            foreach (ChessmanSchema cs in pieces) {
-                Chessman newChessman = Chessman.CreateFromSchema(cs);
-                Tile underlyingTile = GetCommittedTile(cs.location);
-
-                newChessman.SetUnderlyingTile(underlyingTile);
-                underlyingTile.SetPiece(newChessman);
-
-                chessmenById[newChessman.id] = newChessman;
-            }
-
-            foreach (ChessmanSchema cs in pieces) {
-                Chessman newChessman = Chessman.CreateFromSchema(cs);
-                Tile underlyingTile = GetPendingTile(cs.location);
-
-                newChessman.SetUnderlyingTile(underlyingTile);
-                underlyingTile.SetPiece(newChessman);
-
-                pendingChessmenById[newChessman.id] = newChessman;
-            }
+            pendingBoard = new Board(pieces);
+            committedBoard = new Board(pieces);
         }
 
         // TODO
@@ -257,43 +228,7 @@ namespace ChessersEngine {
         private void CommitMatchState () {
             committedTurnColor = turnColor;
 
-            // Update the states of the Chessmen
-            foreach (KeyValuePair<int, Chessman> pair in chessmenById) {
-                int chessmanId = pair.Key;
-                Chessman pendingChessman = pendingChessmenById[chessmanId];
-                Chessman committedChessman = chessmenById[chessmanId];
-
-                committedChessman.CopyFrom(pendingChessman);
-            }
-
-            // Update the states of the Tiles, and which Chessmen they reference
-            foreach (KeyValuePair<int, Tile> pair in tilesById) {
-                int tileId = pair.Key;
-                Tile pendingTile = GetPendingTile(tileId);
-                Tile committedTile = GetCommittedTile(tileId);
-
-                committedTile.CopyFrom(pendingTile);
-
-                if (pendingTile.IsOccupied()) {
-                    // If the tile became occupied, update the Chessman reference
-                    Chessman newlyCommittedChessman = GetCommittedChessman(pendingTile.GetPiece().id);
-
-                    committedTile.SetPiece(newlyCommittedChessman);
-                } else {
-                    // If the tile is no longer occupied, remove the Chessman reference
-                    committedTile.RemovePiece();
-                }
-            }
-
-            // Update the Tile references for the Chessmen
-            foreach (KeyValuePair<int, Chessman> pair in chessmenById) {
-                int chessmanId = pair.Key;
-                Chessman pendingChessman = GetPendingChessman(chessmanId);
-                Chessman committedChessman = GetCommittedChessman(chessmanId);
-
-                Tile committedTile = GetCommittedTile(pendingChessman.GetUnderlyingTile().id);
-                committedChessman.SetUnderlyingTile(committedTile);
-            }
+            committedBoard.CopyState(pendingBoard);
 
             pendingMoveResults.Clear();
         }
@@ -306,40 +241,7 @@ namespace ChessersEngine {
         private void ResetMatchState () {
             turnColor = committedTurnColor;
 
-            foreach (KeyValuePair<int, Chessman> pair in chessmenById) {
-                int chessmanId = pair.Key;
-                Chessman pendingChessman = GetPendingChessman(chessmanId);
-                Chessman committedChessman = GetCommittedChessman(chessmanId);
-
-                pendingChessman.CopyFrom(committedChessman);
-            }
-
-            foreach (KeyValuePair<int, Tile> pair in tilesById) {
-                int tileId = pair.Key;
-                Tile pendingTile = GetPendingTile(tileId);
-                Tile committedTile = GetCommittedTile(tileId);
-
-                pendingTile.CopyFrom(committedTile);
-
-                if (committedTile.IsOccupied()) {
-                    // If the tile was occupied at the beginning, set the Chessman reference
-                    Chessman pendingChessman = GetPendingChessman(committedTile.GetPiece().id);
-
-                    pendingTile.SetPiece(pendingChessman);
-                } else {
-                    // If the tile is no longer occupied, remove the Chessman reference
-                    pendingTile.RemovePiece();
-                }
-            }
-
-            foreach (KeyValuePair<int, Chessman> pair in chessmenById) {
-                int chessmanId = pair.Key;
-                Chessman pendingChessman = GetPendingChessman(chessmanId);
-                Chessman committedChessman = GetCommittedChessman(chessmanId);
-
-                Tile pendingTile = GetPendingTile(committedChessman.GetUnderlyingTile().id);
-                pendingChessman.SetUnderlyingTile(pendingTile);
-            }
+            pendingBoard.CopyState(committedBoard);
 
             pendingMoveResults.Clear();
         }
@@ -352,22 +254,33 @@ namespace ChessersEngine {
             ResetMatchState();
         }
 
+        public Board CopyPendingBoard () {
+            Board pendingBoardCopy = new Board(pendingBoard.GetChessmanSchemas());
+            pendingBoardCopy.CopyState(pendingBoard);
+
+            return pendingBoardCopy;
+        }
+
         #region Getters / Setters
 
         public Chessman GetPendingChessman (int id) {
-            return pendingChessmenById[id];
+            return pendingBoard.GetChessman(id);
         }
 
         public Chessman GetCommittedChessman (int id) {
-            return chessmenById[id];
+            return committedBoard.GetChessman(id);
+        }
+
+        public Dictionary<int, Chessman> GetAllCommittedChessmen () {
+            return committedBoard.GetAllChessmen();
         }
 
         public Tile GetPendingTile (int id) {
-            return pendingTilesById[id];
+            return pendingBoard.GetTile(id);
         }
 
         public Tile GetCommittedTile (int id) {
-            return tilesById[id];
+            return committedBoard.GetTile(id);
         }
 
         public int GetCommittedTurnColor () {
@@ -414,54 +327,49 @@ namespace ChessersEngine {
 
         #region Move-related
 
-        public MoveResult GetMoveResult (Chessman chessman, Tile toTile) {
-            Move move = new Move(this, chessman, toTile);
+        public MoveResult GetMoveResult (MoveAttempt moveAttempt) {
+            Move move = new Move(CopyPendingBoard(), moveAttempt);
             return move.GetMoveResult();
         }
 
-        public MoveResult MoveChessman (long playerId, Chessman chessman, Tile toTile) {
+        public MoveResult MoveChessman (MoveAttempt moveAttempt) {
             // -- Base validation
             if (turnColor == Constants.ID_WHITE) {
-                if (playerId == blackPlayerId) {
+                if (moveAttempt.playerId == blackPlayerId) {
                     return null;
                 }
             }
 
             if (turnColor == Constants.ID_BLACK) {
-                if (playerId == whitePlayerId) {
+                if (moveAttempt.playerId == whitePlayerId) {
                     return null;
                 }
             }
 
+            Chessman chessman = GetPendingChessman(moveAttempt.pieceId);
+
             if (chessman.colorId != turnColor) {
                 return null;
             }
+
+            Tile toTile = GetPendingTile(moveAttempt.tileId);
 
             Chessman targetChessman = toTile.occupant;
             if (targetChessman?.colorId == chessman.colorId) {
                 return null;
             }
 
-            MoveResult moveResult = GetMoveResult(chessman, toTile);
+            MoveResult moveResult = GetMoveResult(moveAttempt);
             if (moveResult == null || !moveResult.valid) {
                 return null;
             }
 
-
-            moveResult.playerId = playerId;
+            moveResult.playerId = moveAttempt.playerId;
 
             UpdateFromMoveResult(moveResult);
             pendingMoveResults.Add(moveResult);
 
             return moveResult;
-        }
-
-        public MoveResult MoveChessman (long playerId, int chessmanId, int toTileId) {
-            return MoveChessman(playerId, GetPendingChessman(chessmanId), GetPendingTile(toTileId));
-        }
-
-        public MoveResult MoveChessman (MoveAttempt moveAttempt) {
-            return MoveChessman(moveAttempt.playerId, moveAttempt.pieceId, moveAttempt.tileId);
         }
 
         public void HandleJumpAndCapture (MoveResult moveResult) {
