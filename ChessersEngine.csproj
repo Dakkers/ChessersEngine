@@ -1,7 +1,18 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard1.6</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="NUnit" Version="3.11.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="Tests\UnitTest1.cs" />
+    <Compile Remove="Tests\Checkmate.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="Tests\bin\Debug\netcoreapp2.1\nunit.engine.netstandard.dll" />
+    <None Remove="ChessersEngine.Tests\obj\ChessersEngine.Tests.csproj.nuget.cache" />
+  </ItemGroup>
 </Project>

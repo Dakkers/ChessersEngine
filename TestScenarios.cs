@@ -3,16 +3,25 @@ using System.Collections.Generic;
 
 namespace ChessersEngine {
     public static class TestScenarios {
-        private static ChessmanSchema CreateWhiteKing (int location) {
+        static ChessmanSchema CreateKing (bool isWhite = true) {
             return new ChessmanSchema {
                 kind = Constants.CHESSMAN_KIND_KING,
-                id = Constants.ID_WHITE_KING,
-                guid = Constants.ID_WHITE_KING,
-                location = location,
+                id = isWhite ? Constants.ID_WHITE_KING : Constants.ID_BLACK_KING,
+                guid = isWhite ? Constants.ID_WHITE_KING : Constants.ID_BLACK_KING,
             };
         }
 
-        private static ChessmanSchema CreateWhitePawn (int id, int location) {
+        public static ChessmanSchema CreateWhiteKing (int location) {
+            ChessmanSchema cs = CreateKing();
+            cs.location = location;
+            return cs;
+        }
+        public static ChessmanSchema CreateBlackKing (int location) {
+            ChessmanSchema cs = CreateKing(false);
+            cs.location = location;
+            return cs;
+        }
+        public static ChessmanSchema CreatePawn (int id, int location) {
             return new ChessmanSchema {
                 kind = Constants.CHESSMAN_KIND_PAWN,
                 id = id,
@@ -20,8 +29,16 @@ namespace ChessersEngine {
                 location = location,
             };
         }
+        public static ChessmanSchema CreateRook (int id, int location) {
+            return new ChessmanSchema {
+                kind = Constants.CHESSMAN_KIND_ROOK,
+                id = id,
+                guid = id,
+                location = location,
+            };
+        }
 
-        private static ChessmanSchema CreateBlackQueen (int location) {
+        public static ChessmanSchema CreateBlackQueen (int location) {
             return new ChessmanSchema {
                 kind = Constants.CHESSMAN_KIND_QUEEN,
                 id = Constants.ID_BLACK_QUEEN,
@@ -30,7 +47,7 @@ namespace ChessersEngine {
             };
         }
 
-        private static ChessmanSchema CreateBlackChecker (int id, int location) {
+        public static ChessmanSchema CreateBlackChecker (int id, int location) {
             return new ChessmanSchema {
                 kind = Constants.CHESSMAN_KIND_PAWN,
                 id = id,
@@ -75,7 +92,7 @@ namespace ChessersEngine {
                 blackPlayerId = 1,
                 pieces = new List<ChessmanSchema> {
                     CreateWhiteKing(3),
-                    CreateWhitePawn(Constants.ID_WHITE_PAWN_1, 18),
+                    CreatePawn(Constants.ID_WHITE_PAWN_1, 18),
                     CreateBlackQueen(58)
                 }
             };
@@ -89,7 +106,7 @@ namespace ChessersEngine {
                 blackPlayerId = 1,
                 pieces = new List<ChessmanSchema> {
                     CreateWhiteKing(3),
-                    CreateWhitePawn(Constants.ID_WHITE_PAWN_1, 4),
+                    CreatePawn(Constants.ID_WHITE_PAWN_1, 4),
                     CreateBlackQueen(60)
                 }
             };
@@ -103,10 +120,28 @@ namespace ChessersEngine {
                 blackPlayerId = 1,
                 pieces = new List<ChessmanSchema> {
                     CreateWhiteKing(2),
-                    CreateWhitePawn(Constants.ID_WHITE_PAWN_1, 12),
-                    CreateWhitePawn(Constants.ID_WHITE_PAWN_2, 14),
+                    CreatePawn(Constants.ID_WHITE_PAWN_1, 12),
+                    CreatePawn(Constants.ID_WHITE_PAWN_2, 14),
 
                     CreateBlackChecker(Constants.ID_BLACK_PAWN_1, 23)
+                }
+            };
+        }
+
+        public static MatchData Checkmate1 () {
+            return new MatchData {
+                currentTurn = Constants.ID_BLACK,
+                matchId = 1,
+                whitePlayerId = 0,
+                blackPlayerId = 1,
+                pieces = new List<ChessmanSchema> {
+                    TestScenarios.CreateWhiteKing(0),
+                    TestScenarios.CreatePawn(Constants.ID_WHITE_PAWN_1, 32),
+
+                    TestScenarios.CreateRook(Constants.ID_BLACK_ROOK_1, 15),
+                    TestScenarios.CreateRook(Constants.ID_BLACK_ROOK_2, 56),
+                    TestScenarios.CreateBlackQueen(57),
+                    TestScenarios.CreateBlackKing(58),
                 }
             };
         }

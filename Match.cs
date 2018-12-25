@@ -86,145 +86,6 @@ namespace ChessersEngine {
             }
         }
 
-        private List<ChessmanSchema> CreateDefaultChessmen () {
-            List<ChessmanSchema> chessmanSchemas = new List<ChessmanSchema> {
-                new ChessmanSchema () {
-                    location = 0,
-                    id = Constants.ID_WHITE_ROOK_1
-                },
-                new ChessmanSchema () {
-                    location = 1,
-                    id = Constants.ID_WHITE_KNIGHT_1
-                },
-                new ChessmanSchema () {
-                    location = 2,
-                    id = Constants.ID_WHITE_BISHOP_1
-                },
-                new ChessmanSchema () {
-                    location = 3,
-                    id = Constants.ID_WHITE_QUEEN
-                },
-                new ChessmanSchema () {
-                    location = 4,
-                    id = Constants.ID_WHITE_KING
-                },
-                new ChessmanSchema () {
-                    location = 5,
-                    id = Constants.ID_WHITE_BISHOP_2
-                },
-                new ChessmanSchema () {
-                    location = 6,
-                    id = Constants.ID_WHITE_KNIGHT_2
-                },
-                new ChessmanSchema () {
-                    location = 7,
-                    id = Constants.ID_WHITE_ROOK_2
-                },
-                new ChessmanSchema () {
-                    location = 8,
-                    id = Constants.ID_WHITE_PAWN_1
-                },
-                new ChessmanSchema () {
-                    location = 9,
-                    id = Constants.ID_WHITE_PAWN_2
-                },
-                new ChessmanSchema () {
-                    location = 10,
-                    id = Constants.ID_WHITE_PAWN_3
-                },
-                new ChessmanSchema () {
-                    location = 11,
-                    id = Constants.ID_WHITE_PAWN_4
-                },
-                new ChessmanSchema () {
-                    location = 12,
-                    id = Constants.ID_WHITE_PAWN_5
-                },
-                new ChessmanSchema () {
-                    location = 13,
-                    id = Constants.ID_WHITE_PAWN_6
-                },
-                new ChessmanSchema () {
-                    location = 14,
-                    id = Constants.ID_WHITE_PAWN_7
-                },
-                new ChessmanSchema () {
-                    location = 15,
-                    id = Constants.ID_WHITE_PAWN_8
-                },
-                new ChessmanSchema () {
-                    location = 48,
-                    id = Constants.ID_BLACK_PAWN_1
-                },
-                new ChessmanSchema () {
-                    location = 49,
-                    id = Constants.ID_BLACK_PAWN_2
-                },
-                new ChessmanSchema () {
-                    location = 50,
-                    id = Constants.ID_BLACK_PAWN_3
-                },
-                new ChessmanSchema () {
-                    location = 51,
-                    id = Constants.ID_BLACK_PAWN_4
-                },
-                new ChessmanSchema () {
-                    location = 52,
-                    id = Constants.ID_BLACK_PAWN_5
-                },
-                new ChessmanSchema () {
-                    location = 53,
-                    id = Constants.ID_BLACK_PAWN_6
-                },
-                new ChessmanSchema () {
-                    location = 54,
-                    id = Constants.ID_BLACK_PAWN_7
-                },
-                new ChessmanSchema () {
-                    location = 55,
-                    id = Constants.ID_BLACK_PAWN_8
-                },
-                new ChessmanSchema () {
-                    location = 56,
-                    id = Constants.ID_BLACK_ROOK_1
-                },
-                new ChessmanSchema () {
-                    location = 57,
-                    id = Constants.ID_BLACK_KNIGHT_1
-                },
-                new ChessmanSchema () {
-                    location = 58,
-                    id = Constants.ID_BLACK_BISHOP_1
-                },
-                new ChessmanSchema () {
-                    location = 59,
-                    id = Constants.ID_BLACK_QUEEN
-                },
-                new ChessmanSchema () {
-                    location = 60,
-                    id = Constants.ID_BLACK_KING
-                },
-                new ChessmanSchema () {
-                    location = 61,
-                    id = Constants.ID_BLACK_BISHOP_2
-                },
-                new ChessmanSchema () {
-                    location = 62,
-                    id = Constants.ID_BLACK_KNIGHT_2
-                },
-                new ChessmanSchema () {
-                    location = 63,
-                    id = Constants.ID_BLACK_ROOK_2
-                },
-            };
-
-            foreach (ChessmanSchema cs in chessmanSchemas) {
-                cs.kind = Helpers.GetKind(cs.id);
-            }
-
-            return chessmanSchemas;
-        }
-
         private void CommitMatchState () {
             committedTurnColor = turnColor;
 
@@ -327,11 +188,6 @@ namespace ChessersEngine {
 
         #region Move-related
 
-        public MoveResult GetMoveResult (MoveAttempt moveAttempt) {
-            Move move = new Move(CopyPendingBoard(), moveAttempt);
-            return move.GetMoveResult();
-        }
-
         public MoveResult MoveChessman (MoveAttempt moveAttempt) {
             // -- Base validation
             if (turnColor == Constants.ID_WHITE) {
@@ -359,73 +215,23 @@ namespace ChessersEngine {
                 return null;
             }
 
-            MoveResult moveResult = GetMoveResult(moveAttempt);
+            MoveResult moveResult = pendingBoard.MoveChessman(moveAttempt);
             if (moveResult == null || !moveResult.valid) {
                 return null;
             }
 
             moveResult.playerId = moveAttempt.playerId;
 
-            UpdateFromMoveResult(moveResult);
             pendingMoveResults.Add(moveResult);
+
+            if (moveResult.turnChanged) {
+                ChangeTurn();
+            }
 
             return moveResult;
         }
 
-        public void HandleJumpAndCapture (MoveResult moveResult) {
-            Chessman pieceToRemove = null;
-
-            if (moveResult.WasPieceJumped()) {
-                pieceToRemove = GetPendingChessman(moveResult.jumpedPieceId);
-            } else if (moveResult.WasPieceCaptured()) {
-                pieceToRemove = GetPendingChessman(moveResult.capturedPieceId);
-            }
-
-            if (pieceToRemove != null) {
-                pieceToRemove.SetActive(false);
-                Tile tileWithRemovedPiece = pieceToRemove.GetUnderlyingTile();
-                tileWithRemovedPiece?.RemovePiece();
-            }
-        }
-
-        public void UpdateFromMoveResult (MoveResult moveResult) {
-            Chessman chessman = GetPendingChessman(moveResult.pieceId);
-            Tile fromTile = chessman.GetUnderlyingTile();
-            Tile toTile = GetPendingTile(moveResult.tileId);
-
-            HandleJumpAndCapture(moveResult);
-
-            // Remove piece from current tile, move it to new tile
-            chessman.SetHasMoved(true);
-            fromTile.RemovePiece();
-            toTile.SetPiece(chessman);
-            chessman.SetUnderlyingTile(toTile);
-
-            // Most moves result in a change of whose turn it is, EXCEPT for jumping
-            bool shouldChangeTurns = !moveResult.WasPieceJumped();
-
-            if (shouldChangeTurns) {
-                moveResult.turnChanged = true;
-                ChangeTurn();
-            }
-
-            // If the moveResult contains information about what the piece was promoted to,
-            // handle the promotion here
-            if (moveResult.promotionOccurred && Helpers.IsValidPromotion(moveResult.promotionRank)) {
-                PromoteChessman(chessman.id, moveResult.promotionRank);
-            }
-
-            if (moveResult.polarityChanged) {
-                chessman.TogglePolarity();
-            }
-        }
-
         #endregion
-
-        public void PromoteChessman (int chessmanId, ChessmanKindEnum promotionValue) {
-            Chessman chessman = GetPendingChessman(chessmanId);
-            chessman.Promote(promotionValue);
-        }
 
         public void UpdateMatch (MatchData newMatchData) {
             foreach (ChessmanSchema cs in newMatchData.pieces) {

@@ -18,6 +18,9 @@
 
         public long guid;
         public bool hasMoved = false;
+        /// <summary>
+        /// Represents whether or not the chessman is still in play.
+        /// </summary>
         public bool isActive = true;
         public int id;
         public bool isChecker = false;
@@ -25,6 +28,7 @@
         public bool isPromoted = false;
         public ChessmanKindEnum kind;
 
+        // TODO -- should this be null if `isActive = false`?
         private Tile underlyingTile;
 
         public Chessman (ChessmanSchema cs) {
@@ -51,7 +55,9 @@
         }
 
         public void Deactivate () {
-            underlyingTile.RemovePiece();
+            if (underlyingTile.GetPiece().id == this.id) {
+                underlyingTile.RemovePiece();
+            }
             SetActive(false);
         }
 
@@ -91,6 +97,19 @@
 
         public bool IsBlack () {
             return colorId == Constants.ID_BLACK;
+        }
+
+        /// <summary>
+        /// Compare the color of this chessman to the color of another chessman.
+        /// </summary>
+        /// <returns><c>true</c>, if colors are the same, <c>false</c> otherwise.</returns>
+        /// <param name="other">Other chessman to compare against.</param>
+        public bool IsSameColor (Chessman other) {
+            return this.colorId == other.colorId;
+        }
+
+        public bool IsSameColor (ColorEnum color) {
+            return this.colorId == Helpers.ConvertColorEnumToInt(color);
         }
 
         #endregion

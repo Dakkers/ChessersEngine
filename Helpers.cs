@@ -3,6 +3,28 @@
 namespace ChessersEngine {
     public static class Helpers {
 
+        #region Color helpers
+
+        public static int ConvertColorEnumToInt (ColorEnum color) {
+            return color == ColorEnum.BLACK ?
+                                     Constants.ID_BLACK :
+                                     Constants.ID_WHITE;
+        }
+
+        public static ColorEnum ConvertColorIntToEnum (int colorId) {
+            return colorId == Constants.ID_BLACK ?
+                                       ColorEnum.BLACK :
+                                       ColorEnum.WHITE;
+        }
+
+        public static int GetOppositeColor (int colorId) {
+            return (colorId == Constants.ID_WHITE) ?
+                Constants.ID_BLACK :
+                 Constants.ID_WHITE;
+        }
+
+        #endregion
+
         #region Math
 
         public static int Mod (int x, int m) {

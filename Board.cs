@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ChessersEngine {
     public class Board {
+        public readonly long id;
         private List<ChessmanSchema> pieces;
         private Dictionary<int, Tile> tilesById;
         private Dictionary<int, Chessman> chessmenById;
@@ -15,6 +17,7 @@ namespace ChessersEngine {
         private int numRows = 8;
 
         public Board (List<ChessmanSchema> pieces2) {
+            id = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             pieces = pieces2;
             tilesById = new Dictionary<int, Tile>();
             chessmenById = new Dictionary<int, Chessman>();
@@ -49,18 +52,7 @@ namespace ChessersEngine {
             return chessmenById[id];
         }
 
-        public Tile GetTile (int id) {
-            return tilesById[id];
-        }
-
-        public Tile GetTileIfExists (int id) {
-            if (tilesById.ContainsKey(id)) {
-                return tilesById[id];
-            }
-            return null;
-        }
-
-        private List<ChessmanSchema> CreateDefaultChessmen () {
+        List<ChessmanSchema> CreateDefaultChessmen () {
             List<ChessmanSchema> chessmanSchemas = new List<ChessmanSchema> {
                 new ChessmanSchema () {
                     location = 0,
@@ -200,6 +192,7 @@ namespace ChessersEngine {
         }
 
         public void CopyState (Board otherBoard) {
+            Match.Log($"Copying {otherBoard.id} to {this.id}");
             // Update the states of the Chessmen
             foreach (KeyValuePair<int, Chessman> pair in chessmenById) {
                 int chessmanId = pair.Key;
@@ -239,16 +232,29 @@ namespace ChessersEngine {
             }
         }
 
+        #region Chessman getters
+
         public Dictionary<int, Chessman> GetAllChessmen () {
             return chessmenById;
         }
 
-        private Chessman GetKingOfColor (ColorEnum color) {
+        Chessman GetKingOfColor (ColorEnum color) {
             if (color == ColorEnum.BLACK) {
                 return GetChessman(Constants.ID_BLACK_KING);
             } else {
                 return GetChessman(Constants.ID_WHITE_KING);
             }
+        }
+
+        public List<Chessman> GetActiveChessmenOfColor (ColorEnum color) {
+            List<Chessman> val = new List<Chessman>();
+            foreach (var pair in chessmenById) {
+                Chessman c = pair.Value;
+                if (c.isActive && c.IsSameColor(color)) {
+                    val.Add(c);
+                }
+            }
+            return val;
         }
 
         public Chessman GetWhiteKing () {
@@ -257,6 +263,36 @@ namespace ChessersEngine {
 
         public Chessman GetBlackKing () {
             return GetKingOfColor(ColorEnum.BLACK);
+        }
+
+        #endregion
+
+        #region Tile-getters
+
+        public Tile GetTile (int id) {
+            return tilesById[id];
+        }
+
+        public Tile GetTileIfExists (int id) {
+            if (tilesById.ContainsKey(id)) {
+                return GetTile(id);
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the tile by row+column combination. If either value is out of
+        /// bounds, null is returned.
+        /// </summary>
+        /// <returns>Tile at (col, row).</returns>
+        /// <param name="row">Row.</param>
+        /// <param name="col">Col.</param>
+        public Tile GetTileByRowColumn (int row, int col) {
+            if (row < 0 || row > GetNumberOfRows() || col < 0 || col > GetNumberOfColumns()) {
+                return null;
+            }
+
+            return GetTileIfExists(GetTileNumberFromRowColumn(row, col));
         }
 
         public int GetColumn (int tileId) {
@@ -289,6 +325,12 @@ namespace ChessersEngine {
 
         public Tile GetRightmostTileOfRow (int row) {
             return GetTile((row * numColumns) + (numColumns - 1));
+        }
+
+        #endregion
+
+        public int GetTileNumberFromRowColumn (int row, int col) {
+            return (numRows * row) + col;
         }
 
         public int GetNumberOfColumns () {
@@ -353,6 +395,7 @@ namespace ChessersEngine {
         ) {
             Tile tile = chessman.GetUnderlyingTile();
             Tile startTile, endTile;
+            Match.Log($"CanChessmanBeCapturedFromDirection() -- {dir} -- board {id}");
 
             Func<Chessman, bool> additionalValidator = null;
 
@@ -381,18 +424,21 @@ namespace ChessersEngine {
                 throw new Exception($"Invalid directionality: {dir}");
             }
 
-            for (int i = startTile.id; i <= endTile.id; i += numColumns) {
+            for (int i = startTile.id; i <= endTile.id; i += stepSize) {
+                Match.Log($"    Checking tile {i}");
                 if (i == tile.id) {
                     continue;
                 }
 
                 Tile tileToCheck = GetTile(i);
+                Match.Log($"        occupied? = {tileToCheck.IsOccupied()}");
                 if (!tileToCheck.IsOccupied()) {
                     continue;
                 }
 
                 Chessman occupant = tileToCheck.GetPiece();
                 if (occupant.colorId == chessman.colorId || occupant.IsChecker()) {
+                    Match.Log("        same color!!");
                     break;
                 }
 
@@ -422,8 +468,9 @@ namespace ChessersEngine {
 
         public bool CanChessmanBeCaptured (Chessman chessman) {
             return (
-                CanChessmanBeCapturedVertically(chessman) ||
-                CanChessmanBeCapturedHorizontally(chessman)
+                CanChessmanBeCapturedVertically(chessman)
+            // TODO -- diagonal... -_-
+            //CanChessmanBeCapturedHorizontally(chessman)
             );
         }
 
@@ -557,10 +604,10 @@ namespace ChessersEngine {
         /// Given a tile, get the tiles that could potentially have a piece jump
         /// to the first tile from. "Potentially" means that if a piece WERE to
         /// be on this distant tile, could it jump?
-        /// 
+        ///
         /// A tile can be jumped to from another tile that is 2 columns and 2 rows
         /// away, and for the tile in between, it must be occupied.
-        /// 
+        ///
         /// We do NOT check that the distant tile (2 and 2 away) is occupied or
         /// not. (Again, IF there is a piece here.)
         /// </summary>
@@ -599,5 +646,202 @@ namespace ChessersEngine {
 
             return tiles;
         }
+
+        #region Potential moves
+
+        bool IsPathBlockedByChessman (Tile fromTile, Tile toTile, int delta, int directionality) {
+            int stepSize = 0;
+
+            if (directionality == (int) Directionalities.HORIZONTAL) {
+                stepSize = 1;
+            } else if (directionality == (int) Directionalities.VERTICAL) {
+                stepSize = 8;
+            } else if (directionality == (int) Directionalities.POSITIVE_DIAGONAL) {
+                stepSize = 9;
+            } else if (directionality == (int) Directionalities.NEGATIVE_DIAGONAL) {
+                stepSize = 7;
+            }
+
+            // Scenarios:
+            //  HORIZONTAL
+            //      - left-to-right: e.g. 1 --> 7. Need to check tiles 2 - 6.
+            //      - right-to-left: e.g. 6 --> 2. Need to check tiles 5 - 3.
+            //  VERTICAL
+            //      - top-to-bottom: e.g. 32 --> 8. Need to check tiles [24, 16].
+            //      - bottom-to-top: e.g. 16 --> 56. Need to check tiles [24, 32, 40, 48].
+            //  POSITIVE_DIAGONAL
+            //      - bottomleft-to-topright: e.g. 0 --> 27. Need to check tiles [9, 18]
+            //      - topright-to-bottomleft: e.g. 59 --> 32. Need to check tiles [41, 50]
+            //  NEGATIVE_DIAGONAL
+            //      - bottomright-to-topleft: e.g. 7 --> 21. Need to check tiles [14]
+            //      - topleft-to-bottomright: e.g. 60 --> 39. Need to check tiles [53, 46]
+
+            int start, stop;
+            if (delta > 0) {
+                start = fromTile.id;
+                stop = toTile.id;
+            } else {
+                start = toTile.id;
+                stop = fromTile.id;
+            }
+
+            for (int tileId = start + stepSize; tileId <= stop - stepSize; tileId += stepSize) {
+                if (GetTile(tileId).IsOccupied()) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public List<Tile> GetPotentialTilesForMovement (Chessman chessman) {
+            if (chessman.IsChecker()) {
+
+            } else if (chessman.IsPawn()) {
+                return GetPotentialTilesForPawnMovement(chessman);
+            }
+
+            return new List<Tile>();
+        }
+
+        List<Tile> GetPotentialTilesForPawnMovement (Chessman chessman) {
+            List<Tile> potentialTiles = new List<Tile>();
+            Tile tile = chessman.GetUnderlyingTile();
+            int modifier = (chessman.IsBlack()) ? -1 : 1;
+
+            Tile tileForRegularMovement = GetTile(modifier * GetNumberOfColumns());
+            if (!tileForRegularMovement.IsOccupied()) {
+                potentialTiles.Add(tileForRegularMovement);
+            }
+
+            Tile tileForLongMovement = GetTile(2 * modifier * GetNumberOfColumns());
+            if (!tileForLongMovement.IsOccupied() && !tileForRegularMovement.IsOccupied()) {
+                potentialTiles.Add(tileForLongMovement);
+            }
+
+            Tile captureTile1 = null, captureTile2 = null;
+
+            if (!IsTileInLeftmostColumn(tile)) {
+                captureTile1 = GetTile(modifier * GetPositiveDiagonalDelta());
+            }
+            if (!IsTileInRightmostColumn(tile)) {
+                captureTile2 = GetTile(modifier * GetNegativeDiagonalDelta());
+            }
+
+            foreach (var t in new Tile[] { captureTile1, captureTile2 }) {
+                if (t != null && t.IsOccupied() && !t.GetPiece().IsSameColor(chessman)) {
+                    potentialTiles.Add(t);
+                }
+            }
+            return potentialTiles;
+        }
+
+        List<Tile> PotentialTileIterator (
+            Chessman chessman,
+            int iter,
+            Func<int, bool> loopConditional,
+            Func<int, Tile> currentTileGetter,
+            bool increasing = true
+        ) {
+            List<Tile> potentialTiles = new List<Tile>();
+            while (loopConditional(iter)) {
+                Tile nextTile = currentTileGetter(iter);
+                if (increasing) {
+                    iter++;
+                } else {
+                    iter--;
+                }
+
+                if (nextTile.IsOccupied()) {
+                    if (!nextTile.GetPiece().IsSameColor(chessman)) {
+                        potentialTiles.Add(nextTile);
+                    }
+
+                    break;
+                }
+
+                potentialTiles.Add(nextTile);
+            }
+            return potentialTiles;
+        }
+
+        List<Tile> GetPotentialTilesForRookMovement (Chessman chessman) {
+            List<Tile> potentialTiles = new List<Tile>();
+            Tile tile = chessman.GetUnderlyingTile();
+            int col = GetColumn(tile);
+            int row = GetRow(tile);
+
+            potentialTiles.AddRange(PotentialTileIterator(
+                chessman,
+                iter: row + 1,
+                loopConditional: (iter) => iter <= GetNumberOfRows(),
+                currentTileGetter: (iter) => GetTileByRowColumn(iter, col)
+            ));
+            potentialTiles.AddRange(PotentialTileIterator(
+                chessman,
+                iter: row - 1,
+                loopConditional: (iter) => iter >= 0,
+                currentTileGetter: (iter) => GetTileByRowColumn(iter, col),
+                increasing: false
+            ));
+            potentialTiles.AddRange(PotentialTileIterator(
+                chessman,
+                iter: col + 1,
+                loopConditional: (iter) => iter <= GetNumberOfColumns(),
+                currentTileGetter: (iter) => GetTileByRowColumn(row, iter)
+            ));
+            potentialTiles.AddRange(PotentialTileIterator(
+                chessman,
+                iter: col - 1,
+                loopConditional: (iter) => iter >= 0,
+                currentTileGetter: (iter) => GetTileByRowColumn(row, iter),
+                increasing: false
+            ));
+
+            return potentialTiles;
+        }
+
+        List<Tile> GetPotentialTilesForKnightMovement (Chessman chessman) {
+            Tile tile = chessman.GetUnderlyingTile();
+            int col = GetColumn(tile);
+            int row = GetRow(tile);
+
+            List<Tile> potentialTiles = new List<Tile> {
+                GetTileByRowColumn(col - 2, row - 1),
+                GetTileByRowColumn(col + 2, row - 1),
+                GetTileByRowColumn(col - 2, row + 1),
+                GetTileByRowColumn(col + 2, row + 1),
+
+                GetTileByRowColumn(col - 1, row - 2),
+                GetTileByRowColumn(col + 1, row - 2),
+                GetTileByRowColumn(col - 1, row + 2),
+                GetTileByRowColumn(col + 1, row + 2),
+            };
+
+            return potentialTiles.Where((t) => t != null).ToList();
+        }
+
+        #endregion
+
+        #region Movements
+
+        public MoveResult MoveChessman (MoveAttempt moveAttempt) {
+            Board boardCopy = new Board(this.GetChessmanSchemas());
+            boardCopy.CopyState(this);
+
+            Move move = new Move(boardCopy, moveAttempt);
+            MovementValidationEndResult result = move.ExecuteMove();
+
+            if (result.moveResult == null || !result.moveResult.valid) {
+                return null;
+            }
+
+            result.moveResult.playerId = moveAttempt.playerId;
+            this.CopyState(result.modifiedBoard);
+
+            return result.moveResult;
+        }
+
+        #endregion
     }
 }

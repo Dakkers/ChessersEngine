@@ -17,7 +17,7 @@ namespace ChessersEngine {
         public bool turnChanged { get; set; }
         public int type { get; set; }
 
-        // Whether or not this move triggers a polarity flip
+        // Whether or not this move triggers a polarity flip (checker piece to chess piece)
         public bool polarityChanged { get; set; }
 
         // Whether or not this move triggers a king-ing
