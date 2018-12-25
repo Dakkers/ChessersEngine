@@ -145,5 +145,42 @@ namespace ChessersEngine {
                 }
             };
         }
+
+        public static MatchData AlmostCheckmate1 () {
+            return new MatchData {
+                currentTurn = Constants.ID_BLACK,
+                matchId = 1,
+                whitePlayerId = 0,
+                blackPlayerId = 1,
+                pieces = new List<ChessmanSchema> {
+                    TestScenarios.CreateWhiteKing(0),
+                    TestScenarios.CreateRook(Constants.ID_WHITE_ROOK_1, 18),
+                    TestScenarios.CreatePawn(Constants.ID_WHITE_PAWN_1, 32),
+
+                    TestScenarios.CreateRook(Constants.ID_BLACK_ROOK_1, 15),
+                    TestScenarios.CreateRook(Constants.ID_BLACK_ROOK_2, 56),
+                    TestScenarios.CreateBlackQueen(57),
+                    TestScenarios.CreateBlackKing(58),
+                }
+            };
+        }
+
+        public static MatchData Promotion () {
+            ChessmanSchema pawnCS = CreatePawn(Constants.ID_WHITE_PAWN_1, 48);
+            pawnCS.isChecker = true;
+
+            return new MatchData {
+                currentTurn = Constants.ID_WHITE,
+                matchId = 1,
+                whitePlayerId = 0,
+                blackPlayerId = 1,
+                pieces = new List<ChessmanSchema> {
+                    TestScenarios.CreateWhiteKing(0),
+                    pawnCS,
+
+                    TestScenarios.CreateBlackKing(60),
+                }
+            };
+        }
     }
 }

@@ -6,9 +6,9 @@ namespace ChessersEngine {
     public enum Directionalities {
         HORIZONTAL,
         VERTICAL,
-        // Bottom-left <-> top-right
+        // Bottom-left <-> top-right, i.e. parallel with the line y = x
         POSITIVE_DIAGONAL,
-        // Top-left <-> bottom-right
+        // Top-left <-> bottom-right, i.e. parallel with the line y = -x
         NEGATIVE_DIAGONAL
     };
 
@@ -430,7 +430,7 @@ namespace ChessersEngine {
             // code, those pieces cannot attack the king directly. Due to the mechanics of the
             // game, they also cannot be used in multi-jumps or capture-multi-jump below.
             foreach (var tile in board.GetDiagonallyAdjacentTiles(kingTile)) {
-                if (!tile.IsOccupied() || tile.GetPiece().colorId != kingChessman.colorId) {
+                if (!tile.IsOccupied() || !(tile.GetPiece().IsSameColor(kingChessman))) {
                     tilesToCheckForLanding.Enqueue(tile);
                     checkedTilesForLanding.Add(tile.id, true);
                 }
@@ -563,18 +563,14 @@ namespace ChessersEngine {
             toTile.SetPiece(chessman);
             chessman.SetUnderlyingTile(toTile);
 
-            Match.Log($"{board.id} -- {board.GetTile(32).IsOccupied()}");
-
-            //if (IsMovingPlayerInCheck()) {
-            //    moveResult.valid = false;
-            //    Match.Log("Moving player is in check.");
-            //    return;
-            //}
+            if (IsMovingPlayerInCheck()) {
+                moveResult.valid = false;
+                Match.Log("Moving player is in check.");
+                return;
+            }
 
             // -- Completely valid!
             PostValidationHandler();
-
-            Match.Log($"{board.id} -- {board.GetTile(32).IsOccupied()}");
 
             // -- Now see if this player has won.
             if (IsOpposingPlayerInCheck()) {
@@ -584,8 +580,6 @@ namespace ChessersEngine {
                     Match.Log("  Opposing player checkmated!");
                 }
             }
-
-            Match.Log("End of ExecuteLegalMove()");
         }
 
         MoveResult GetPseudoLegalMoveResult () {
@@ -602,6 +596,7 @@ namespace ChessersEngine {
             }
 
             PostValidationHandler();
+            moveResult.valid = true;
 
             return moveResult;
         }
@@ -653,6 +648,10 @@ namespace ChessersEngine {
                     moveResult.kinged = (toRow == Constants.RANK_8);
                 } else {
                     moveResult.kinged = (toRow == Constants.RANK_1);
+                }
+
+                if (moveResult.kinged) {
+                    chessman.isKinged = true;
                 }
             }
 

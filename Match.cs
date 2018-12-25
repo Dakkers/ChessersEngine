@@ -136,6 +136,10 @@ namespace ChessersEngine {
             return committedBoard.GetAllChessmen();
         }
 
+        public Dictionary<int, Chessman> GetAllPendingChessmen () {
+            return pendingBoard.GetAllChessmen();
+        }
+
         public Tile GetPendingTile (int id) {
             return pendingBoard.GetTile(id);
         }
