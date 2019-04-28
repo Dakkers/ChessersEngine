@@ -37,11 +37,11 @@ namespace ChessersEngine {
         readonly int toColumn;
 
         readonly MoveResult moveResult;
-        readonly bool useOnlyPseudoLegalChecks;
 
-        public Move (Board _board, MoveAttempt moveAttempt, bool pseudoLegal = false) {
+        string moveNotation;
+
+        public Move (Board _board, MoveAttempt moveAttempt) {
             board = _board;
-            useOnlyPseudoLegalChecks = pseudoLegal;
 
             chessman = board.GetChessman(moveAttempt.pieceId);
             toTile = board.GetTile(moveAttempt.tileId);
@@ -398,19 +398,48 @@ namespace ChessersEngine {
 
         #region Check/Checkmate
 
-        bool IsInCheck (int colorId) {
+        int ConvertChessmanToSortScore (Chessman c) {
+            if (c.IsChecker()) {
+                return 1;
+            } else if (c.IsPawn()) {
+                return 0;
+            } else if (c.IsKnight()) {
+                return 2;
+            } else if (c.IsBishop()) {
+                return 3;
+            } else if (c.IsRook()) {
+                return 4;
+            } else if (c.IsQueen()) {
+                return 5;
+            } else if (c.IsKing()) {
+                return 6;
+            } else {
+                return 0;
+            }
+        }
+
+        void DetermineCheckMovements () {
+
+        }
+
+        List<Tile> CalculateCheckTiles (int colorId, bool exitEarly) {
             // -- DIRECT ATTACK
             // Check that the king cannot be attacked directly.
+
+            List<Tile> result = new List<Tile>();
 
             Chessman kingChessman = (colorId == Constants.ID_WHITE) ?
                 board.GetWhiteKing() :
                 board.GetBlackKing();
 
-            if (
-                board.CanChessmanBeCaptured(kingChessman) ||
-                board.CanChessmanBeJumped(kingChessman)
-            ) {
-                return true;
+            result = result.Concat(board.CanChessmanBeCaptured(kingChessman, exitEarly)).ToList();
+            if (exitEarly && result.Count > 0) {
+                return result;
+            }
+
+            result = result.Concat(board.CanChessmanBeJumped(kingChessman, exitEarly)).ToList();
+            if (exitEarly && result.Count > 0) {
+                return result;
             }
 
             // -- Validate jumping...
@@ -446,16 +475,21 @@ namespace ChessersEngine {
                     // We found a piece that is of the opposite colour.
                     //
                     if (occupant.colorId != kingChessman.colorId) {
-                        return true;
+                        result.Add(tileToCheck);
+                        if (exitEarly) {
+                            return result;
+                        } else {
+                            continue;
+                        }
                     }
 
                     // If the tile is occupied by a piece of the same colour, then
                     // we have to check if it can be captured.
                     // If it can, then a capture-jump can occur.
 
-                    //TODO -- check direct attack...
-                    if (board.CanChessmanBeCaptured(occupant)) {
-                        return true;
+                    result = result.Concat(board.CanChessmanBeCaptured(occupant, exitEarly)).ToList();
+                    if (exitEarly && result.Count > 0) {
+                        return result;
                     }
 
                     continue;
@@ -476,26 +510,34 @@ namespace ChessersEngine {
 
             }
 
-            return false;
+            return result;
         }
 
+        /// <summary>
+        /// Determines if the moving player is in check. We don't need to know the details of
+        /// how they're in check - just whether or not they're in check.
+        /// </summary>
+        /// <returns><c>true</c>, if moving player in check was ised, <c>false</c> otherwise.</returns>
         bool IsMovingPlayerInCheck () {
-            return IsInCheck(chessman.colorId);
+            List<Tile> result = (CalculateCheckTiles(chessman.colorId, exitEarly: true));
+            return result.Count > 0;
         }
 
-        bool IsOpposingPlayerInCheck () {
-            return IsInCheck(Helpers.GetOppositeColor(chessman.colorId));
-        }
-
-        bool IsOpposingPlayerCheckmated () {
+        bool IsOpposingPlayerCheckmated (List<Tile> tilesThatCheckOpposingPlayer) {
             List<Chessman> chessmenForOpposingPlayer = board.GetActiveChessmenOfColor(Helpers.ConvertColorIntToEnum(opposingColor));
             Board boardClone = new Board(board.GetChessmanSchemas());
             boardClone.CopyState(board);
             Match.Log($"Checking for checkmate...");
 
+            // Sort by King, Queen, Rook, Bishop, Knight, Pawn.
+
+            chessmenForOpposingPlayer.Sort((c1, c2) => {
+                return ConvertChessmanToSortScore(c1) - ConvertChessmanToSortScore(c2);
+            });
+
             foreach (Chessman c in chessmenForOpposingPlayer) {
                 List<Tile> potentialTiles = boardClone.GetPotentialTilesForMovement(c);
-                Match.Log($"    Chessman: {c.id}");
+                Match.Log($"    Chessman: {c.id} {c.kind}");
 
                 // TODO -- need to recurse
                 foreach (Tile t in potentialTiles) {
@@ -572,10 +614,12 @@ namespace ChessersEngine {
             // -- Completely valid!
             PostValidationHandler();
 
+            List<Tile> tilesThatCheckOpposingPlayer = CalculateCheckTiles(opposingColor, exitEarly: false);
+
             // -- Now see if this player has won.
-            if (IsOpposingPlayerInCheck()) {
+            if (tilesThatCheckOpposingPlayer.Count > 0) {
                 Match.Log("Opposing player is in check.");
-                if (IsOpposingPlayerCheckmated()) {
+                if (IsOpposingPlayerCheckmated(tilesThatCheckOpposingPlayer)) {
                     //moveResult.
                     Match.Log("  Opposing player checkmated!");
                 }
@@ -673,6 +717,17 @@ namespace ChessersEngine {
             if (pieceToRemove != null) {
                 pieceToRemove.Deactivate();
             }
+        }
+
+        void Notation () {
+            moveNotation = (
+                Helpers.ConvertChessmanKindToNotationSymbol(chessman.kind) +
+                Helpers.ConvertRowToRank(fromRow) +
+                Helpers.ConvertColumnToFile(fromColumn) +
+                "-" +
+                Helpers.ConvertRowToRank(toRow) +
+                Helpers.ConvertColumnToFile(toColumn)
+            );
         }
     }
 }

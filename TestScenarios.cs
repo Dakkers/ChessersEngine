@@ -37,12 +37,29 @@ namespace ChessersEngine {
                 location = location,
             };
         }
+        public static ChessmanSchema CreateBishop (int id, int location) {
+            return new ChessmanSchema {
+                kind = Constants.CHESSMAN_KIND_BISHOP,
+                id = id,
+                guid = id,
+                location = location,
+            };
+        }
 
         public static ChessmanSchema CreateBlackQueen (int location) {
             return new ChessmanSchema {
                 kind = Constants.CHESSMAN_KIND_QUEEN,
                 id = Constants.ID_BLACK_QUEEN,
                 guid = Constants.ID_BLACK_QUEEN,
+                location = location,
+            };
+        }
+
+        public static ChessmanSchema CreateWhiteQueen (int location) {
+            return new ChessmanSchema {
+                kind = Constants.CHESSMAN_KIND_QUEEN,
+                id = Constants.ID_WHITE_QUEEN,
+                guid = Constants.ID_WHITE_QUEEN,
                 location = location,
             };
         }
@@ -129,6 +146,7 @@ namespace ChessersEngine {
         }
 
         public static MatchData Checkmate1 () {
+            // If Rook @ 56 captures the pawn @ 32, White will be in checkmate.
             return new MatchData {
                 currentTurn = Constants.ID_BLACK,
                 matchId = 1,
@@ -136,6 +154,7 @@ namespace ChessersEngine {
                 blackPlayerId = 1,
                 pieces = new List<ChessmanSchema> {
                     TestScenarios.CreateWhiteKing(0),
+                    CreateWhiteQueen(7),
                     TestScenarios.CreatePawn(Constants.ID_WHITE_PAWN_1, 32),
 
                     TestScenarios.CreateRook(Constants.ID_BLACK_ROOK_1, 15),
@@ -147,6 +166,8 @@ namespace ChessersEngine {
         }
 
         public static MatchData AlmostCheckmate1 () {
+            // Black Rook @ 39 captures pawn @ 32.
+            // White Rook @ 15 moves to 8 to block.
             return new MatchData {
                 currentTurn = Constants.ID_BLACK,
                 matchId = 1,
@@ -154,13 +175,56 @@ namespace ChessersEngine {
                 blackPlayerId = 1,
                 pieces = new List<ChessmanSchema> {
                     TestScenarios.CreateWhiteKing(0),
-                    TestScenarios.CreateRook(Constants.ID_WHITE_ROOK_1, 18),
+                    TestScenarios.CreateRook(Constants.ID_WHITE_ROOK_1, 15),
                     TestScenarios.CreatePawn(Constants.ID_WHITE_PAWN_1, 32),
 
-                    TestScenarios.CreateRook(Constants.ID_BLACK_ROOK_1, 15),
+                    TestScenarios.CreateRook(Constants.ID_BLACK_ROOK_1, 23),
                     TestScenarios.CreateRook(Constants.ID_BLACK_ROOK_2, 56),
                     TestScenarios.CreateBlackQueen(57),
                     TestScenarios.CreateBlackKing(58),
+                }
+            };
+        }
+
+        public static MatchData AlmostCheckmate2 () {
+            // Black Bishop @ 43 moves to 36.
+            // White Bishop @ 22 moves to 36 to capture it.
+            return new MatchData {
+                currentTurn = Constants.ID_BLACK,
+                matchId = 1,
+                whitePlayerId = 0,
+                blackPlayerId = 1,
+                pieces = new List<ChessmanSchema> {
+                    TestScenarios.CreateWhiteKing(0),
+                    TestScenarios.CreateBishop(Constants.ID_WHITE_BISHOP_1, 22),
+                    TestScenarios.CreatePawn(Constants.ID_WHITE_PAWN_1, 32),
+
+                    TestScenarios.CreateBishop(Constants.ID_BLACK_BISHOP_1, 43),
+                    TestScenarios.CreateRook(Constants.ID_BLACK_ROOK_2, 56),
+                    TestScenarios.CreateBlackQueen(57),
+                    TestScenarios.CreateBlackKing(58),
+                }
+            };
+        }
+
+        public static MatchData AlmostCheckmate3 () {
+            // Pawn @ 52 moves to 36.
+            // King can capture the pawn but there's another pawn to capture it.
+            return new MatchData {
+                currentTurn = Constants.ID_BLACK,
+                matchId = 1,
+                whitePlayerId = 0,
+                blackPlayerId = 1,
+                pieces = new List<ChessmanSchema> {
+                    TestScenarios.CreateWhiteKing(27),
+
+                    TestScenarios.CreatePawn(Constants.ID_BLACK_PAWN_1, 52),
+                    TestScenarios.CreatePawn(Constants.ID_BLACK_PAWN_2, 45),
+                    TestScenarios.CreateBishop(Constants.ID_BLACK_BISHOP_1, 38),
+                    TestScenarios.CreateBishop(Constants.ID_BLACK_BISHOP_2, 46),
+                    TestScenarios.CreateRook(Constants.ID_BLACK_ROOK_2, 59),
+                    TestScenarios.CreateBlackQueen(58),
+                    TestScenarios.CreateBlackKing(56),
                 }
             };
         }

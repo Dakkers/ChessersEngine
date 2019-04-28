@@ -5,16 +5,16 @@ using System.Linq;
 namespace ChessersEngine {
     public class Board {
         public readonly long id;
-        private List<ChessmanSchema> pieces;
-        private Dictionary<int, Tile> tilesById;
-        private Dictionary<int, Chessman> chessmenById;
+        List<ChessmanSchema> pieces;
+        Dictionary<int, Tile> tilesById;
+        Dictionary<int, Chessman> chessmenById;
 
-        private List<string> moves = new List<string>();
+        List<string> moves = new List<string>();
 
-        private List<MoveResult> pendingMoveResults = new List<MoveResult>();
+        List<MoveResult> pendingMoveResults = new List<MoveResult>();
 
-        private int numColumns = 8;
-        private int numRows = 8;
+        int numColumns = 8;
+        int numRows = 8;
 
         public Board (List<ChessmanSchema> pieces2) {
             id = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
@@ -280,6 +280,10 @@ namespace ChessersEngine {
             return null;
         }
 
+        public Tile GetTileIfExists (int row, int col) {
+            return GetTileIfExists(GetTileNumberFromRowColumn(row, col));
+        }
+
         /// <summary>
         /// Gets the tile by row+column combination. If either value is out of
         /// bounds, null is returned.
@@ -292,7 +296,7 @@ namespace ChessersEngine {
                 return null;
             }
 
-            return GetTileIfExists(GetTileNumberFromRowColumn(row, col));
+            return GetTileIfExists(row, col);
         }
 
         public int GetColumn (int tileId) {
@@ -325,6 +329,40 @@ namespace ChessersEngine {
 
         public Tile GetRightmostTileOfRow (int row) {
             return GetTile((row * numColumns) + (numColumns - 1));
+        }
+
+        Tile GetEndTileOfDiagonal (int row, int col, int rowStep, int colStep) {
+            int currentRow = row;
+            int currentCol = col;
+
+            Tile result = null;
+
+            while (true) {
+                Tile temp = GetTileByRowColumn(row, col);
+                if (temp == null) {
+                    return result;
+                } else {
+                    result = temp;
+                }
+                row += rowStep;
+                col += colStep;
+            }
+        }
+
+        public Tile GetBottomLeftmostTileOfDiagonal (int row, int col) {
+            return GetEndTileOfDiagonal(row, col, -1, -1);
+        }
+
+        public Tile GetTopLeftmostTileOfDiagonal (int row, int col) {
+            return GetEndTileOfDiagonal(row, col, 1, -1);
+        }
+
+        public Tile GetBottomRightmostTileOfDiagonal (int row, int col) {
+            return GetEndTileOfDiagonal(row, col, -1, 1);
+        }
+
+        public Tile GetTopRightmostTileOfDiagonal (int row, int col) {
+            return GetEndTileOfDiagonal(row, col, 1, 1);
         }
 
         #endregion
@@ -389,46 +427,28 @@ namespace ChessersEngine {
             return (GetNumberOfRows() * GetNumberOfColumns()) - 1;
         }
 
-        private bool CanChessmanBeCapturedFromDirection (
+        #region Can capture?
+
+        List<Tile> CanChessmanBeCapturedFromDirectionSubset (
             Chessman chessman,
-            Directionalities dir
+            Tile startTile,
+            Tile endTile,
+            int stepSize,
+            Func<Chessman, bool> additionalValidator,
+            bool exitEarly
         ) {
-            Tile tile = chessman.GetUnderlyingTile();
-            Tile startTile, endTile;
+            List<Tile> capturableTiles = new List<Tile>();
 
-            Func<Chessman, bool> additionalValidator = null;
+            int sign = (stepSize > 0) ? 1 : -1;
 
-            int stepSize;
-            if (dir == Directionalities.HORIZONTAL) {
-                stepSize = 1;
-                startTile = GetLeftmostTileOfRow(GetRow(tile));
-                endTile = GetRightmostTileOfRow(GetRow(tile));
+            for (int i = (sign * startTile.id); i <= (sign * endTile.id); i += Math.Abs(stepSize)) {
+                int tileId = Math.Abs(i);
 
-                additionalValidator = (Chessman occupant) => {
-                    return !occupant.IsQueen() && !occupant.IsRook();
-                };
-            } else if (dir == Directionalities.VERTICAL) {
-                stepSize = numColumns;
-                startTile = GetBottomTileOfColumn(GetColumn(tile));
-                endTile = GetTopTileOfColumn(GetColumn(tile));
-                //} else if (dir == Directionalities.POSITIVE_DIAGONAL) {
-                //    stepSize = GetPositiveDiagonalDelta();
-                //} else if (dir == Directionalities.NEGATIVE_DIAGONAL) {
-                //stepSize = GetNegativeDiagonalDelta();
-
-                additionalValidator = (Chessman occupant) => {
-                    return !occupant.IsQueen() && !occupant.IsRook();
-                };
-            } else {
-                throw new Exception($"Invalid directionality: {dir}");
-            }
-
-            for (int i = startTile.id; i <= endTile.id; i += stepSize) {
-                if (i == tile.id) {
+                if (tileId == startTile.id) {
                     continue;
                 }
 
-                Tile tileToCheck = GetTile(i);
+                Tile tileToCheck = GetTile(tileId);
                 if (!tileToCheck.IsOccupied()) {
                     continue;
                 }
@@ -438,39 +458,197 @@ namespace ChessersEngine {
                     break;
                 }
 
-                bool additionalValidationResult = additionalValidator(occupant);
+                bool additionalValidationResult = true;
+                if (additionalValidator != null) {
+                    additionalValidationResult = additionalValidator(occupant);
+                }
 
                 if (!additionalValidationResult) {
-                    return true;
+                    capturableTiles.Add(tileToCheck);
+                    if (exitEarly) {
+                        break;
+                    }
                 }
             }
 
-            return false;
+            return capturableTiles;
         }
 
-        public bool CanChessmanBeCapturedVertically (Chessman chessman) {
+        List<Tile> CanChessmanBeCapturedFromDirection (
+            Chessman chessman,
+            Directionalities dir,
+            bool exitEarly
+        ) {
+            Tile tile = chessman.GetUnderlyingTile();
+            Func<Chessman, bool> additionalValidator = null;
+
+            List<Tile> capturableTiles = new List<Tile>();
+
+            if (dir == Directionalities.HORIZONTAL) {
+                additionalValidator = (Chessman occupant) => {
+                    return !occupant.IsQueen() && !occupant.IsRook();
+                };
+
+                capturableTiles = capturableTiles
+                        // Tile to left side
+                        .Concat(CanChessmanBeCapturedFromDirectionSubset(
+                            chessman,
+                            startTile: tile,
+                            endTile: GetLeftmostTileOfRow(GetRow(tile)),
+                            stepSize: -1,
+                            additionalValidator,
+                            exitEarly
+                        ))
+                        // Tile to right side
+                        .Concat(CanChessmanBeCapturedFromDirectionSubset(
+                            chessman,
+                            startTile: tile,
+                            endTile: GetRightmostTileOfRow(GetRow(tile)),
+                            stepSize: 1,
+                            additionalValidator,
+                            exitEarly
+                        ))
+                        .ToList();
+            } else if (dir == Directionalities.VERTICAL) {
+                additionalValidator = (Chessman occupant) => {
+                    return !occupant.IsQueen() && !occupant.IsRook();
+                };
+
+                capturableTiles = capturableTiles
+                        // Tile to bottom
+                        .Concat(CanChessmanBeCapturedFromDirectionSubset(
+                            chessman,
+                            startTile: tile,
+                            endTile: GetBottomTileOfColumn(GetColumn(tile)),
+                            stepSize: -1 * numColumns,
+                            additionalValidator,
+                            exitEarly
+                        ))
+                        // Tile to top
+                        .Concat(CanChessmanBeCapturedFromDirectionSubset(
+                            chessman,
+                            startTile: tile,
+                            endTile: GetTopTileOfColumn(GetColumn(tile)),
+                            stepSize: numColumns,
+                            additionalValidator,
+                            exitEarly
+                        ))
+                        .ToList();
+            } else if (dir == Directionalities.POSITIVE_DIAGONAL) {
+                int stepSize = GetPositiveDiagonalDelta();
+                additionalValidator = (Chessman occupant) => {
+                    return !occupant.IsQueen() && !occupant.IsBishop();
+                };
+
+                capturableTiles = capturableTiles
+                        // Tile to bottom-left
+                        .Concat(CanChessmanBeCapturedFromDirectionSubset(
+                            chessman,
+                            startTile: tile,
+                            endTile: GetBottomLeftmostTileOfDiagonal(GetRow(tile), GetColumn(tile)),
+                            stepSize: -1 * stepSize,
+                            additionalValidator,
+                            exitEarly
+                        ))
+                        // Tile to top-right
+                        .Concat(CanChessmanBeCapturedFromDirectionSubset(
+                            chessman,
+                            startTile: tile,
+                            endTile: GetTopRightmostTileOfDiagonal(GetRow(tile), GetColumn(tile)),
+                            stepSize: stepSize,
+                            additionalValidator,
+                            exitEarly
+                        ))
+                        .ToList();
+            } else if (dir == Directionalities.NEGATIVE_DIAGONAL) {
+                int stepSize = GetNegativeDiagonalDelta();
+                additionalValidator = (Chessman occupant) => {
+                    return !occupant.IsQueen() && !occupant.IsBishop();
+                };
+
+                capturableTiles = capturableTiles
+                        // Tile to top-left
+                        .Concat(CanChessmanBeCapturedFromDirectionSubset(
+                            chessman,
+                            startTile: tile,
+                            endTile: GetTopLeftmostTileOfDiagonal(GetRow(tile), GetColumn(tile)),
+                            stepSize: -1 * stepSize,
+                            additionalValidator,
+                            exitEarly
+                        ))
+                        // Tile to bottom-right
+                        .Concat(CanChessmanBeCapturedFromDirectionSubset(
+                            chessman,
+                            startTile: tile,
+                            endTile: GetBottomRightmostTileOfDiagonal(GetRow(tile), GetColumn(tile)),
+                            stepSize: stepSize,
+                            additionalValidator,
+                            exitEarly
+                        ))
+                        .ToList();
+            } else {
+                throw new Exception($"Invalid directionality: {dir}");
+            }
+
+            if (dir == Directionalities.NEGATIVE_DIAGONAL || dir == Directionalities.POSITIVE_DIAGONAL) {
+                List<Tile> pawnTilesToCheck = new List<Tile>();
+                if (chessman.IsWhite()) {
+                    pawnTilesToCheck.Add(GetTileIfExists(GetRow(tile) + 1, GetColumn(tile) - 1));
+                    pawnTilesToCheck.Add(GetTileIfExists(GetRow(tile) + 1, GetColumn(tile) + 1));
+                } else {
+                    pawnTilesToCheck.Add(GetTileIfExists(GetRow(tile) - 1, GetColumn(tile) - 1));
+                    pawnTilesToCheck.Add(GetTileIfExists(GetRow(tile) - 1, GetColumn(tile) + 1));
+                }
+
+                foreach (var pawnTile in pawnTilesToCheck) {
+                    if (pawnTile == null || !pawnTile.IsOccupied()) {
+                        continue;
+                    }
+                    var occ = pawnTile.GetPiece();
+                    if (!occ.IsSameColor(chessman) && !occ.IsChecker() && occ.IsPawn()) {
+                        capturableTiles.Add(pawnTile);
+                    }
+                }
+            }
+
+            //TODO -- for diagonal, way to check for pawns is to allow the additional validator
+            // to take in the current distance from the target tile?
+
+            return capturableTiles;
+        }
+
+        public List<Tile> CanChessmanBeCapturedVertically (Chessman chessman, bool exitEarly = true) {
             return CanChessmanBeCapturedFromDirection(
                 chessman,
-                Directionalities.VERTICAL
+                Directionalities.VERTICAL,
+                exitEarly
             );
         }
 
-        public bool CanChessmanBeCapturedHorizontally (Chessman chessman) {
+        public List<Tile> CanChessmanBeCapturedHorizontally (Chessman chessman, bool exitEarly = true) {
             return CanChessmanBeCapturedFromDirection(
                 chessman,
-                Directionalities.HORIZONTAL
+                Directionalities.HORIZONTAL,
+                exitEarly
             );
         }
 
-        public bool CanChessmanBeCaptured (Chessman chessman) {
+        public List<Tile> CanChessmanBeCaptured (Chessman chessman, bool exitEarly = true) {
             return (
-                CanChessmanBeCapturedVertically(chessman)
+                CanChessmanBeCapturedVertically(chessman, exitEarly)
+                .Concat(
+                    CanChessmanBeCapturedHorizontally(chessman, exitEarly)
+                )
+                .ToList()
             // TODO -- diagonal... -_-
-            //CanChessmanBeCapturedHorizontally(chessman)
             );
         }
 
-        private bool CanChessmanBeJumpedFromTile (Chessman targetChessman, Tile attackingTile) {
+        #endregion
+
+        #region Can jump?
+
+        bool CanChessmanBeJumpedFromTile (Chessman targetChessman, Tile attackingTile) {
             if (attackingTile == null) {
                 return false;
             }
@@ -549,18 +727,25 @@ namespace ChessersEngine {
             }
         }
 
-        public bool CanChessmanBeJumped (Chessman chessman) {
+        public List<Tile> CanChessmanBeJumped (Chessman chessman, bool exitEarly = true) {
+            List<Tile> result = new List<Tile>();
+
             Tile tile = chessman.GetUnderlyingTile();
 
             List<Tile> diagonallyAdjacentTiles = GetDiagonallyAdjacentTiles(tile);
             foreach (var diagonallyAdjacentTile in diagonallyAdjacentTiles) {
                 if (CanChessmanBeJumpedFromTile(chessman, diagonallyAdjacentTile)) {
-                    return true;
+                    result.Add(diagonallyAdjacentTile);
+                    if (exitEarly) {
+                        break;
+                    }
                 }
             }
 
-            return false;
+            return result;
         }
+
+        #endregion
 
         /// <summary>
         /// Given a tile, gets all of the diagonally adjacent tiles.
@@ -718,7 +903,7 @@ namespace ChessersEngine {
             List<Tile> potentialTiles = new List<Tile>();
             int loopLimiter = 0;
 
-            while (loopConditional(iter) && loopLimiter <= limit) {
+            while (loopConditional(iter) && loopLimiter < limit) {
                 Tile nextTile = currentTileGetter(iter);
                 if (increasing) {
                     iter++;
@@ -893,7 +1078,12 @@ namespace ChessersEngine {
                 GetTileByRowColumn(col + 1, row + 2),
             };
 
-            return potentialTiles.Where((t) => t != null).ToList();
+            return potentialTiles.Where((t) => {
+                return (
+                    t != null &&
+                    (!t.IsOccupied() || t.GetPiece().colorId != chessman.colorId)
+                );
+            }).ToList();
         }
 
         List<Tile> GetPotentialTilesForRookMovement (Chessman chessman) {
@@ -992,7 +1182,7 @@ namespace ChessersEngine {
             Func<Chessman, List<Tile>> potentialTilesGetter = null;
 
             if (chessman.IsChecker()) {
-
+                // TODO...
             } else if (chessman.IsPawn()) {
                 potentialTilesGetter = GetPotentialTilesForPawnMovement;
             } else if (chessman.IsKnight()) {

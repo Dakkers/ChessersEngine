@@ -218,5 +218,51 @@ namespace ChessersEngine {
                 (promotionRank == ChessmanKindEnum.ROOK) ||
                 (promotionRank == ChessmanKindEnum.KNIGHT);
         }
+
+        public static string ConvertRowToRank (int row) {
+            return (row + 1).ToString();
+        }
+
+        public static string ConvertColumnToFile (int column) {
+            switch (column + 1) {
+                case 1:
+                    return "a";
+                case 2:
+                    return "b";
+                case 3:
+                    return "c";
+                case 4:
+                    return "d";
+                case 5:
+                    return "e";
+                case 6:
+                    return "f";
+                case 7:
+                    return "g";
+                case 8:
+                    return "h";
+                default:
+                    throw new System.Exception($"Invalid column: {column}");
+            }
+        }
+
+        public static string ConvertChessmanKindToNotationSymbol (ChessmanKindEnum kind) {
+            switch (kind) {
+                case ChessmanKindEnum.PAWN:
+                    return "";
+                case ChessmanKindEnum.ROOK:
+                    return "R";
+                case ChessmanKindEnum.KNIGHT:
+                    return "N";
+                case ChessmanKindEnum.KING:
+                    return "K";
+                case ChessmanKindEnum.QUEEN:
+                    return "Q";
+                case ChessmanKindEnum.BISHOP:
+                    return "B";
+                default:
+                    throw new System.Exception($"Invalid chessman kind: {kind}");
+            }
+        }
     }
 }
