@@ -496,8 +496,8 @@ namespace ChessersEngine {
                             startTile: tile,
                             endTile: GetLeftmostTileOfRow(GetRow(tile)),
                             stepSize: -1,
-                            additionalValidator,
-                            exitEarly
+                            additionalValidator: additionalValidator,
+                            exitEarly: exitEarly
                         ))
                         // Tile to right side
                         .Concat(CanChessmanBeCapturedFromDirectionSubset(
@@ -505,8 +505,8 @@ namespace ChessersEngine {
                             startTile: tile,
                             endTile: GetRightmostTileOfRow(GetRow(tile)),
                             stepSize: 1,
-                            additionalValidator,
-                            exitEarly
+                            additionalValidator: additionalValidator,
+                            exitEarly: exitEarly
                         ))
                         .ToList();
             } else if (dir == Directionalities.VERTICAL) {
@@ -521,8 +521,8 @@ namespace ChessersEngine {
                             startTile: tile,
                             endTile: GetBottomTileOfColumn(GetColumn(tile)),
                             stepSize: -1 * numColumns,
-                            additionalValidator,
-                            exitEarly
+                            additionalValidator: additionalValidator,
+                            exitEarly: exitEarly
                         ))
                         // Tile to top
                         .Concat(CanChessmanBeCapturedFromDirectionSubset(
@@ -530,8 +530,8 @@ namespace ChessersEngine {
                             startTile: tile,
                             endTile: GetTopTileOfColumn(GetColumn(tile)),
                             stepSize: numColumns,
-                            additionalValidator,
-                            exitEarly
+                            additionalValidator: additionalValidator,
+                            exitEarly: exitEarly
                         ))
                         .ToList();
             } else if (dir == Directionalities.POSITIVE_DIAGONAL) {
@@ -547,8 +547,8 @@ namespace ChessersEngine {
                             startTile: tile,
                             endTile: GetBottomLeftmostTileOfDiagonal(GetRow(tile), GetColumn(tile)),
                             stepSize: -1 * stepSize,
-                            additionalValidator,
-                            exitEarly
+                            additionalValidator: additionalValidator,
+                            exitEarly: exitEarly
                         ))
                         // Tile to top-right
                         .Concat(CanChessmanBeCapturedFromDirectionSubset(
@@ -556,8 +556,8 @@ namespace ChessersEngine {
                             startTile: tile,
                             endTile: GetTopRightmostTileOfDiagonal(GetRow(tile), GetColumn(tile)),
                             stepSize: stepSize,
-                            additionalValidator,
-                            exitEarly
+                            additionalValidator: additionalValidator,
+                            exitEarly: exitEarly
                         ))
                         .ToList();
             } else if (dir == Directionalities.NEGATIVE_DIAGONAL) {
@@ -573,8 +573,8 @@ namespace ChessersEngine {
                             startTile: tile,
                             endTile: GetTopLeftmostTileOfDiagonal(GetRow(tile), GetColumn(tile)),
                             stepSize: -1 * stepSize,
-                            additionalValidator,
-                            exitEarly
+                            additionalValidator: additionalValidator,
+                            exitEarly: exitEarly
                         ))
                         // Tile to bottom-right
                         .Concat(CanChessmanBeCapturedFromDirectionSubset(
@@ -582,8 +582,8 @@ namespace ChessersEngine {
                             startTile: tile,
                             endTile: GetBottomRightmostTileOfDiagonal(GetRow(tile), GetColumn(tile)),
                             stepSize: stepSize,
-                            additionalValidator,
-                            exitEarly
+                            additionalValidator: additionalValidator,
+                            exitEarly: exitEarly
                         ))
                         .ToList();
             } else {
