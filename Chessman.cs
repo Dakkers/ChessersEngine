@@ -177,7 +177,7 @@
                 isKinged = isKinged,
                 isPromoted = isPromoted,
                 kind = (int) kind,
-                location = underlyingTile.id
+                location = underlyingTile?.id ?? -1
             };
         }
     }

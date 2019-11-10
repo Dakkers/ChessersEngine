@@ -225,8 +225,12 @@ namespace ChessersEngine {
                 Chessman otherChessman = otherBoard.GetChessman(chessmanId);
                 Chessman chessman = GetChessman(chessmanId);
 
-                Tile tile = GetTile(otherChessman.GetUnderlyingTile().id);
-                chessman.SetUnderlyingTile(tile);
+                if (otherChessman.GetUnderlyingTile() == null) {
+                    chessman.RemoveUnderlyingTileReference();
+                } else {
+                    Tile tile = GetTile(otherChessman.GetUnderlyingTile().id);
+                    chessman.SetUnderlyingTile(tile);
+                }
             }
         }
 

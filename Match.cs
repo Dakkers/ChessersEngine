@@ -251,18 +251,21 @@ namespace ChessersEngine {
 
         public void UpdateMatch (MatchData newMatchData) {
             foreach (ChessmanSchema cs in newMatchData.pieces) {
-                Chessman chessman = GetCommittedChessman(cs.id);
-                chessman.CopyFrom(cs);
+                Chessman committedChessman = GetCommittedChessman(cs.id);
 
-                if (!chessman.isActive) {
-                    chessman.RemoveUnderlyingTileReference();
+                committedChessman.CopyFrom(cs);
+
+                if (!committedChessman.isActive) {
+                    committedChessman.RemoveUnderlyingTileReference();
                 } else {
-                    chessman.SetUnderlyingTile(GetCommittedTile(cs.location));
+                    committedChessman.SetUnderlyingTile(GetCommittedTile(cs.location));
                 }
             }
 
             SetTurnColorFromPlayerId(newMatchData.currentTurn);
             committedTurnColor = turnColor;
+
+            ResetMatchState();
         }
 
         public static void Log (object s) {
