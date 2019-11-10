@@ -66,7 +66,7 @@ namespace ChessersEngine {
 
         #region Move types
 
-        private bool IsHorizontalMove () {
+        bool IsHorizontalMove () {
             return fromRow == toRow;
         }
 
@@ -76,7 +76,7 @@ namespace ChessersEngine {
         /// vice versa.
         /// </summary>
         /// <returns><c>true</c>, if positive diagonal move was ised, <c>false</c> otherwise.</returns>
-        private bool IsPositiveDiagonalMove () {
+        bool IsPositiveDiagonalMove () {
             if ((Math.Abs(delta) % 9) != 0) {
                 return false;
             }
@@ -90,7 +90,7 @@ namespace ChessersEngine {
             }
         }
 
-        private bool IsNegativeDiagonalMove () {
+        bool IsNegativeDiagonalMove () {
             if ((Math.Abs(delta) % 7) != 0) {
                 return false;
             }
@@ -104,15 +104,15 @@ namespace ChessersEngine {
             }
         }
 
-        private bool IsVerticalMove () {
+        bool IsVerticalMove () {
             return fromColumn == toColumn;
         }
 
-        private bool IsRankIncreasing () {
+        bool IsRankIncreasing () {
             return (toRow - fromRow) > 0;
         }
 
-        private bool IsRankDecreasing () {
+        bool IsRankDecreasing () {
             return !IsRankIncreasing();
         }
 
@@ -120,7 +120,7 @@ namespace ChessersEngine {
 
         #region Chessman kind-specific move validations
 
-        private MoveResult IsValidBishopMove () {
+        MoveResult IsValidBishopMove () {
             // Bishops can move diagonally by any amount, as long as there
             // is not a piece in between its current tile and its target tile
 
@@ -146,7 +146,7 @@ namespace ChessersEngine {
             return moveResult;
         }
 
-        private MoveResult IsValidCheckerMove () {
+        MoveResult IsValidCheckerMove () {
             // Spacing represents how many tiles the piece is attempting to move
             // diagonally. When jumping, this value will be 2. When moving regularly,
             // this value will be 1.
@@ -179,15 +179,18 @@ namespace ChessersEngine {
 
             if (spacing == 1) {
                 if (toTile.IsOccupied()) {
+                    // Can't move a single diagonal onto an occupied tile.
                     return null;
                 }
             } else if (spacing == 2) {
                 Tile tileJumpingOver = board.GetTile(fromTile.id + stepSize);
                 if (!tileJumpingOver.IsOccupied()) {
+                    // Need to actually jump over a piece.
                     return null;
                 }
 
                 if (tileJumpingOver.GetPiece().colorId == chessman.colorId) {
+                    // Can't jump a piece of the same color.
                     return null;
                 }
 
@@ -200,7 +203,7 @@ namespace ChessersEngine {
             return moveResult;
         }
 
-        private MoveResult IsValidKnightMove () {
+        MoveResult IsValidKnightMove () {
             // Knights move either by 2-columns 1-row OR 2-rows 1-column
             // Additionally, they can jump over pieces
 
@@ -222,7 +225,7 @@ namespace ChessersEngine {
             return moveResult;
         }
 
-        private MoveResult IsValidPawnMove () {
+        MoveResult IsValidPawnMove () {
             List<int> validDeltas = new List<int>();
             bool checkPath = false;
 
@@ -265,7 +268,7 @@ namespace ChessersEngine {
             return moveResult;
         }
 
-        private MoveResult IsValidQueenMove () {
+        MoveResult IsValidQueenMove () {
             // Queens can move directly up/down by any amount, or left/right by any amount,
             // or diagonally by any amount, as long as there is not a piece in between its
             // current tile and its target tile
@@ -296,7 +299,7 @@ namespace ChessersEngine {
             return moveResult;
         }
 
-        private MoveResult IsValidRookMove () {
+        MoveResult IsValidRookMove () {
             // Rooks can move directly up/down by any amount, or left/right by any amount, as long as there
             // is not a piece in between its current tile and its target tile
 
@@ -329,7 +332,7 @@ namespace ChessersEngine {
         /// capture pieces in the same manner.
         /// </summary>
         /// <returns>The valid king move.</returns>
-        private MoveResult IsValidKingMove () {
+        MoveResult IsValidKingMove () {
             Match.Log("IsValidKingMove()");
             if (!IsVerticalMove() && !IsPositiveDiagonalMove() && !IsNegativeDiagonalMove()) {
                 return null;
@@ -397,6 +400,7 @@ namespace ChessersEngine {
         }
 
         #region Check/Checkmate
+        /*
 
         int ConvertChessmanToSortScore (Chessman c) {
             if (c.IsChecker()) {
@@ -554,12 +558,20 @@ namespace ChessersEngine {
                         return false;
                     }
 
+                    // If this move results in a possible jump, we need to check that too
+
+                    while (!mr.turnChanged) {
+                        //TODO
+                    }
+
                     boardClone.CopyState(board);
                 }
             }
 
             return true;
         }
+        
+        */
 
         #endregion
 
@@ -605,25 +617,25 @@ namespace ChessersEngine {
             toTile.SetPiece(chessman);
             chessman.SetUnderlyingTile(toTile);
 
-            if (IsMovingPlayerInCheck()) {
-                moveResult.valid = false;
-                Match.Log("Moving player is in check.");
-                return;
-            }
+            //if (IsMovingPlayerInCheck()) {
+            //    moveResult.valid = false;
+            //    Match.Log("Moving player is in check.");
+            //    return;
+            //}
 
             // -- Completely valid!
             PostValidationHandler();
 
-            List<Tile> tilesThatCheckOpposingPlayer = CalculateCheckTiles(opposingColor, exitEarly: false);
+            //List<Tile> tilesThatCheckOpposingPlayer = CalculateCheckTiles(opposingColor, exitEarly: false);
 
-            // -- Now see if this player has won.
-            if (tilesThatCheckOpposingPlayer.Count > 0) {
-                Match.Log("Opposing player is in check.");
-                if (IsOpposingPlayerCheckmated(tilesThatCheckOpposingPlayer)) {
-                    //moveResult.
-                    Match.Log("  Opposing player checkmated!");
-                }
-            }
+            //// -- Now see if this player has won.
+            //if (tilesThatCheckOpposingPlayer.Count > 0) {
+            //    Match.Log("Opposing player is in check.");
+            //    if (IsOpposingPlayerCheckmated(tilesThatCheckOpposingPlayer)) {
+            //        //moveResult.
+            //        Match.Log("  Opposing player checkmated!");
+            //    }
+            //}
         }
 
         MoveResult GetPseudoLegalMoveResult () {
@@ -634,10 +646,10 @@ namespace ChessersEngine {
             toTile.SetPiece(chessman);
             chessman.SetUnderlyingTile(toTile);
 
-            if (IsMovingPlayerInCheck()) {
-                Match.Log("            Player is in check.");
-                return null;
-            }
+            //if (IsMovingPlayerInCheck()) {
+            //    Match.Log("            Player is in check.");
+            //    return null;
+            //}
 
             PostValidationHandler();
             moveResult.valid = true;

@@ -33,6 +33,8 @@ namespace ChessersEngine {
         // Piece that gets captured, if applicable
         public int capturedPieceId { get; set; } = -1;
 
+        public bool isWinningMove { get; set; } = false;
+
         public bool valid { get; set; }
 
         public override string ToString () {

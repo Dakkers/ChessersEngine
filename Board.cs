@@ -9,14 +9,16 @@ namespace ChessersEngine {
         Dictionary<int, Tile> tilesById;
         Dictionary<int, Chessman> chessmenById;
 
-        List<string> moves = new List<string>();
+        readonly List<string> moves = new List<string>();
 
-        List<MoveResult> pendingMoveResults = new List<MoveResult>();
+        readonly List<MoveResult> pendingMoveResults = new List<MoveResult>();
 
-        int numColumns = 8;
-        int numRows = 8;
+        readonly int numColumns = 8;
+        readonly int numRows = 8;
 
         public Board (List<ChessmanSchema> pieces2) {
+            pieces2 = pieces2 ?? CreateDefaultChessmen();
+
             id = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             pieces = pieces2;
             tilesById = new Dictionary<int, Tile>();
@@ -26,10 +28,6 @@ namespace ChessersEngine {
                 tilesById[i] = new Tile {
                     id = i
                 };
-            }
-
-            if (pieces == null) {
-                pieces = CreateDefaultChessmen();
             }
 
             foreach (ChessmanSchema cs in pieces) {
@@ -239,11 +237,7 @@ namespace ChessersEngine {
         }
 
         Chessman GetKingOfColor (ColorEnum color) {
-            if (color == ColorEnum.BLACK) {
-                return GetChessman(Constants.ID_BLACK_KING);
-            } else {
-                return GetChessman(Constants.ID_WHITE_KING);
-            }
+            return color == ColorEnum.BLACK ? GetChessman(Constants.ID_BLACK_KING) : GetChessman(Constants.ID_WHITE_KING);
         }
 
         public List<Chessman> GetActiveChessmenOfColor (ColorEnum color) {

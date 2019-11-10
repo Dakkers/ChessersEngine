@@ -16,8 +16,6 @@ namespace ChessersEngine {
 
         public List<ChessmanSchema> pieces;
         public long whitePlayerId;
-
-        // TODO -- specify check status for players
     }
 
     public struct MatchCloningResult {
@@ -33,23 +31,28 @@ namespace ChessersEngine {
         /// step because otherwise the engine would never say the move is invalid based
         /// solely on this value.
         /// </summary>
-        private int turnColor;
+        int turnColor;
 
         /// <summary>
         /// The color of the player currently making moves. Switches values when the "commit"
         /// step occurs.
         /// </summary>
-        private int committedTurnColor;
+        int committedTurnColor;
 
-        private List<MoveResult> pendingMoveResults = new List<MoveResult>();
+        /// <summary>
+        /// The list of moves that have been executed in `pendingBoard` but not
+        /// executed in `committedBoard`.
+        /// </summary>
+        List<MoveResult> pendingMoveResults = new List<MoveResult>();
 
-        private Board pendingBoard;
-        private Board committedBoard;
+        Board pendingBoard;
+        Board committedBoard;
 
         public List<string> moves = new List<string>();
 
         public long whitePlayerId = -1;
         public long blackPlayerId = -1;
+        long winningPlayer = -1;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="T:ChessersEngine.Match"/> class.
@@ -78,7 +81,7 @@ namespace ChessersEngine {
         public void Save () {
         }
 
-        private void SetTurnColorFromPlayerId (long playerId) {
+        void SetTurnColorFromPlayerId (long playerId) {
             if (playerId == whitePlayerId) {
                 turnColor = Constants.ID_WHITE;
             } else if (playerId == blackPlayerId) {
@@ -86,10 +89,16 @@ namespace ChessersEngine {
             }
         }
 
-        private void CommitMatchState () {
+        void CommitMatchState () {
             committedTurnColor = turnColor;
 
             committedBoard.CopyState(pendingBoard);
+
+            if (!committedBoard.GetBlackKing().isActive) {
+                winningPlayer = whitePlayerId;
+            } else if (!committedBoard.GetWhiteKing().isActive) {
+                winningPlayer = blackPlayerId;
+            }
 
             pendingMoveResults.Clear();
         }
@@ -99,7 +108,7 @@ namespace ChessersEngine {
         /// of the turn. Identical to `CommitMatchState`, but the pending objects copy FROM the
         /// committed objects, instead of vice versa.
         /// </summary>
-        private void ResetMatchState () {
+        void ResetMatchState () {
             turnColor = committedTurnColor;
 
             pendingBoard.CopyState(committedBoard);
@@ -196,19 +205,21 @@ namespace ChessersEngine {
             // -- Base validation
             if (turnColor == Constants.ID_WHITE) {
                 if (moveAttempt.playerId == blackPlayerId) {
+                    // White's turn, black is trying to move --> no!
                     return null;
                 }
             }
 
             if (turnColor == Constants.ID_BLACK) {
                 if (moveAttempt.playerId == whitePlayerId) {
+                    // Black's turn, white is trying to move --> no!
                     return null;
                 }
             }
 
             Chessman chessman = GetPendingChessman(moveAttempt.pieceId);
-
             if (chessman.colorId != turnColor) {
+                // Make sure the moving piece belongs to the player.
                 return null;
             }
 
@@ -216,6 +227,7 @@ namespace ChessersEngine {
 
             Chessman targetChessman = toTile.occupant;
             if (targetChessman?.colorId == chessman.colorId) {
+                // Can't move to a tile occupied by the moving player
                 return null;
             }
 

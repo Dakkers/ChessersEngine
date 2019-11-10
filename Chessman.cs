@@ -29,7 +29,7 @@
         public ChessmanKindEnum kind;
 
         // TODO -- should this be null if `isActive = false`?
-        private Tile underlyingTile;
+        Tile underlyingTile;
 
         public Chessman (ChessmanSchema cs) {
             colorId = ((cs.id % 2) == 0) ?
