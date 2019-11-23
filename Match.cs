@@ -256,6 +256,10 @@ namespace ChessersEngine {
                 committedChessman.CopyFrom(cs);
 
                 if (!committedChessman.isActive) {
+                    if (committedChessman.GetUnderlyingTile() != null) {
+                        committedChessman.GetUnderlyingTile().RemovePiece();
+                    }
+
                     committedChessman.RemoveUnderlyingTileReference();
                 } else {
                     committedChessman.SetUnderlyingTile(GetCommittedTile(cs.location));
