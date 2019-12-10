@@ -48,11 +48,11 @@ namespace ChessersEngine {
         Board pendingBoard;
         Board committedBoard;
 
-        public List<string> moves = new List<string>();
+        List<string> moves = new List<string>();
 
         public long whitePlayerId = -1;
         public long blackPlayerId = -1;
-        long winningPlayer = -1;
+        long winningPlayerId = -1;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="T:ChessersEngine.Match"/> class.
@@ -90,14 +90,24 @@ namespace ChessersEngine {
         }
 
         void CommitMatchState () {
+            // It's possible that the final pending move was a checker jumping over
+            // a piece, which does NOT automatically change the turn colour.
+            if (committedTurnColor == turnColor) {
+                ChangeTurn();
+            }
+
             committedTurnColor = turnColor;
 
             committedBoard.CopyState(pendingBoard);
 
             if (!committedBoard.GetBlackKing().isActive) {
-                winningPlayer = whitePlayerId;
+                winningPlayerId = whitePlayerId;
             } else if (!committedBoard.GetWhiteKing().isActive) {
-                winningPlayer = blackPlayerId;
+                winningPlayerId = blackPlayerId;
+            }
+
+            foreach (MoveResult moveResult in pendingMoveResults) {
+                moves.Add(moveResult.CreateNotation());
             }
 
             pendingMoveResults.Clear();
@@ -185,6 +195,10 @@ namespace ChessersEngine {
             return pendingMoveResults;
         }
 
+        public List<string> GetMoves () {
+            return moves;
+        }
+
         /// <summary>
         /// Gets the ID of the player whose turn it is.
         /// </summary>
@@ -195,6 +209,14 @@ namespace ChessersEngine {
             } else {
                 return blackPlayerId;
             }
+        }
+
+        public long GetWinner () {
+            return winningPlayerId;
+        }
+
+        public bool HasWinner () {
+            return winningPlayerId >= 0;
         }
 
         #endregion
@@ -245,6 +267,15 @@ namespace ChessersEngine {
             }
 
             return moveResult;
+        }
+
+        /// <summary>
+        /// Promote a piece.
+        /// </summary>
+        /// <param name="moveResult">Move result.</param>
+        public void Promote (MoveResult moveResult) {
+            Chessman c = pendingBoard.GetChessman(moveResult.pieceId);
+            c.kind = moveResult.promotionRank;
         }
 
         #endregion

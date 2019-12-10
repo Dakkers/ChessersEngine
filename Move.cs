@@ -30,15 +30,13 @@ namespace ChessersEngine {
 
         readonly int delta;
 
-        readonly int fromRow;
-        readonly int toRow;
+        public readonly int fromRow;
+        public readonly int toRow;
 
-        readonly int fromColumn;
-        readonly int toColumn;
+        public readonly int fromColumn;
+        public readonly int toColumn;
 
         readonly MoveResult moveResult;
-
-        string moveNotation;
 
         public Move (Board _board, MoveAttempt moveAttempt) {
             board = _board;
@@ -60,7 +58,14 @@ namespace ChessersEngine {
             moveResult = new MoveResult {
                 pieceGuid = chessman.guid,
                 pieceId = chessman.id,
-                tileId = toTile.id
+                tileId = toTile.id,
+                fromTileId = fromTile.id,
+
+                fromRow = fromRow,
+                toRow = toRow,
+                fromColumn = fromColumn,
+                toColumn = toColumn,
+                chessmanKind = chessman.kind,
             };
         }
 
@@ -155,6 +160,7 @@ namespace ChessersEngine {
             // If the piece is not kinged, it can only move in a specific direction.
             // White pieces can move in increasing rank (from bottom to top) whereas
             // black pieces can move in decreasing rank (from top to bottom) only.
+            Match.Log($"{chessman.isKinged} {IsRankDecreasing()} {IsRankIncreasing()}");
             if (!chessman.isKinged) {
                 if (chessman.IsWhite()) {
                     if (IsRankDecreasing()) {
@@ -176,6 +182,7 @@ namespace ChessersEngine {
             }
 
             int spacing = (Math.Abs(delta) / stepSize);
+            Match.Log($"{spacing} = {delta}/{stepSize}");
 
             if (spacing == 1) {
                 if (toTile.IsOccupied()) {
@@ -570,7 +577,7 @@ namespace ChessersEngine {
 
             return true;
         }
-        
+
         */
 
         #endregion
@@ -728,18 +735,10 @@ namespace ChessersEngine {
 
             if (pieceToRemove != null) {
                 pieceToRemove.Deactivate();
+                if (pieceToRemove.IsKing()) {
+                    moveResult.isWinningMove = true;
+                }
             }
-        }
-
-        void Notation () {
-            moveNotation = (
-                Helpers.ConvertChessmanKindToNotationSymbol(chessman.kind) +
-                Helpers.ConvertRowToRank(fromRow) +
-                Helpers.ConvertColumnToFile(fromColumn) +
-                "-" +
-                Helpers.ConvertRowToRank(toRow) +
-                Helpers.ConvertColumnToFile(toColumn)
-            );
         }
     }
 }

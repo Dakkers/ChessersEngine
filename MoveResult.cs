@@ -13,6 +13,7 @@ namespace ChessersEngine {
 
         public int pieceId { get; set; }
         public long pieceGuid { get; set; }
+        public int fromTileId { get; set; }
         public int tileId { get; set; }
         public bool turnChanged { get; set; }
         public int type { get; set; }
@@ -37,8 +38,22 @@ namespace ChessersEngine {
 
         public bool valid { get; set; }
 
+        public string notation { get; set; }
+        public int fromRow { get; set; }
+        public int toRow { get; set; }
+        public int fromColumn { get; set; }
+        public int toColumn { get; set; }
+        public ChessmanKindEnum chessmanKind { get; set; }
+
         public override string ToString () {
-            return $"{{ pieceId = {pieceId}, tileId = {tileId}, capturedPieceId = {capturedPieceId}, promotion = {promotionOccurred}, turnChanged = {turnChanged} }}";
+            return $"{{ " +
+                $"pieceId = {pieceId}, " +
+                $"tileId = {tileId}, " +
+                $"capturedPieceId = {capturedPieceId}, " +
+                $"promotion = {promotionOccurred}, " +
+                $"turnChanged = {turnChanged}, " +
+                $"isWinningMove = {isWinningMove}, " +
+            "}}";
         }
 
         public bool IsRegular () {
@@ -51,6 +66,37 @@ namespace ChessersEngine {
 
         public bool WasPieceJumped () {
             return jumpedPieceId != -1;
+        }
+
+        public string CreateNotation () {
+            // Start with e.g. "Qh4"
+            string moveNotation = (
+                Helpers.ConvertChessmanKindToNotationSymbol(chessmanKind) +
+                Helpers.ConvertRowToRank(fromRow) +
+                Helpers.ConvertColumnToFile(fromColumn)
+            );
+
+            if (WasPieceCaptured()) {
+                // "Qh4" becomes "Qh4x"
+                moveNotation += "x";
+            }
+            if (WasPieceJumped()) {
+                // "Qh4" becomes "Qh4y"
+                moveNotation += "y";
+            }
+
+            // "Qh4" becomes "Qh4e7"
+            moveNotation += (
+                Helpers.ConvertRowToRank(toRow) +
+                Helpers.ConvertColumnToFile(toColumn)
+            );
+
+            if (promotionOccurred) {
+                // "h7h8" becomes "h7h8Q"
+                moveNotation += Helpers.ConvertChessmanKindToNotationSymbol(promotionRank);
+            }
+
+            return moveNotation;
         }
     }
 }
