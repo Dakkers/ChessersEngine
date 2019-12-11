@@ -16,11 +16,10 @@ namespace ChessersEngine {
         readonly int numColumns = 8;
         readonly int numRows = 8;
 
-        public Board (List<ChessmanSchema> pieces2) {
-            pieces2 = pieces2 ?? CreateDefaultChessmen();
+        public Board (List<ChessmanSchema> _pieces) {
+            pieces = _pieces ?? CreateDefaultChessmen();
 
             id = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-            pieces = pieces2;
             tilesById = new Dictionary<int, Tile>();
             chessmenById = new Dictionary<int, Chessman>();
 
@@ -39,11 +38,10 @@ namespace ChessersEngine {
 
                 chessmenById[newChessman.id] = newChessman;
             }
-
         }
 
         public List<ChessmanSchema> GetChessmanSchemas () {
-            return pieces;
+            return chessmenById.Values.Select((c) => c.CreateSchema()).ToList();
         }
 
         public Chessman GetChessman (int id) {

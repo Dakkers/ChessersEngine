@@ -32,10 +32,6 @@
         Tile underlyingTile;
 
         public Chessman (ChessmanSchema cs) {
-            colorId = ((cs.id % 2) == 0) ?
-                Constants.ID_WHITE :
-                Constants.ID_BLACK;
-
             guid = cs.guid == 0 ?
                      cs.id :
                      cs.guid;
@@ -46,6 +42,10 @@
             isChecker = cs.isChecker;
             isKinged = cs.isKinged;
             isPromoted = cs.isPromoted;
+
+            colorId = ((id % 2) == 0) ?
+                Constants.ID_WHITE :
+                Constants.ID_BLACK;
 
             kind = (ChessmanKindEnum) cs.kind;
         }

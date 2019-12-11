@@ -12,10 +12,14 @@ namespace ChessersEngine {
         /// </summary>
         public long currentTurn;
 
+        public bool isDraw = false;
+        public bool isResignation = false;
+
         public long matchId;
 
         public List<ChessmanSchema> pieces;
         public long whitePlayerId;
+        public long winningPlayerId = -1;
     }
 
     public struct MatchCloningResult {
@@ -24,6 +28,8 @@ namespace ChessersEngine {
     }
 
     public class Match {
+        long id = -1;
+
         /// <summary>
         /// The "effective" turn color. When a player's turn begins and they make a move
         /// ends their turn (i.e. a move where they cannot do a jump), this value switches.
@@ -53,6 +59,8 @@ namespace ChessersEngine {
         public long whitePlayerId = -1;
         public long blackPlayerId = -1;
         long winningPlayerId = -1;
+        bool isDraw = false;
+        bool isResignation = false;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="T:ChessersEngine.Match"/> class.
@@ -65,6 +73,7 @@ namespace ChessersEngine {
                 blackPlayerId = Constants.DEFAULT_BLACK_PLAYER_ID;
                 turnColor = Constants.ID_WHITE;
             } else {
+                id = data.matchId;
                 pieces = data.pieces;
                 whitePlayerId = data.whitePlayerId;
                 blackPlayerId = data.blackPlayerId;
@@ -301,6 +310,19 @@ namespace ChessersEngine {
             committedTurnColor = turnColor;
 
             ResetMatchState();
+        }
+
+        public MatchData CreateMatchData () {
+            return new MatchData {
+                pieces = committedBoard.GetChessmanSchemas(),
+                blackPlayerId = blackPlayerId,
+                currentTurn = turnColor,
+                isDraw = isDraw,
+                isResignation = isResignation,
+                matchId = id,
+                whitePlayerId = whitePlayerId,
+                winningPlayerId = winningPlayerId,
+            };
         }
 
         public static void Log (object s) {
