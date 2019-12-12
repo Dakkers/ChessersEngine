@@ -242,15 +242,12 @@ namespace ChessersEngine {
             return color == ColorEnum.BLACK ? GetChessman(Constants.ID_BLACK_KING) : GetChessman(Constants.ID_WHITE_KING);
         }
 
+        public List<Chessman> GetActiveChessmen () {
+            return chessmenById.Values.Where((c) => c.isActive).ToList();
+        }
+
         public List<Chessman> GetActiveChessmenOfColor (ColorEnum color) {
-            List<Chessman> val = new List<Chessman>();
-            foreach (var pair in chessmenById) {
-                Chessman c = pair.Value;
-                if (c.isActive && c.IsSameColor(color)) {
-                    val.Add(c);
-                }
-            }
-            return val;
+            return GetActiveChessmen().Where((c) => c.color == color).ToList();
         }
 
         public Chessman GetWhiteKing () {
@@ -259,6 +256,10 @@ namespace ChessersEngine {
 
         public Chessman GetBlackKing () {
             return GetKingOfColor(ColorEnum.BLACK);
+        }
+
+        public bool IsGameOver () {
+            return (!GetWhiteKing().isActive || !GetBlackKing().isActive);
         }
 
         #endregion
@@ -309,6 +310,13 @@ namespace ChessersEngine {
 
         public int GetRow (Tile tile) {
             return GetRow(tile.id);
+        }
+
+        public (int, int) GetRowColumn (Tile tile) {
+            return (
+                GetRow(tile),
+                GetColumn(tile)
+            );
         }
 
         public Tile GetTopTileOfColumn (int column) {
@@ -450,7 +458,7 @@ namespace ChessersEngine {
                 }
 
                 Chessman occupant = tileToCheck.GetPiece();
-                if (occupant.colorId == chessman.colorId || occupant.IsChecker()) {
+                if (occupant.color == chessman.color || occupant.IsChecker()) {
                     break;
                 }
 
@@ -700,7 +708,7 @@ namespace ChessersEngine {
             // -- Validate the attrs of the occupant doing the jump
             // (They have to be a different colour, and currently a checker)
             Chessman jumpingChessman = attackingTile.GetPiece();
-            if (jumpingChessman.colorId == targetChessman.colorId || !jumpingChessman.IsChecker()) {
+            if (jumpingChessman.color == targetChessman.color || !jumpingChessman.IsChecker()) {
                 return false;
             }
 
@@ -1077,7 +1085,7 @@ namespace ChessersEngine {
             return potentialTiles.Where((t) => {
                 return (
                     t != null &&
-                    (!t.IsOccupied() || t.GetPiece().colorId != chessman.colorId)
+                    (!t.IsOccupied() || t.GetPiece().color != chessman.color)
                 );
             }).ToList();
         }
@@ -1221,6 +1229,94 @@ namespace ChessersEngine {
             return result.moveResult;
         }
 
+        public void UndoMove (MoveResult moveResult) {
+            Chessman movedChessman = GetChessman(moveResult.pieceId);
+            Tile fromTile = GetTile(moveResult.fromTileId);
+            Tile toTile = GetTile(moveResult.tileId);
+
+            toTile.RemovePiece();
+
+            fromTile.SetPiece(movedChessman);
+            movedChessman.SetUnderlyingTile(fromTile);
+
+            if (moveResult.promotionOccurred) {
+                movedChessman.kind = moveResult.chessmanKind;
+            }
+
+            if (moveResult.kinged) {
+                movedChessman.isKinged = false;
+            }
+
+            if (moveResult.polarityChanged) {
+                movedChessman.isChecker = !movedChessman.isChecker;
+            }
+
+            if (moveResult.wasFirstMoveForPiece) {
+                movedChessman.hasMoved = false;
+            }
+
+            if (moveResult.WasPieceJumped()) {
+                Chessman jumpedChessman = GetChessman(moveResult.jumpedPieceId);
+                Tile jumpedOverTile = GetTile(moveResult.jumpedTileId);
+                jumpedChessman.isActive = true;
+
+                jumpedOverTile.SetPiece(jumpedChessman);
+                jumpedChessman.SetUnderlyingTile(jumpedOverTile);
+            }
+
+            if (moveResult.WasPieceCaptured()) {
+                Chessman capturedChessman = GetChessman(moveResult.capturedPieceId);
+                capturedChessman.isActive = true;
+
+                toTile.SetPiece(capturedChessman);
+                capturedChessman.SetUnderlyingTile(toTile);
+            }
+        }
+
         #endregion
+
+        const int VALUE_PAWN = 100;
+        const int VALUE_KNIGHT = 350;
+        const int VALUE_BISHOP = 350;
+        const int VALUE_ROOK = 525;
+        const int VALUE_QUEEN = 1000;
+        const int VALUE_KING = 10000;
+
+        public int CalculateBoardValue () {
+            if (!GetWhiteKing().isActive) {
+                return int.MinValue;
+            } else if (!GetBlackKing().isActive) {
+                return int.MaxValue;
+            }
+
+            int result = 0;
+
+            foreach (Chessman c in GetActiveChessmen()) {
+                int temp = 0;
+                if (c.IsPawn()) {
+                    temp = VALUE_PAWN;
+                } else if (c.IsKnight()) {
+                    temp = VALUE_KNIGHT;
+                } else if (c.IsBishop()) {
+                    temp = VALUE_BISHOP;
+                } else if (c.IsRook()) {
+                    temp = VALUE_ROOK;
+                } else if (c.IsQueen()) {
+                    temp = VALUE_QUEEN;
+                } else if (c.IsKing()) {
+                    temp = VALUE_KING;
+                } else if (c.IsChecker()) {
+                    //TODO
+                }
+
+                if (c.IsBlack()) {
+                    temp = -1 * temp;
+                }
+
+                result += temp;
+            }
+
+            return result;
+        }
     }
 }
