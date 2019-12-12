@@ -6,6 +6,14 @@ namespace ChessersEngine {
         public int pieceId { get; set; }
         public long pieceGuid { get; set; }
         public int tileId { get; set; }
+
+        public override string ToString () {
+            return $"{{ " +
+                $"pieceId = {pieceId}, " +
+                $"tileId = {tileId}, " +
+                $"playerId = {playerId}, " +
+            "}}";
+        }
     }
 
     public class MoveResult {
@@ -18,10 +26,22 @@ namespace ChessersEngine {
         public bool turnChanged { get; set; }
         public int type { get; set; }
 
-        // Whether or not this move triggers a polarity flip (checker piece to chess piece)
+        /// <summary>
+        /// Whether or not this move triggers a polarity flip (checker piece to chess piece or vice versa)
+        /// </summary>
+        /// <value><c>true</c> if polarity changed; otherwise, <c>false</c>.</value>
         public bool polarityChanged { get; set; }
 
-        // Whether or not this move triggers a king-ing
+        /// <summary>
+        /// Whether or not this move was the first time the piece had moved.
+        /// </summary>
+        /// <value><c>true</c> if was first move for piece; otherwise, <c>false</c>.</value>
+        public bool wasFirstMoveForPiece { get; set; }
+
+        /// <summary>
+        /// Whether or not this move triggers a king-ing
+        /// </summary>
+        /// <value><c>true</c> if kinged; otherwise, <c>false</c>.</value>
         public bool kinged { get; set; }
 
         // Whether or not this move triggers a Promotion
@@ -30,6 +50,7 @@ namespace ChessersEngine {
 
         // Piece that gets jumped, if applicable
         public int jumpedPieceId { get; set; } = -1;
+        public int jumpedTileId { get; set; } = -1;
 
         // Piece that gets captured, if applicable
         public int capturedPieceId { get; set; } = -1;
@@ -43,6 +64,11 @@ namespace ChessersEngine {
         public int toRow { get; set; }
         public int fromColumn { get; set; }
         public int toColumn { get; set; }
+        /// <summary>
+        /// This is the kind the chessman STARTED as. So, if a pawn was promoted
+        /// then this would be PAWN and `promotionRank` would be e.g. QUEEN.
+        /// </summary>
+        /// <value>The kind of the chessman.</value>
         public ChessmanKindEnum chessmanKind { get; set; }
 
         public override string ToString () {

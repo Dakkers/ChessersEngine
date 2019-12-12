@@ -14,7 +14,7 @@
     }
 
     public class Chessman {
-        public int colorId;
+        public ColorEnum color;
 
         public long guid;
         public bool hasMoved = false;
@@ -43,9 +43,9 @@
             isKinged = cs.isKinged;
             isPromoted = cs.isPromoted;
 
-            colorId = ((id % 2) == 0) ?
-                Constants.ID_WHITE :
-                Constants.ID_BLACK;
+            color = ((id % 2) == 0) ?
+                ColorEnum.WHITE :
+                ColorEnum.BLACK;
 
             kind = (ChessmanKindEnum) cs.kind;
         }
@@ -74,7 +74,7 @@
         }
 
         public void CopyFrom (ChessmanSchema chessmanSchema) {
-            this.colorId = chessmanSchema.colorId;
+            this.color = Helpers.ConvertColorIntToEnum(chessmanSchema.colorId);
             this.guid = chessmanSchema.guid;
             this.hasMoved = chessmanSchema.hasMoved;
             this.id = chessmanSchema.id;
@@ -92,11 +92,11 @@
         #region Color checks
 
         public bool IsWhite () {
-            return colorId == Constants.ID_WHITE;
+            return color == ColorEnum.WHITE;
         }
 
         public bool IsBlack () {
-            return colorId == Constants.ID_BLACK;
+            return color == ColorEnum.BLACK;
         }
 
         /// <summary>
@@ -105,11 +105,11 @@
         /// <returns><c>true</c>, if colors are the same, <c>false</c> otherwise.</returns>
         /// <param name="other">Other chessman to compare against.</param>
         public bool IsSameColor (Chessman other) {
-            return this.colorId == other.colorId;
+            return this.color == other.color;
         }
 
         public bool IsSameColor (ColorEnum color) {
-            return this.colorId == Helpers.ConvertColorEnumToInt(color);
+            return this.color == color;
         }
 
         #endregion
@@ -168,7 +168,7 @@
 
         public ChessmanSchema CreateSchema () {
             return new ChessmanSchema {
-                colorId = colorId,
+                colorId = Helpers.ConvertColorEnumToInt(this.color),
                 guid = guid,
                 hasMoved = hasMoved,
                 id = id,

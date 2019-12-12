@@ -25,8 +25,6 @@ namespace ChessersEngine {
         readonly Chessman chessman;
         Tile fromTile;
         Tile toTile;
-        readonly int movingColor;
-        readonly int opposingColor;
 
         readonly int delta;
 
@@ -44,16 +42,11 @@ namespace ChessersEngine {
             chessman = board.GetChessman(moveAttempt.pieceId);
             toTile = board.GetTile(moveAttempt.tileId);
             fromTile = chessman.GetUnderlyingTile();
-            movingColor = chessman.colorId;
-            opposingColor = Helpers.GetOppositeColor(movingColor);
 
             delta = toTile.id - fromTile.id;
 
-            fromRow = Helpers.GetRow(fromTile.id);
-            toRow = Helpers.GetRow(toTile.id);
-
-            fromColumn = Helpers.GetColumn(fromTile.id);
-            toColumn = Helpers.GetColumn(toTile.id);
+            (fromRow, fromColumn) = board.GetRowColumn(fromTile);
+            (toRow, toColumn) = board.GetRowColumn(toTile);
 
             moveResult = new MoveResult {
                 pieceGuid = chessman.guid,
@@ -196,12 +189,13 @@ namespace ChessersEngine {
                     return null;
                 }
 
-                if (tileJumpingOver.GetPiece().colorId == chessman.colorId) {
+                if (tileJumpingOver.GetPiece().color == chessman.color) {
                     // Can't jump a piece of the same color.
                     return null;
                 }
 
                 moveResult.jumpedPieceId = tileJumpingOver.GetPiece().id;
+                moveResult.jumpedTileId = tileJumpingOver.id;
             } else {
                 return null;
             }
@@ -619,7 +613,11 @@ namespace ChessersEngine {
             // -- Move the piece in a copy of the match's board.
             // We can then check for the Check status.
 
-            chessman.SetHasMoved(true);
+            if (!chessman.hasMoved) {
+                moveResult.wasFirstMoveForPiece = true;
+                chessman.SetHasMoved(true);
+            }
+
             fromTile.RemovePiece();
             toTile.SetPiece(chessman);
             chessman.SetUnderlyingTile(toTile);

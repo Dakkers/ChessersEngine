@@ -37,13 +37,13 @@ namespace ChessersEngine {
         /// step because otherwise the engine would never say the move is invalid based
         /// solely on this value.
         /// </summary>
-        int turnColor;
+        ColorEnum turnColor;
 
         /// <summary>
         /// The color of the player currently making moves. Switches values when the "commit"
         /// step occurs.
         /// </summary>
-        int committedTurnColor;
+        ColorEnum committedTurnColor;
 
         /// <summary>
         /// The list of moves that have been executed in `pendingBoard` but not
@@ -92,9 +92,9 @@ namespace ChessersEngine {
 
         void SetTurnColorFromPlayerId (long playerId) {
             if (playerId == whitePlayerId) {
-                turnColor = Constants.ID_WHITE;
+                turnColor = ColorEnum.WHITE;
             } else if (playerId == blackPlayerId) {
-                turnColor = Constants.ID_BLACK;
+                turnColor = ColorEnum.BLACK;
             }
         }
 
@@ -176,19 +176,19 @@ namespace ChessersEngine {
             return committedBoard.GetTile(id);
         }
 
-        public int GetCommittedTurnColor () {
+        public ColorEnum GetCommittedTurnColor () {
             return committedTurnColor;
         }
 
-        public int GetTurn () {
+        public ColorEnum GetTurn () {
             return turnColor;
         }
 
         public void ChangeTurn () {
             if (turnColor == Constants.ID_WHITE) {
-                turnColor = Constants.ID_BLACK;
+                turnColor = ColorEnum.BLACK;
             } else {
-                turnColor = Constants.ID_WHITE;
+                turnColor = ColorEnum.WHITE;
             }
         }
 
@@ -241,7 +241,7 @@ namespace ChessersEngine {
                 }
             }
 
-            if (turnColor == Constants.ID_BLACK) {
+            if (turnColor == ColorEnum.BLACK) {
                 if (moveAttempt.playerId == whitePlayerId) {
                     // Black's turn, white is trying to move --> no!
                     return null;
@@ -249,7 +249,7 @@ namespace ChessersEngine {
             }
 
             Chessman chessman = GetPendingChessman(moveAttempt.pieceId);
-            if (chessman.colorId != turnColor) {
+            if (chessman.color != turnColor) {
                 // Make sure the moving piece belongs to the player.
                 return null;
             }
@@ -257,7 +257,7 @@ namespace ChessersEngine {
             Tile toTile = GetPendingTile(moveAttempt.tileId);
 
             Chessman targetChessman = toTile.occupant;
-            if (targetChessman?.colorId == chessman.colorId) {
+            if (targetChessman?.color == chessman.color) {
                 // Can't move to a tile occupied by the moving player
                 return null;
             }
@@ -289,6 +289,124 @@ namespace ChessersEngine {
 
         #endregion
 
+        #region Move generation?
+
+        /// <summary>
+        /// Minimax!
+        /// </summary>
+        /// <param name="b">Board.</param>
+        /// <param name="depth">Depth.</param>
+        /// <param name="isMaximizingPlayer">TRUE = WHITE, FALSE = BLACK</param>
+        (List<MoveAttempt>, int) MinimaxHelper (
+            Board board,
+            int depth,
+            bool isMaximizingPlayer
+        ) {
+            if (depth == 0 || board.IsGameOver()) {
+                return (null, board.CalculateBoardValue());
+            }
+
+            ColorEnum color = isMaximizingPlayer ? ColorEnum.WHITE : ColorEnum.BLACK;
+            // This is a LIST of best moves because in Chessers, you can have multiple moves in a single turn.
+            // (If this was Chess, it would not be a list, but a single value.)
+            List<MoveAttempt> bestMoves = new List<MoveAttempt>();
+            // Even though we have a list of best moves, the best score will still be a single value; it could
+            // be either from doing multiple moves in a turn, or by ending the turn early.
+            int bestValueSoFar = isMaximizingPlayer ? int.MinValue : int.MaxValue;
+
+            MoveAttempt fallbackMove = null;
+
+            foreach (var chessman in board.GetActiveChessmenOfColor(color)) {
+                List<Tile> potentialTiles = board.GetPotentialTilesForMovement(chessman);
+                //Match.Log($"Looking @ chessman for tile {committedBoard.GetRowColumn(chessman.GetUnderlyingTile())}. Found:" +
+                //$"{potentialTiles.Count} potential moves.");
+
+                foreach (var tile in potentialTiles) {
+                    MoveAttempt moveAttempt = new MoveAttempt {
+                        pieceGuid = chessman.guid,
+                        pieceId = chessman.id,
+                        playerId = isMaximizingPlayer ? whitePlayerId : blackPlayerId,
+                        tileId = tile.id
+                    };
+
+                    MoveResult moveResult = board.MoveChessman(moveAttempt);
+                    if (moveResult == null || !moveResult.valid) {
+                        // This should not occur
+                        continue;
+                    }
+
+                    if (fallbackMove == null) {
+                        fallbackMove = moveAttempt;
+                    }
+
+                    // Because the move might not have changed the turn, we need to determine if it's best
+                    // that the player stops here, or continues moving.
+                    // TODO! -- this should be doable by just passing in `isMaximizingPlayer` is the same value...
+
+                    (List<MoveAttempt> moves, int value) = MinimaxHelper(
+                        board,
+                        depth - 1,
+                        !isMaximizingPlayer
+                    );
+
+                    moves = moves ?? new List<MoveAttempt>();
+                    moves.Add(moveAttempt);
+
+                    if (isMaximizingPlayer) {
+                        if (value > bestValueSoFar) {
+                            bestValueSoFar = value;
+                            bestMoves = moves;
+                        }
+                    } else {
+                        if (value < bestValueSoFar) {
+                            //Match.Log($"  Overriding best choice: {value} {moves?.Count}");
+                            bestValueSoFar = value;
+                            bestMoves = moves;
+                        }
+                    }
+
+                    board.UndoMove(moveResult);
+                }
+            }
+
+            return (
+                (bestMoves?.Count ?? 0) == 0 ? new List<MoveAttempt> { fallbackMove } : bestMoves,
+                bestValueSoFar
+            );
+        }
+
+        /// <summary>
+        /// Calculates the best move for the current player.
+        /// </summary>
+        public List<MoveAttempt> CalculateBestMove () {
+            Board boardClone = new Board(committedBoard.GetChessmanSchemas());
+            boardClone.CopyState(committedBoard);
+
+            (List<MoveAttempt> moves, int value) = MinimaxHelper(
+                boardClone,
+                1,
+                isMaximizingPlayer: turnColor == ColorEnum.WHITE
+            );
+
+            //Log($"BEST CALCULATION: {value} NUM MOVES TO MAKE: {moves?.Count}");
+            //if (moves?.Count > 0) {
+            //    Log(moves[0]);
+            //}
+
+            return moves;
+        }
+
+        public void UndoMoves () {
+            int i = pendingMoveResults.Count - 1;
+            while (i >= 0) {
+                pendingBoard.UndoMove(pendingMoveResults[i]);
+                pendingMoveResults.RemoveAt(i);
+                i--;
+            }
+        }
+
+        #endregion
+
         public void UpdateMatch (MatchData newMatchData) {
             foreach (ChessmanSchema cs in newMatchData.pieces) {
                 Chessman committedChessman = GetCommittedChessman(cs.id);
@@ -316,7 +434,7 @@ namespace ChessersEngine {
             return new MatchData {
                 pieces = committedBoard.GetChessmanSchemas(),
                 blackPlayerId = blackPlayerId,
-                currentTurn = turnColor,
+                currentTurn = Helpers.ConvertColorEnumToInt(turnColor),
                 isDraw = isDraw,
                 isResignation = isResignation,
                 matchId = id,
