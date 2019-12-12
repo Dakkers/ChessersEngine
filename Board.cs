@@ -929,55 +929,56 @@ namespace ChessersEngine {
             return potentialTiles;
         }
 
-        List<Tile> PotentialTilesForHorizontalMovement (Chessman chessman) {
+        List<Tile> PotentialTilesForHorizontalMovement (Chessman chessman, int limit = int.MaxValue) {
             List<Tile> potentialTiles = new List<Tile>();
             Tile tile = chessman.GetUnderlyingTile();
-            int col = GetColumn(tile);
-            int row = GetRow(tile);
+            (int col, int row) = GetRowColumn(tile);
 
             potentialTiles.AddRange(PotentialTileIterator(
                 chessman,
                 iter: col + 1,
                 loopConditional: (iter) => iter < GetNumberOfColumns(),
-                currentTileGetter: (iter) => GetTileByRowColumn(row, iter)
+                currentTileGetter: (iter) => GetTileByRowColumn(row, iter),
+                limit: limit
             ));
             potentialTiles.AddRange(PotentialTileIterator(
                 chessman,
                 iter: col - 1,
                 loopConditional: (iter) => iter >= 0,
                 currentTileGetter: (iter) => GetTileByRowColumn(row, iter),
-                increasing: false
+                increasing: false,
+                limit: limit
             ));
             return potentialTiles;
         }
 
-        List<Tile> PotentialTilesForVerticalMovement (Chessman chessman) {
+        List<Tile> PotentialTilesForVerticalMovement (Chessman chessman, int limit = int.MaxValue) {
             List<Tile> potentialTiles = new List<Tile>();
             Tile tile = chessman.GetUnderlyingTile();
-            int col = GetColumn(tile);
-            int row = GetRow(tile);
+            (int col, int row) = GetRowColumn(tile);
 
             potentialTiles.AddRange(PotentialTileIterator(
                 chessman,
                 iter: row + 1,
-                loopConditional: (iter) => iter <= GetNumberOfRows(),
-                currentTileGetter: (iter) => GetTileByRowColumn(iter, col)
+                loopConditional: (iter) => iter < GetNumberOfRows(),
+                currentTileGetter: (iter) => GetTileByRowColumn(iter, col),
+                limit: limit
             ));
             potentialTiles.AddRange(PotentialTileIterator(
                 chessman,
                 iter: row - 1,
                 loopConditional: (iter) => iter >= 0,
                 currentTileGetter: (iter) => GetTileByRowColumn(iter, col),
-                increasing: false
+                increasing: false,
+                limit: limit
             ));
             return potentialTiles;
         }
 
-        List<Tile> PotentialTilesForDiagonalMovement (Chessman chessman) {
+        List<Tile> PotentialTilesForDiagonalMovement (Chessman chessman, int limit = int.MaxValue) {
             List<Tile> potentialTiles = new List<Tile>();
             Tile tile = chessman.GetUnderlyingTile();
-            int col = GetColumn(tile);
-            int row = GetRow(tile);
+            (int col, int row) = GetRowColumn(tile);
 
             int i;
 
@@ -989,7 +990,8 @@ namespace ChessersEngine {
                 loopConditional: (iter) => {
                     return ((row + iter) < GetNumberOfRows()) && ((col + iter) < GetNumberOfColumns());
                 },
-                currentTileGetter: (iter) => GetTileByRowColumn(row + iter, col + iter)
+                currentTileGetter: (iter) => GetTileByRowColumn(row + iter, col + iter),
+                limit: limit
             ));
 
             // Positive diagonal: down-and-left
@@ -1000,7 +1002,8 @@ namespace ChessersEngine {
                 loopConditional: (iter) => {
                     return ((row - iter) >= 0) && ((col - iter) >= 0);
                 },
-                currentTileGetter: (iter) => GetTileByRowColumn(row - iter, col - iter)
+                currentTileGetter: (iter) => GetTileByRowColumn(row - iter, col - iter),
+                limit: limit
             ));
 
             // negative diagonal: down-and-right
@@ -1011,7 +1014,8 @@ namespace ChessersEngine {
                 loopConditional: (iter) => {
                     return ((row - iter) >= 0) && ((col + iter) < GetNumberOfColumns());
                 },
-                currentTileGetter: (iter) => GetTileByRowColumn(row - iter, col + iter)
+                currentTileGetter: (iter) => GetTileByRowColumn(row - iter, col + iter),
+                limit: limit
             ));
 
             // negative diagonal: up-and-left
@@ -1022,7 +1026,8 @@ namespace ChessersEngine {
                 loopConditional: (iter) => {
                     return ((row + iter) < GetNumberOfRows()) && ((col - iter) >= 0);
                 },
-                currentTileGetter: (iter) => GetTileByRowColumn(row + iter, col - iter)
+                currentTileGetter: (iter) => GetTileByRowColumn(row + iter, col - iter),
+                limit: limit
             ));
 
             return potentialTiles;
@@ -1067,8 +1072,7 @@ namespace ChessersEngine {
 
         List<Tile> GetPotentialTilesForKnightMovement (Chessman chessman) {
             Tile tile = chessman.GetUnderlyingTile();
-            int col = GetColumn(tile);
-            int row = GetRow(tile);
+            (int col, int row) = GetRowColumn(tile);
 
             List<Tile> potentialTiles = new List<Tile> {
                 GetTileByRowColumn(col - 2, row - 1),
@@ -1116,8 +1120,7 @@ namespace ChessersEngine {
         /// <summary>
         /// Gets the potential tiles for king movement.
         ///
-        /// Kings can move only by 1 tile, and only up, up-left, up-right (from
-        /// their point of reference; i.e. for black it's down, down-left, down-right)
+        /// Kings can move only by 1 tile at a time.
         /// </summary>
         /// <returns>The potential tiles for king movement.</returns>
         /// <param name="chessman">Chessman.</param>
@@ -1129,6 +1132,9 @@ namespace ChessersEngine {
             int row = GetRow(tile);
             bool upwards = chessman.IsWhite();
             int modifier = (upwards) ? 1 : -1;
+
+            /**
+            // OLD LOGIC: The king used to only be above to move forward/forward diagonal.
 
             // Up/down
             potentialTiles.AddRange(PotentialTileIterator(
@@ -1177,6 +1183,12 @@ namespace ChessersEngine {
                 increasing: true,
                 limit: 1
             ));
+
+            */
+
+            potentialTiles.AddRange(PotentialTilesForVerticalMovement(chessman, limit: 1));
+            potentialTiles.AddRange(PotentialTilesForHorizontalMovement(chessman, limit: 1));
+            potentialTiles.AddRange(PotentialTilesForDiagonalMovement(chessman, limit: 1));
 
             return potentialTiles;
         }

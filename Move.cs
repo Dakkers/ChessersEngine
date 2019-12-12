@@ -23,8 +23,9 @@ namespace ChessersEngine {
         readonly Board board;
 
         readonly Chessman chessman;
-        Tile fromTile;
-        Tile toTile;
+        readonly Tile fromTile;
+        readonly Tile toTile;
+        readonly List<Tile> potentialTilesForMovement;
 
         readonly int delta;
 
@@ -60,6 +61,8 @@ namespace ChessersEngine {
                 toColumn = toColumn,
                 chessmanKind = chessman.kind,
             };
+
+            potentialTilesForMovement = board.GetPotentialTilesForMovement(chessman);
         }
 
         #region Move types
@@ -117,32 +120,6 @@ namespace ChessersEngine {
         #endregion
 
         #region Chessman kind-specific move validations
-
-        MoveResult IsValidBishopMove () {
-            // Bishops can move diagonally by any amount, as long as there
-            // is not a piece in between its current tile and its target tile
-
-            int directionality;
-
-            if (IsPositiveDiagonalMove()) {
-                directionality = (int) Directionalities.POSITIVE_DIAGONAL;
-            } else if (IsNegativeDiagonalMove()) {
-                directionality = (int) Directionalities.NEGATIVE_DIAGONAL;
-            } else {
-                return null;
-            }
-
-            if (IsPathBlockedByChessman(directionality)) {
-                return null;
-            }
-
-            if (toTile.IsOccupied()) {
-                moveResult.capturedPieceId = toTile.occupant.id;
-            }
-
-            moveResult.valid = true;
-            return moveResult;
-        }
 
         MoveResult IsValidCheckerMove () {
             // Spacing represents how many tiles the piece is attempting to move
@@ -204,201 +181,7 @@ namespace ChessersEngine {
             return moveResult;
         }
 
-        MoveResult IsValidKnightMove () {
-            // Knights move either by 2-columns 1-row OR 2-rows 1-column
-            // Additionally, they can jump over pieces
-
-            int rowAbsDelta = Math.Abs(fromRow - toRow);
-            int columnAbsDelta = Math.Abs(fromColumn - toColumn);
-
-            if (!(
-                ((rowAbsDelta == 2) && (columnAbsDelta == 1)) ||
-                ((rowAbsDelta == 1) && (columnAbsDelta == 2))
-            )) {
-                return null;
-            }
-
-            if (toTile.IsOccupied()) {
-                moveResult.capturedPieceId = toTile.occupant.id;
-            }
-
-            moveResult.valid = true;
-            return moveResult;
-        }
-
-        MoveResult IsValidPawnMove () {
-            List<int> validDeltas = new List<int>();
-            bool checkPath = false;
-
-            if (!toTile.IsOccupied()) {
-                // Validate regular movement
-                // If a pawn hasn't moved yet, it can move forward by 2 spaces for its first move
-                validDeltas.Add(8);
-
-                if (!chessman.hasMoved) {
-                    validDeltas.Add(16);
-                    checkPath = true;
-                }
-            } else {
-                // Validate capturing movement
-                validDeltas.Add(7);
-                validDeltas.Add(9);
-
-                if (!IsPositiveDiagonalMove() && !IsNegativeDiagonalMove()) {
-                    return null;
-                }
-
-                moveResult.capturedPieceId = toTile.occupant.id;
-            }
-
-            if (chessman.IsBlack()) {
-                validDeltas = validDeltas.Select((deltaVal) => -deltaVal).ToList();
-            }
-
-            if (!validDeltas.Contains(delta)) {
-                return null;
-            }
-
-            if (checkPath) {
-                if (IsPathBlockedByChessman((int) Directionalities.VERTICAL)) {
-                    return null;
-                }
-            }
-
-            moveResult.valid = true;
-            return moveResult;
-        }
-
-        MoveResult IsValidQueenMove () {
-            // Queens can move directly up/down by any amount, or left/right by any amount,
-            // or diagonally by any amount, as long as there is not a piece in between its
-            // current tile and its target tile
-
-            int directionality;
-
-            if (IsHorizontalMove()) {
-                directionality = (int) Directionalities.HORIZONTAL;
-            } else if (IsVerticalMove()) {
-                directionality = (int) Directionalities.VERTICAL;
-            } else if (IsPositiveDiagonalMove()) {
-                directionality = (int) Directionalities.POSITIVE_DIAGONAL;
-            } else if (IsNegativeDiagonalMove()) {
-                directionality = (int) Directionalities.NEGATIVE_DIAGONAL;
-            } else {
-                return null;
-            }
-
-            if (IsPathBlockedByChessman(directionality)) {
-                return null;
-            }
-
-            if (toTile.IsOccupied()) {
-                moveResult.capturedPieceId = toTile.occupant.id;
-            }
-
-            moveResult.valid = true;
-            return moveResult;
-        }
-
-        MoveResult IsValidRookMove () {
-            // Rooks can move directly up/down by any amount, or left/right by any amount, as long as there
-            // is not a piece in between its current tile and its target tile
-
-            int directionality;
-
-            if (IsHorizontalMove()) {
-                directionality = (int) Directionalities.HORIZONTAL;
-            } else if (IsVerticalMove()) {
-                directionality = (int) Directionalities.VERTICAL;
-            } else {
-                return null;
-            }
-
-            if (IsPathBlockedByChessman(directionality)) {
-                return null;
-            }
-
-            if (toTile.IsOccupied()) {
-                moveResult.capturedPieceId = toTile.occupant.id;
-            }
-
-            moveResult.valid = true;
-            return moveResult;
-        }
-
-        /// <summary>
-        /// Determines if the move is a valid move for a king.
-        ///
-        /// Kings can only move forward or diagonally forward. They are able to
-        /// capture pieces in the same manner.
-        /// </summary>
-        /// <returns>The valid king move.</returns>
-        MoveResult IsValidKingMove () {
-            Match.Log("IsValidKingMove()");
-            if (!IsVerticalMove() && !IsPositiveDiagonalMove() && !IsNegativeDiagonalMove()) {
-                return null;
-            }
-
-            List<int> validDeltas = new List<int> { 7, 8, 9 };
-
-            if (chessman.IsBlack()) {
-                validDeltas = validDeltas.Select((deltaVal) => -deltaVal).ToList();
-            }
-
-            if (!validDeltas.Contains(delta)) {
-                return null;
-            }
-
-            moveResult.valid = true;
-            return moveResult;
-        }
-
         #endregion
-
-        bool IsPathBlockedByChessman (int directionality) {
-            int stepSize = 0;
-
-            if (directionality == (int) Directionalities.HORIZONTAL) {
-                stepSize = 1;
-            } else if (directionality == (int) Directionalities.VERTICAL) {
-                stepSize = 8;
-            } else if (directionality == (int) Directionalities.POSITIVE_DIAGONAL) {
-                stepSize = 9;
-            } else if (directionality == (int) Directionalities.NEGATIVE_DIAGONAL) {
-                stepSize = 7;
-            }
-
-            // Scenarios:
-            //  HORIZONTAL
-            //      - left-to-right: e.g. 1 --> 7. Need to check tiles 2 - 6.
-            //      - right-to-left: e.g. 6 --> 2. Need to check tiles 5 - 3.
-            //  VERTICAL
-            //      - top-to-bottom: e.g. 32 --> 8. Need to check tiles [24, 16].
-            //      - bottom-to-top: e.g. 16 --> 56. Need to check tiles [24, 32, 40, 48].
-            //  POSITIVE_DIAGONAL
-            //      - bottomleft-to-topright: e.g. 0 --> 27. Need to check tiles [9, 18]
-            //      - topright-to-bottomleft: e.g. 59 --> 32. Need to check tiles [41, 50]
-            //  NEGATIVE_DIAGONAL
-            //      - bottomright-to-topleft: e.g. 7 --> 21. Need to check tiles [14]
-            //      - topleft-to-bottomright: e.g. 60 --> 39. Need to check tiles [53, 46]
-
-            int start, stop;
-            if (delta > 0) {
-                start = fromTile.id;
-                stop = toTile.id;
-            } else {
-                start = toTile.id;
-                stop = fromTile.id;
-            }
-
-            for (int tileId = start + stepSize; tileId <= stop - stepSize; tileId += stepSize) {
-                if (board.GetTile(tileId).IsOccupied()) {
-                    return true;
-                }
-            }
-
-            return false;
-        }
 
         #region Check/Checkmate
         /*
@@ -582,29 +365,34 @@ namespace ChessersEngine {
         /// </summary>
         /// <returns>The move result.</returns>
         void ExecuteLegalMove () {
-            Func<MoveResult> pieceSpecificValidator = null;
-
-            if (chessman.IsChecker()) {
-                pieceSpecificValidator = IsValidCheckerMove;
-            } else if (chessman.IsPawn()) {
-                pieceSpecificValidator = IsValidPawnMove;
-            } else if (chessman.IsRook()) {
-                pieceSpecificValidator = IsValidRookMove;
-            } else if (chessman.IsKnight()) {
-                pieceSpecificValidator = IsValidKnightMove;
-            } else if (chessman.IsBishop()) {
-                pieceSpecificValidator = IsValidBishopMove;
-            } else if (chessman.IsKing()) {
-                pieceSpecificValidator = IsValidKingMove;
-            } else if (chessman.IsQueen()) {
-                pieceSpecificValidator = IsValidQueenMove;
-            }
-
-            if (pieceSpecificValidator == null) {
+            if (
+                !(potentialTilesForMovement.Exists((t) => t.id == toTile.id))
+            ) {
+                // Not a legal move to the specified tile.
                 return;
             }
 
-            pieceSpecificValidator();
+            if (chessman.IsChecker()) {
+                // This was a valid movement - if the piece moved +/- 2 rows/columns, then
+                // a piece was jumped.
+                if (
+                    (Math.Abs(toRow - fromRow) == 2) ||
+                    (Math.Abs(toColumn - fromColumn) == 2)
+                ) {
+                    // `delta` will always be even in this case; this value will represent
+                    // the movement amount from `fromTile` to the tile that the jumped piece
+                    // was occupying
+                    int halfDelta = delta / 2;
+                    Tile jumpedTile = board.GetTile(fromTile.id + halfDelta);
+
+                    moveResult.jumpedPieceId = jumpedTile.GetPiece().id;
+                    moveResult.jumpedTileId = jumpedTile.id;
+                }
+            } else {
+                if (toTile.IsOccupied()) {
+                    moveResult.capturedPieceId = toTile.GetPiece().id;
+                }
+            }
 
             if (!moveResult.valid) {
                 return;
