@@ -246,5 +246,44 @@ namespace ChessersEngine {
                 }
             };
         }
+
+        public static MatchData Jump1 () {
+            var checkerCS = TestScenarios.CreateWhiteQueen(61);
+            checkerCS.isChecker = true;
+            checkerCS.isKinged = true;
+
+            return new MatchData {
+                currentTurn = Constants.ID_WHITE,
+                matchId = 1,
+                whitePlayerId = 0,
+                blackPlayerId = 1,
+                pieces = new List<ChessmanSchema> {
+                    TestScenarios.CreateWhiteKing(0),
+                    checkerCS,
+
+                    TestScenarios.CreateBlackQueen(52),
+                    TestScenarios.CreateBlackKing(56),
+                }
+            };
+        }
+
+        public static MatchData Jump2 () {
+            var checkerCS = TestScenarios.CreateWhiteQueen(45);
+            checkerCS.isChecker = true;
+
+            return new MatchData {
+                currentTurn = Constants.ID_WHITE,
+                matchId = 1,
+                whitePlayerId = 0,
+                blackPlayerId = 1,
+                pieces = new List<ChessmanSchema> {
+                    TestScenarios.CreateWhiteKing(0),
+                    checkerCS,
+
+                    TestScenarios.CreateBlackQueen(52),
+                    TestScenarios.CreateBlackKing(56),
+                }
+            };
+        }
     }
 }

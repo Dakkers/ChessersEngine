@@ -63,6 +63,7 @@ namespace ChessersEngine {
             };
 
             potentialTilesForMovement = board.GetPotentialTilesForMovement(chessman);
+            //Match.Log($"Potential: {string.Join(", ", potentialTilesForMovement.Select((t) => t.id))}");
         }
 
         #region Move types
@@ -372,6 +373,8 @@ namespace ChessersEngine {
                 return;
             }
 
+            moveResult.valid = true;
+
             if (chessman.IsChecker()) {
                 // This was a valid movement - if the piece moved +/- 2 rows/columns, then
                 // a piece was jumped.
@@ -394,9 +397,6 @@ namespace ChessersEngine {
                 }
             }
 
-            if (!moveResult.valid) {
-                return;
-            }
 
             // -- Move the piece in a copy of the match's board.
             // We can then check for the Check status.
