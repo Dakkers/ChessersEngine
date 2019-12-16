@@ -63,7 +63,7 @@ namespace ChessersEngine {
             };
 
             potentialTilesForMovement = board.GetPotentialTilesForMovement(chessman);
-            //Match.Log($"Potential: {string.Join(", ", potentialTilesForMovement.Select((t) => t.id))}");
+            //Match.Log($"Potential for chessman @ {fromTile.id} ({toTile.id}): {string.Join(", ", potentialTilesForMovement.Select((t) => t.id))}");
         }
 
         #region Move types

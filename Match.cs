@@ -61,6 +61,7 @@ namespace ChessersEngine {
         long winningPlayerId = -1;
         bool isDraw = false;
         bool isResignation = false;
+        System.Random rng = new System.Random();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="T:ChessersEngine.Match"/> class.
@@ -316,8 +317,12 @@ namespace ChessersEngine {
 
             MoveAttempt fallbackMove = null;
 
-            foreach (var chessman in board.GetActiveChessmenOfColor(color)) {
+            List<Chessman> availableChessmen = board.GetActiveChessmenOfColor(color);
+            Helpers.Shuffle(rng, availableChessmen);
+
+            foreach (var chessman in availableChessmen) {
                 List<Tile> potentialTiles = board.GetPotentialTilesForMovement(chessman);
+                Helpers.Shuffle(rng, potentialTiles);
                 //Match.Log($"Looking @ chessman for tile {committedBoard.GetRowColumn(chessman.GetUnderlyingTile())}. Found:" +
                 //$"{potentialTiles.Count} potential moves.");
 
@@ -396,13 +401,29 @@ namespace ChessersEngine {
             return moves;
         }
 
-        public void UndoMoves () {
-            int i = pendingMoveResults.Count - 1;
-            while (i >= 0) {
-                pendingBoard.UndoMove(pendingMoveResults[i]);
-                pendingMoveResults.RemoveAt(i);
-                i--;
+        public List<MoveResult> DoBestMovesForCurrentPlayer () {
+            List<MoveAttempt> moveAttempts = CalculateBestMove();
+            List<MoveResult> moveResults = new List<MoveResult>();
+
+            foreach (var attempt in moveAttempts) {
+                MoveResult moveResult = MoveChessman(attempt);
+                //Match.Log(moveResult);
+
+                if (moveResult == null || !moveResult.valid) {
+                    break;
+                }
+
+                moveResults.Add(moveResult);
             }
+
+            return moveResults;
+        }
+
+        public void UndoMoves () {
+            for (int i = pendingMoveResults.Count - 1; i >= 0; i--) {
+                pendingBoard.UndoMove(pendingMoveResults[i]);
+            }
+            pendingMoveResults.Clear();
         }
 
         #endregion

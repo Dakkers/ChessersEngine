@@ -1080,15 +1080,15 @@ namespace ChessersEngine {
             (int row, int col) = GetRowColumn(tile);
 
             List<Tile> potentialTiles = new List<Tile> {
-                GetTileByRowColumn(col - 2, row - 1),
-                GetTileByRowColumn(col + 2, row - 1),
-                GetTileByRowColumn(col - 2, row + 1),
-                GetTileByRowColumn(col + 2, row + 1),
+                GetTileByRowColumn(row - 2, col - 1),
+                GetTileByRowColumn(row + 2, col - 1),
+                GetTileByRowColumn(row - 2, col + 1),
+                GetTileByRowColumn(row + 2, col + 1),
 
-                GetTileByRowColumn(col - 1, row - 2),
-                GetTileByRowColumn(col + 1, row - 2),
-                GetTileByRowColumn(col - 1, row + 2),
-                GetTileByRowColumn(col + 1, row + 2),
+                GetTileByRowColumn(row - 1, col - 2),
+                GetTileByRowColumn(row + 1, col - 2),
+                GetTileByRowColumn(row - 1, col + 2),
+                GetTileByRowColumn(row + 1, col + 2),
             };
 
             return potentialTiles.Where((t) => {
