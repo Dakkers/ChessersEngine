@@ -225,6 +225,14 @@ namespace ChessersEngine {
             return winningPlayerId;
         }
 
+        public ColorEnum GetColorOfPlayer (long playerId) {
+            return (playerId == blackPlayerId) ? ColorEnum.BLACK : ColorEnum.WHITE;
+        }
+
+        public ColorEnum GetWinnerColor () {
+            return GetColorOfPlayer(winningPlayerId);
+        }
+
         public bool HasWinner () {
             return winningPlayerId >= 0;
         }
@@ -301,6 +309,8 @@ namespace ChessersEngine {
         (List<MoveAttempt>, int) MinimaxHelper (
             Board board,
             int depth,
+            int alpha,
+            int beta,
             bool isMaximizingPlayer
         ) {
             if (depth == 0 || board.IsGameOver()) {
@@ -326,6 +336,8 @@ namespace ChessersEngine {
                 //Match.Log($"Looking @ chessman for tile {committedBoard.GetRowColumn(chessman.GetUnderlyingTile())}. Found:" +
                 //$"{potentialTiles.Count} potential moves.");
 
+                bool exitEarly = false;
+
                 foreach (var tile in potentialTiles) {
                     MoveAttempt moveAttempt = new MoveAttempt {
                         pieceGuid = chessman.guid,
@@ -348,29 +360,43 @@ namespace ChessersEngine {
                     // that the player stops here, or continues moving.
                     // TODO! -- this should be doable by just passing in `isMaximizingPlayer` is the same value...
 
-                    (List<MoveAttempt> moves, int value) = MinimaxHelper(
+                    // `moves` is a list of moves the current player (based off of `isMaximizingPlayer`) should
+                    // make to achieve a board value of `value`
+                    (List<MoveAttempt> _, int value) = MinimaxHelper(
                         board,
                         depth - 1,
+                        alpha,
+                        beta,
                         !isMaximizingPlayer
                     );
-
-                    moves = moves ?? new List<MoveAttempt>();
-                    moves.Add(moveAttempt);
 
                     if (isMaximizingPlayer) {
                         if (value > bestValueSoFar) {
                             bestValueSoFar = value;
-                            bestMoves = moves;
+                            bestMoves = new List<MoveAttempt>() { moveAttempt };
                         }
+
+                        alpha = System.Math.Max(alpha, value);
                     } else {
                         if (value < bestValueSoFar) {
                             //Match.Log($"  Overriding best choice: {value} {moves?.Count}");
                             bestValueSoFar = value;
-                            bestMoves = moves;
+                            bestMoves = new List<MoveAttempt>() { moveAttempt };
                         }
+
+                        beta = System.Math.Min(beta, value);
                     }
 
                     board.UndoMove(moveResult);
+
+                    if (beta <= alpha) {
+                        exitEarly = true;
+                        break;
+                    }
+                }
+
+                if (exitEarly) {
+                    break;
                 }
             }
 
@@ -389,13 +415,17 @@ namespace ChessersEngine {
 
             (List<MoveAttempt> moves, int value) = MinimaxHelper(
                 boardClone,
-                1,
+                2,
+                int.MinValue,
+                int.MaxValue,
                 isMaximizingPlayer: turnColor == ColorEnum.WHITE
             );
 
             //Log($"BEST CALCULATION: {value} NUM MOVES TO MAKE: {moves?.Count}");
             //if (moves?.Count > 0) {
-            //    Log(moves[0]);
+            //    foreach (var m in moves) {
+            //        Log(m);
+            //    }
             //}
 
             return moves;

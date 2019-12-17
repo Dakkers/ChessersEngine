@@ -1232,6 +1232,7 @@ namespace ChessersEngine {
                 if (
                     potentialTile == null ||
                     jumpOverTile == null ||
+                    potentialTile.IsOccupied() ||
                     !jumpOverTile.IsOccupied() ||
                     jumpOverTile.GetPiece().IsSameColor(chessman)
                 ) {
