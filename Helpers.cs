@@ -129,8 +129,8 @@ namespace ChessersEngine {
 
         #endregion
 
-        public static int GetTileIdFromCoords (int x, int y) {
-            return (8 * y) + x;
+        public static int GetTileIdFromCoords (int col, int row) {
+            return (8 * row) + col;
         }
 
         #region Chessman color
@@ -224,6 +224,10 @@ namespace ChessersEngine {
             return (row + 1).ToString();
         }
 
+        public static int ConvertRankToRow (char rank) {
+            return int.Parse(rank.ToString()) - 1;
+        }
+
         public static string ConvertColumnToFile (int column) {
             switch (column + 1) {
                 case 1:
@@ -247,10 +251,33 @@ namespace ChessersEngine {
             }
         }
 
+        public static int ConvertFileToColumn (char file) {
+            switch (file) {
+                case 'a':
+                    return 0;
+                case 'b':
+                    return 1;
+                case 'c':
+                    return 2;
+                case 'd':
+                    return 3;
+                case 'e':
+                    return 4;
+                case 'f':
+                    return 5;
+                case 'g':
+                    return 6;
+                case 'h':
+                    return 7;
+                default:
+                    throw new System.Exception($"Invalid file: {file}");
+            }
+        }
+
         public static string ConvertChessmanKindToNotationSymbol (ChessmanKindEnum kind) {
             switch (kind) {
                 case ChessmanKindEnum.PAWN:
-                    return "";
+                    return "P";
                 case ChessmanKindEnum.ROOK:
                     return "R";
                 case ChessmanKindEnum.KNIGHT:

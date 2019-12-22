@@ -9,10 +9,6 @@ namespace ChessersEngine {
         Dictionary<int, Tile> tilesById;
         Dictionary<int, Chessman> chessmenById;
 
-        readonly List<string> moves = new List<string>();
-
-        readonly List<MoveResult> pendingMoveResults = new List<MoveResult>();
-
         readonly int numColumns = 8;
         readonly int numRows = 8;
         readonly int rightDiagonalDelta;
@@ -1054,23 +1050,34 @@ namespace ChessersEngine {
             }
 
             Tile tileForLongMovement = GetTile(tile.id + 2 * modifier * GetNumberOfColumns());
-            if (!tileForLongMovement.IsOccupied() && !tileForRegularMovement.IsOccupied()) {
+            if (
+                !chessman.hasMoved &&
+                !tileForLongMovement.IsOccupied() &&
+                !tileForRegularMovement.IsOccupied()
+            ) {
                 potentialTiles.Add(tileForLongMovement);
             }
 
             Tile captureTile1 = null, captureTile2 = null;
 
-            if (!IsTileInLeftmostColumn(tile)) {
+            if (!IsTileInRightmostColumn(tile)) {
                 captureTile1 = GetTile(tile.id + modifier * GetPositiveDiagonalDelta());
             }
-            if (!IsTileInRightmostColumn(tile)) {
+            if (!IsTileInLeftmostColumn(tile)) {
                 captureTile2 = GetTile(tile.id + modifier * GetNegativeDiagonalDelta());
             }
 
-            foreach (var t in new Tile[] { captureTile1, captureTile2 }) {
-                if (t != null && t.IsOccupied() && !t.GetPiece().IsSameColor(chessman)) {
-                    potentialTiles.Add(t);
+            foreach (Tile captureTile in new Tile[] { captureTile1, captureTile2 }) {
+                if (captureTile == null || !captureTile.IsOccupied() || captureTile.GetPiece().IsSameColor(chessman)) {
+                    continue;
                 }
+
+                (int rowDelta, int colDelta) = CalculateRowColumnDelta(tile, captureTile);
+                if (rowDelta != 1 || colDelta != 1) {
+                    continue;
+                }
+
+                potentialTiles.Add(captureTile);
             }
             return potentialTiles;
         }
@@ -1220,7 +1227,14 @@ namespace ChessersEngine {
 
             foreach (int d in regularMovementDeltas) {
                 Tile potentialTile = GetTileIfExists(tile.id + d);
-                if (potentialTile != null && !potentialTile.IsOccupied()) {
+                if (potentialTile == null) { continue; }
+
+                (int rowDelta, int colDelta) = CalculateRowColumnDelta(tile, potentialTile);
+                if (
+                    !potentialTile.IsOccupied() &&
+                    rowDelta == 1 &&
+                    colDelta == 1
+                ) {
                     potentialTiles.Add(potentialTile);
                 }
             }
@@ -1228,13 +1242,19 @@ namespace ChessersEngine {
             foreach (int d in jumpMovementDeltas) {
                 Tile potentialTile = GetTileIfExists(tile.id + d);
                 Tile jumpOverTile = GetTileIfExists(tile.id + (d / 2));
+                if (potentialTile == null || jumpOverTile == null) { continue; }
+
+                (int farRowDelta, int farColDelta) = CalculateRowColumnDelta(tile, potentialTile);
+                (int shortRowDelta, int shortColDelta) = CalculateRowColumnDelta(tile, jumpOverTile);
 
                 if (
-                    potentialTile == null ||
-                    jumpOverTile == null ||
                     potentialTile.IsOccupied() ||
                     !jumpOverTile.IsOccupied() ||
-                    jumpOverTile.GetPiece().IsSameColor(chessman)
+                    jumpOverTile.GetPiece().IsSameColor(chessman) ||
+                    farRowDelta != 2 ||
+                    farColDelta != 2 ||
+                    shortRowDelta != 1 ||
+                    shortColDelta != 1
                 ) {
                     continue;
                 }
@@ -1270,6 +1290,16 @@ namespace ChessersEngine {
             }
 
             return new List<Tile>();
+        }
+
+        public (int, int) CalculateRowColumnDelta (Tile tile1, Tile tile2) {
+            (int row1, int col1) = GetRowColumn(tile1);
+            (int row2, int col2) = GetRowColumn(tile2);
+
+            return (
+                Math.Abs(row1 - row2),
+                Math.Abs(col1 - col2)
+            );
         }
 
         #endregion

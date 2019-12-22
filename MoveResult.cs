@@ -98,8 +98,8 @@ namespace ChessersEngine {
             // Start with e.g. "Qh4"
             string moveNotation = (
                 Helpers.ConvertChessmanKindToNotationSymbol(chessmanKind) +
-                Helpers.ConvertRowToRank(fromRow) +
-                Helpers.ConvertColumnToFile(fromColumn)
+                Helpers.ConvertColumnToFile(fromColumn) +
+                Helpers.ConvertRowToRank(fromRow)
             );
 
             if (WasPieceCaptured()) {
@@ -113,8 +113,8 @@ namespace ChessersEngine {
 
             // "Qh4" becomes "Qh4e7"
             moveNotation += (
-                Helpers.ConvertRowToRank(toRow) +
-                Helpers.ConvertColumnToFile(toColumn)
+                Helpers.ConvertColumnToFile(toColumn) +
+                Helpers.ConvertRowToRank(toRow)
             );
 
             if (promotionOccurred) {
@@ -123,6 +123,66 @@ namespace ChessersEngine {
             }
 
             return moveNotation;
+        }
+
+        /// <summary>
+        /// Create a move result based off of <paramref name="notation"/>. It is NOT possible
+        /// to know which color this move was for from the notation alone; more context is required.
+        /// </summary>
+        /// <returns>The notation.</returns>
+        /// <param name="notation">Notation.</param>
+        public static MoveResult CreatePartialMoveResultFromNotation (string notation) {
+            MoveResult moveResult = new MoveResult();
+
+            Queue<char> chars = new Queue<char>(notation);
+            char letter;
+
+            // -- First letter = the chessman kind that moved
+            char kindChar = chars.Dequeue();
+            ChessmanKindEnum kind = ChessmanKindEnum.PAWN;
+
+            switch (kindChar) {
+                case 'P':
+                    kind = ChessmanKindEnum.PAWN;
+                    break;
+                case 'R':
+                    kind = ChessmanKindEnum.ROOK;
+                    break;
+                case 'N':
+                    kind = ChessmanKindEnum.KNIGHT;
+                    break;
+                case 'K':
+                    kind = ChessmanKindEnum.KING;
+                    break;
+                case 'Q':
+                    kind = ChessmanKindEnum.QUEEN;
+                    break;
+                case 'B':
+                    kind = ChessmanKindEnum.BISHOP;
+                    break;
+                default:
+                    throw new System.Exception($"Invalid chessman letter: {notation[0]}");
+            }
+
+            moveResult.chessmanKind = kind;
+
+            // -- Second/third letter = FROM tile (file/rank)
+            char fromFile = chars.Dequeue();
+            moveResult.fromColumn = Helpers.ConvertFileToColumn(fromFile);
+            char fromRank = chars.Dequeue();
+            moveResult.fromRow = Helpers.ConvertRankToRow(fromRank);
+
+            // -- Fourth letter can be jump or capture symbol
+            char toFile = chars.Dequeue();
+            if (toFile == 'x' || toFile == 'y') {
+                toFile = chars.Dequeue();
+            }
+
+            moveResult.toColumn = Helpers.ConvertFileToColumn(toFile);
+            char toRank = chars.Dequeue();
+            moveResult.toRow = Helpers.ConvertRankToRow(toRank);
+
+            return moveResult;
         }
     }
 }

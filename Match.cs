@@ -54,6 +54,8 @@ namespace ChessersEngine {
         Board pendingBoard;
         Board committedBoard;
 
+        // If multiple moves are made in a single turn, they will be separated by commas
+        // Each element is a different turn
         List<string> moves = new List<string>();
 
         public long whitePlayerId = -1;
@@ -87,10 +89,6 @@ namespace ChessersEngine {
             committedBoard = new Board(pieces);
         }
 
-        // TODO
-        public void Save () {
-        }
-
         void SetTurnColorFromPlayerId (long playerId) {
             if (playerId == whitePlayerId) {
                 turnColor = ColorEnum.WHITE;
@@ -116,9 +114,13 @@ namespace ChessersEngine {
                 winningPlayerId = blackPlayerId;
             }
 
+
+            List<string> movesForTurn = new List<string>();
             foreach (MoveResult moveResult in pendingMoveResults) {
-                moves.Add(moveResult.CreateNotation());
+                movesForTurn.Add(moveResult.CreateNotation());
             }
+
+            moves.Add(string.Join(",", movesForTurn));
 
             pendingMoveResults.Clear();
         }
@@ -294,6 +296,22 @@ namespace ChessersEngine {
         public void Promote (MoveResult moveResult) {
             Chessman c = pendingBoard.GetChessman(moveResult.pieceId);
             c.kind = moveResult.promotionRank;
+        }
+
+        public List<MoveResult> GetMovesForLastTurn () {
+            if (moves.Count == 0) {
+                return null;
+            }
+
+            List<MoveResult> result = new List<MoveResult>();
+            string[] movesOfLastTurn = moves[moves.Count - 1].Split(',');
+
+            for (int i = 0; i < movesOfLastTurn.Length; i++) {
+                string moveNotation = movesOfLastTurn[i];
+                result.Add(MoveResult.CreatePartialMoveResultFromNotation(moveNotation));
+            }
+
+            return result;
         }
 
         #endregion

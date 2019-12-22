@@ -440,12 +440,6 @@ namespace ChessersEngine {
                 }
             }
 
-            // Most moves result in a change of whose turn it is, EXCEPT for jumping
-            bool shouldChangeTurns = !moveResult.WasPieceJumped();
-            if (shouldChangeTurns) {
-                moveResult.turnChanged = true;
-            }
-
             // -- Handle capturing/jump chessman removal
             Chessman pieceToRemove = null;
 
@@ -460,6 +454,30 @@ namespace ChessersEngine {
                 if (pieceToRemove.IsKing()) {
                     moveResult.isWinningMove = true;
                 }
+            }
+
+            // Most moves result in a change of whose turn it is, EXCEPT for jumping
+            bool shouldChangeTurns = !moveResult.WasPieceJumped();
+            if (
+                moveResult.WasPieceCaptured() &&
+                moveResult.polarityChanged &&
+                chessman.IsChecker()
+            ) {
+                // The piece moved, and captured another piece, and became a checker in the process
+                // We need to check for the potential of a capture-jump
+                List<Tile> nextMovePotentialTiles = board.GetPotentialTilesForMovement(chessman);
+                foreach (Tile nextTile in nextMovePotentialTiles) {
+                    (int nextRowDelta, int nextColDelta) = board.CalculateRowColumnDelta(nextTile, toTile);
+
+                    if (nextRowDelta == 2 || nextColDelta == 2) {
+                        shouldChangeTurns = false;
+                        break;
+                    }
+                }
+            }
+
+            if (shouldChangeTurns) {
+                moveResult.turnChanged = true;
             }
         }
     }
