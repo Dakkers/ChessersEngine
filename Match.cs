@@ -490,6 +490,7 @@ namespace ChessersEngine {
                     committedChessman.RemoveUnderlyingTileReference();
                 } else {
                     committedChessman.SetUnderlyingTile(GetCommittedTile(cs.location));
+                    committedChessman.GetUnderlyingTile().SetPiece(committedChessman);
                 }
             }
 
