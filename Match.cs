@@ -5,21 +5,22 @@ using UnityEngine;
 
 namespace ChessersEngine {
     public class MatchData {
-        public long blackPlayerId;
+        public int blackPlayerId;
 
         /// <summary>
         /// The ID of the user whose turn it is. (One of blackPlayerId, whitePlayerId)
         /// </summary>
-        public long currentTurn;
+        public ChessersEngine.ColorEnum currentTurn;
 
         public bool isDraw = false;
         public bool isResignation = false;
 
-        public long matchId;
+        public int matchId;
+        public string matchGuid;
 
         public List<ChessmanSchema> pieces;
-        public long whitePlayerId;
-        public long winningPlayerId = -1;
+        public int whitePlayerId;
+        public int winningPlayerId = -1;
     }
 
     public struct MatchCloningResult {
@@ -28,7 +29,7 @@ namespace ChessersEngine {
     }
 
     public class Match {
-        long id = -1;
+        int id = -1;
 
         /// <summary>
         /// The "effective" turn color. When a player's turn begins and they make a move
@@ -58,9 +59,9 @@ namespace ChessersEngine {
         // Each element is a different turn
         List<string> moves = new List<string>();
 
-        public long whitePlayerId = -1;
-        public long blackPlayerId = -1;
-        long winningPlayerId = -1;
+        public int whitePlayerId = -1;
+        public int blackPlayerId = -1;
+        int winningPlayerId = -1;
         bool isDraw = false;
         bool isResignation = false;
         System.Random rng = new System.Random();
@@ -80,7 +81,7 @@ namespace ChessersEngine {
                 pieces = data.pieces;
                 whitePlayerId = data.whitePlayerId;
                 blackPlayerId = data.blackPlayerId;
-                SetTurnColorFromPlayerId(data.currentTurn);
+                turnColor = data.currentTurn;
             }
 
             committedTurnColor = turnColor;
@@ -494,7 +495,7 @@ namespace ChessersEngine {
                 }
             }
 
-            SetTurnColorFromPlayerId(newMatchData.currentTurn);
+            turnColor = newMatchData.currentTurn;
             committedTurnColor = turnColor;
 
             ResetMatchState();
@@ -504,7 +505,7 @@ namespace ChessersEngine {
             return new MatchData {
                 pieces = committedBoard.GetChessmanSchemas(),
                 blackPlayerId = blackPlayerId,
-                currentTurn = Helpers.ConvertColorEnumToInt(turnColor),
+                currentTurn = turnColor,
                 isDraw = isDraw,
                 isResignation = isResignation,
                 matchId = id,

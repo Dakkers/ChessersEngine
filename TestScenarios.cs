@@ -148,7 +148,7 @@ namespace ChessersEngine {
         public static MatchData Checkmate1 () {
             // If Rook @ 56 captures the pawn @ 32, White will be in checkmate.
             return new MatchData {
-                currentTurn = Constants.ID_BLACK,
+                currentTurn = ColorEnum.BLACK,
                 matchId = 1,
                 whitePlayerId = 0,
                 blackPlayerId = 1,
@@ -169,7 +169,7 @@ namespace ChessersEngine {
             // Black Rook @ 39 captures pawn @ 32.
             // White Rook @ 15 moves to 8 to block.
             return new MatchData {
-                currentTurn = Constants.ID_BLACK,
+                currentTurn = ColorEnum.BLACK,
                 matchId = 1,
                 whitePlayerId = 0,
                 blackPlayerId = 1,
@@ -190,7 +190,7 @@ namespace ChessersEngine {
             // Black Bishop @ 43 moves to 36.
             // White Bishop @ 22 moves to 36 to capture it.
             return new MatchData {
-                currentTurn = Constants.ID_BLACK,
+                currentTurn = ColorEnum.BLACK,
                 matchId = 1,
                 whitePlayerId = 0,
                 blackPlayerId = 1,
@@ -211,7 +211,7 @@ namespace ChessersEngine {
             // Pawn @ 52 moves to 36.
             // King can capture the pawn but there's another pawn to capture it.
             return new MatchData {
-                currentTurn = Constants.ID_BLACK,
+                currentTurn = ColorEnum.BLACK,
                 matchId = 1,
                 whitePlayerId = 0,
                 blackPlayerId = 1,

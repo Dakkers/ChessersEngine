@@ -135,7 +135,6 @@ namespace ChessersEngine {
             MoveResult moveResult = new MoveResult();
 
             Queue<char> chars = new Queue<char>(notation);
-            char letter;
 
             // -- First letter = the chessman kind that moved
             char kindChar = chars.Dequeue();
