@@ -5,7 +5,7 @@ using System.Linq;
 namespace ChessersEngine {
     public class Board {
         public readonly long id;
-        List<ChessmanSchema> pieces;
+        readonly List<ChessmanSchema> pieces;
         Dictionary<int, Tile> tilesById;
         Dictionary<int, Chessman> chessmenById;
 
@@ -290,7 +290,7 @@ namespace ChessersEngine {
         /// <param name="row">Row.</param>
         /// <param name="col">Col.</param>
         public Tile GetTileByRowColumn (int row, int col) {
-            if (row < 0 || row > GetNumberOfRows() || col < 0 || col > GetNumberOfColumns()) {
+            if (row < 0 || row >= GetNumberOfRows() || col < 0 || col >= GetNumberOfColumns()) {
                 return null;
             }
 
@@ -1042,6 +1042,9 @@ namespace ChessersEngine {
         List<Tile> GetPotentialTilesForPawnMovement (Chessman chessman) {
             List<Tile> potentialTiles = new List<Tile>();
             Tile tile = chessman.GetUnderlyingTile();
+            int row = GetRow(tile);
+            int col = GetColumn(tile);
+
             int modifier = (chessman.IsBlack()) ? -1 : 1;
 
             Tile tileForRegularMovement = GetTile(tile.id + modifier * GetNumberOfColumns());
@@ -1058,14 +1061,27 @@ namespace ChessersEngine {
                 potentialTiles.Add(tileForLongMovement);
             }
 
-            Tile captureTile1 = null, captureTile2 = null;
+            //int? captureDelta1 = null, captureDelta2 = null;
 
-            if (!IsTileInRightmostColumn(tile)) {
-                captureTile1 = GetTile(tile.id + modifier * GetPositiveDiagonalDelta());
-            }
-            if (!IsTileInLeftmostColumn(tile)) {
-                captureTile2 = GetTile(tile.id + modifier * GetNegativeDiagonalDelta());
-            }
+            //if (chessman.IsBlack()) {
+            //    // The rightmost column is actually the left side for black...
+            //    if (!IsTileInRightmostColumn(tile)) {
+            //        captureDelta1 = -1 * GetNegativeDiagonalDelta();
+            //    }
+            //    if (!IsTileInLeftmostColumn(tile)) {
+            //        captureDelta2 = -1 * GetPositiveDiagonalDelta();
+            //    }
+            //} else {
+            //    if (!IsTileInRightmostColumn(tile)) {
+            //        captureDelta1 = GetPositiveDiagonalDelta();
+            //    }
+            //    if (!IsTileInLeftmostColumn(tile)) {
+            //        captureDelta2 = GetNegativeDiagonalDelta();
+            //    }
+            //}
+
+            Tile captureTile1 = GetTileByRowColumn(row + modifier, col + 1);
+            Tile captureTile2 = GetTileByRowColumn(row + modifier, col - 1);
 
             foreach (Tile captureTile in new Tile[] { captureTile1, captureTile2 }) {
                 if (captureTile == null || !captureTile.IsOccupied() || captureTile.GetPiece().IsSameColor(chessman)) {

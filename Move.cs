@@ -121,7 +121,6 @@ namespace ChessersEngine {
         #endregion
 
         #region Check/Checkmate
-        /*
 
         int ConvertChessmanToSortScore (Chessman c) {
             if (c.IsChecker()) {
@@ -147,13 +146,13 @@ namespace ChessersEngine {
 
         }
 
-        List<Tile> CalculateCheckTiles (int colorId, bool exitEarly) {
+        List<Tile> CalculateCheckTiles (ColorEnum color, bool exitEarly) {
             // -- DIRECT ATTACK
             // Check that the king cannot be attacked directly.
 
             List<Tile> result = new List<Tile>();
 
-            Chessman kingChessman = (colorId == Constants.ID_WHITE) ?
+            Chessman kingChessman = (color == ColorEnum.WHITE) ?
                 board.GetWhiteKing() :
                 board.GetBlackKing();
 
@@ -199,7 +198,7 @@ namespace ChessersEngine {
 
                     // We found a piece that is of the opposite colour.
                     //
-                    if (occupant.colorId != kingChessman.colorId) {
+                    if (occupant.color != kingChessman.color) {
                         result.Add(tileToCheck);
                         if (exitEarly) {
                             return result;
@@ -244,9 +243,11 @@ namespace ChessersEngine {
         /// </summary>
         /// <returns><c>true</c>, if moving player in check was ised, <c>false</c> otherwise.</returns>
         bool IsMovingPlayerInCheck () {
-            List<Tile> result = (CalculateCheckTiles(chessman.colorId, exitEarly: true));
+            List<Tile> result = (CalculateCheckTiles(chessman.color, exitEarly: true));
             return result.Count > 0;
         }
+
+        /*
 
         bool IsOpposingPlayerCheckmated (List<Tile> tilesThatCheckOpposingPlayer) {
             List<Chessman> chessmenForOpposingPlayer = board.GetActiveChessmenOfColor(Helpers.ConvertColorIntToEnum(opposingColor));
@@ -346,11 +347,11 @@ namespace ChessersEngine {
             toTile.SetPiece(chessman);
             chessman.SetUnderlyingTile(toTile);
 
-            //if (IsMovingPlayerInCheck()) {
-            //    moveResult.valid = false;
-            //    Match.Log("Moving player is in check.");
-            //    return;
-            //}
+            if (IsMovingPlayerInCheck()) {
+                moveResult.valid = false;
+                Match.Log("Moving player is in check.");
+                return;
+            }
 
             // -- Completely valid!
             PostValidationHandler();
