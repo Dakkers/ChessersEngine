@@ -4,7 +4,7 @@
 # build
 [Oo]bj/
 [Bb]in/
-!bin/Release/netstandard2.0/
+!bin/
 packages/
 TestResults/
 
