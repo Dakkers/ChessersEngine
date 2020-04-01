@@ -19,6 +19,7 @@ namespace ChessersEngine {
         public string matchGuid;
 
         public List<ChessmanSchema> pieces;
+        public List<ChessmanSchemaMinified> piecesMinified;
         public int whitePlayerId;
         public int winningPlayerId = -1;
     }
