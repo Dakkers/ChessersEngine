@@ -16,7 +16,7 @@
     public class Chessman {
         public ColorEnum color;
 
-        public long guid;
+        public int guid;
         public bool hasMoved = false;
         /// <summary>
         /// Represents whether or not the chessman is still in play.
