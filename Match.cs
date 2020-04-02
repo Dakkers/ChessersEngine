@@ -302,6 +302,7 @@ namespace ChessersEngine {
         }
 
         public List<MoveResult> GetMovesForLastTurn () {
+            Match.Log($"moves.Count = {moves.Count}");
             if (moves.Count == 0) {
                 return null;
             }
@@ -312,6 +313,7 @@ namespace ChessersEngine {
             for (int i = 0; i < movesOfLastTurn.Length; i++) {
                 string moveNotation = movesOfLastTurn[i];
                 result.Add(MoveResult.CreatePartialMoveResultFromNotation(moveNotation));
+                Match.Log($"move_{i} | {moveNotation} | {result[i]}");
             }
 
             return result;
@@ -521,6 +523,8 @@ namespace ChessersEngine {
         public static void Log (object s) {
 #if UNITY_EDITOR
             Debug.Log(s.ToString());
+#else
+            System.Console.WriteLine(s.ToString());
 #endif
         }
     }
