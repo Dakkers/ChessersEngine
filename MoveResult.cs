@@ -20,7 +20,7 @@ namespace ChessersEngine {
         public long playerId { get; set; }
 
         public int pieceId { get; set; }
-        public long pieceGuid { get; set; }
+        public int pieceGuid { get; set; }
         public int fromTileId { get; set; }
         public int tileId { get; set; }
         public bool turnChanged { get; set; }
@@ -173,8 +173,12 @@ namespace ChessersEngine {
 
             // -- Fourth letter can be jump or capture symbol
             char toFile = chars.Dequeue();
-            if (toFile == 'x' || toFile == 'y') {
-                toFile = chars.Dequeue();
+            if (toFile == 'x') {
+                //moveResult.capturedPieceId = int.MaxValue;
+                chars.Dequeue();
+            } else if (toFile == 'y') {
+                //moveResult.jumpedPieceId = int.MaxValue;
+                chars.Dequeue();
             }
 
             moveResult.toColumn = Helpers.ConvertFileToColumn(toFile);

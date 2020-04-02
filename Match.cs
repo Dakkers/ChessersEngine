@@ -312,7 +312,17 @@ namespace ChessersEngine {
 
             for (int i = 0; i < movesOfLastTurn.Length; i++) {
                 string moveNotation = movesOfLastTurn[i];
-                result.Add(MoveResult.CreatePartialMoveResultFromNotation(moveNotation));
+                MoveResult partialResult = MoveResult.CreatePartialMoveResultFromNotation(moveNotation);
+
+                Tile fromTile = committedBoard.GetTileIfExists(partialResult.fromRow, partialResult.fromColumn);
+                Tile toTile = committedBoard.GetTileIfExists(partialResult.toRow, partialResult.toColumn);
+                Chessman chessmanThatMoved = toTile.GetPiece();
+
+                partialResult.pieceId = chessmanThatMoved.id;
+                partialResult.tileId = toTile.id;
+                partialResult.fromTileId = fromTile.id;
+                result.Add(partialResult);
+
                 Match.Log($"move_{i} | {moveNotation} | {result[i]}");
             }
 

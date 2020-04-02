@@ -220,6 +220,8 @@ namespace ChessersEngine {
                 (promotionRank == ChessmanKindEnum.KNIGHT);
         }
 
+        #region Notation
+
         public static string ConvertRowToRank (int row) {
             return (row + 1).ToString();
         }
@@ -292,6 +294,8 @@ namespace ChessersEngine {
                     throw new System.Exception($"Invalid chessman kind: {kind}");
             }
         }
+
+        #endregion
 
         public static void Shuffle<T> (Random rng, List<T> array) {
             int n = array.Count;
