@@ -512,6 +512,7 @@ namespace ChessersEngine {
                 isDraw = isDraw,
                 isResignation = isResignation,
                 matchId = id,
+                moves = moves,
                 whitePlayerId = whitePlayerId,
                 winningPlayerId = winningPlayerId,
             };
