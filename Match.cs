@@ -18,6 +18,7 @@ namespace ChessersEngine {
         public int matchId;
         public string matchGuid;
 
+        public List<string> moves;
         public List<ChessmanSchema> pieces;
         public List<ChessmanSchemaMinified> piecesMinified;
         public int whitePlayerId;
@@ -498,6 +499,7 @@ namespace ChessersEngine {
 
             turnColor = newMatchData.currentTurn;
             committedTurnColor = turnColor;
+            moves = newMatchData.moves;
 
             ResetMatchState();
         }
