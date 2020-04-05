@@ -700,8 +700,8 @@ namespace ChessersEngine {
 
             Tile tileJumpedOnto = GetTile(tileJumpedOntoLocation);
             if (
-                (CalculateRowDelta(tile, attackingTile) != 1) ||
-                (CalculateColumnDelta(tile, attackingTile) != 1)
+                (CalculateRowDelta(tile, tileJumpedOnto) != 1) ||
+                (CalculateColumnDelta(tile, tileJumpedOnto) != 1)
             ) {
                 return false;
             }
