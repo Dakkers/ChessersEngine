@@ -537,5 +537,9 @@ namespace ChessersEngine {
             System.Console.WriteLine(s.ToString());
 #endif
         }
+
+        public static void Log (object s, int indent) {
+            Log($"{string.Concat(System.Linq.Enumerable.Repeat("    ", indent))}{s}");
+        }
     }
 }

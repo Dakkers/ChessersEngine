@@ -3,13 +3,21 @@ using System.Collections.Generic;
 using System.Linq;
 
 namespace ChessersEngine {
-    public enum Directionalities {
+    public enum Directionality {
         HORIZONTAL,
         VERTICAL,
         // Bottom-left <-> top-right, i.e. parallel with the line y = x
         POSITIVE_DIAGONAL,
         // Top-left <-> bottom-right, i.e. parallel with the line y = -x
-        NEGATIVE_DIAGONAL
+        NEGATIVE_DIAGONAL,
+        HORIZONTAL_LEFT,
+        HORIZONTAL_RIGHT,
+        VERTICAL_ABOVE,
+        VERTICAL_BELOW,
+        POSITIVE_DIAGONAL_ABOVE,
+        POSITIVE_DIAGONAL_BELOW,
+        NEGATIVE_DIAGONAL_ABOVE,
+        NEGATIVE_DIAGONAL_BELOW,
     };
 
     public struct MovementValidationEndResult {
@@ -142,8 +150,103 @@ namespace ChessersEngine {
             }
         }
 
-        void DetermineCheckMovements () {
+        void _RecursivelyFuckMeUp (
+            List<List<int>> result,
+            List<int> currentPath,
+            ColorEnum targetColor,
+            Tile tile,
+            HashSet<int> tilesToIgnore,
+            int depth = 1
+        ) {
+            Match.Log($"Current: {tile.id}", depth);
+            if (tile.IsOccupied()) {
+                // Regardless of which color piece is occupying the tile, this branch
+                // of the search tree ends as there is no way to jump onto an occupied
+                // tile.
 
+                if (!tile.GetPiece().IsSameColor(targetColor)) {
+                    Match.Log("Found a potential multijump...", depth + 1);
+                    // This is the piece that could capture the king!
+                    result.Add(new List<int>(currentPath));
+                } else {
+                    Match.Log("Found a potential capturejump...", depth + 1);
+                    // This piece could lead to a capture jump if it has the potential
+                    // to be captured
+                    if (board.CanChessmanBeCaptured(tile.GetPiece()).Count > 0) {
+                        result.Add(new List<int>(currentPath));
+                    }
+                }
+
+                return;
+            }
+
+            // Generate tiles that are 2 diagonal spaces away
+            (int row, int col) = board.GetRowColumn(tile);
+
+            int deltaNeg = board.GetNegativeDiagonalDelta();
+            int deltaPos = board.GetPositiveDiagonalDelta();
+
+            List<Tile> diagTiles = new List<Tile> {
+                board.GetTileByRowColumn(row + 2, col + 2),
+                board.GetTileByRowColumn(row + 2, col - 2),
+                board.GetTileByRowColumn(row - 2, col + 2),
+                board.GetTileByRowColumn(row - 2, col - 2),
+            };
+
+            int halfwayPointThreshold = (board.GetNumberOfRows() / 2) * board.GetNumberOfColumns();
+            //Match.Log($"{row},{col} -- {string.Join(" | ", diagTiles.Select((t) => $"{board.GetRow(t)},{board.GetColumn(t)}"))}");
+
+            // >= 32 is black... 4 * row length
+
+            foreach (Tile diagTile in diagTiles) {
+                if (diagTile == null || tilesToIgnore.Contains(diagTile.id)) {
+                    continue;
+                }
+
+                // The tile needs to be on the opposite side of the attacker in order for the
+                // attacker's pieces to actually jump
+
+                if (
+                    ((targetColor == ColorEnum.BLACK) && (diagTile.id < halfwayPointThreshold)) ||
+                    ((targetColor == ColorEnum.WHITE) && (diagTile.id >= halfwayPointThreshold))
+                ) {
+                    continue;
+                }
+
+                currentPath.Add(diagTile.id);
+                //Match.Log($"    Recursing on: {diagTile.id}");
+
+                _RecursivelyFuckMeUp(
+                    result,
+                    currentPath,
+                    targetColor,
+                    diagTile,
+                    new HashSet<int>(tilesToIgnore) { diagTile.id },
+                    depth: depth + 1
+                );
+
+                currentPath.RemoveAt(currentPath.Count - 1);
+            }
+        }
+
+        List<List<int>> RecursivelyFuckMeUp (
+            Tile baseTile,
+            ColorEnum targetColor,
+            HashSet<int> tilesToIgnore
+        ) {
+            // A list of lists of tile ids!
+            // Each nested list is a path that the attacking player would take to (capture-)multijump
+            List<List<int>> result = new List<List<int>>();
+
+            _RecursivelyFuckMeUp(
+                result,
+                currentPath: new List<int>(),
+                targetColor,
+                baseTile,
+                tilesToIgnore: new HashSet<int>(tilesToIgnore) { baseTile.id }
+            );
+
+            return result;
         }
 
         List<Tile> CalculateCheckTiles (ColorEnum color, bool exitEarly) {
@@ -156,12 +259,14 @@ namespace ChessersEngine {
                 board.GetWhiteKing() :
                 board.GetBlackKing();
 
-            result = result.Concat(board.CanChessmanBeCaptured(kingChessman, exitEarly)).ToList();
+            result = result.Concat(board.CanChessmanBeCaptured(kingChessman)).ToList();
+            //Match.Log($"Can be captured from: {string.Join(", ", result)}");
             if (exitEarly && result.Count > 0) {
                 return result;
             }
 
-            result = result.Concat(board.CanChessmanBeJumped(kingChessman, exitEarly)).ToList();
+            result = result.Concat(board.CanChessmanBeJumped(kingChessman)).ToList();
+            //Match.Log($"Can be jumped from: {string.Join(", ", result)}");
             if (exitEarly && result.Count > 0) {
                 return result;
             }
@@ -169,69 +274,54 @@ namespace ChessersEngine {
             // -- Validate jumping...
             Tile kingTile = kingChessman.GetUnderlyingTile();
 
-            Queue<Tile> tilesToCheckForLanding = new Queue<Tile>();
-            Dictionary<int, bool> checkedTilesForLanding = new Dictionary<int, bool>();
-            Dictionary<int, bool> checkedTilesForJumpingOver = new Dictionary<int, bool>();
+            // TODO: for capture-jumps, we only care about capture-jumps that are "direct", in that
+            // there is a piece diagonally adjacent to the king that gets captured, and then the king
+            // is jumped right after that.
+            //
+            // A capture jump that is also a multi jump (capture piece A, then jump piece B, then jump
+            // the king) is equivalent to a regular multi jump regarding the checks.
+            // As such, we'll split out the logic.
 
-            //checkedTiles.Add(kingTile.id, true);
+            List<Tile> diagTilesOfKing = board.GetDiagonallyAdjacentTiles(kingTile);
 
-            // Note... the tiles we initially search are the diagonally adjacent tiles to the
-            // king, but they must be unoccupied OR if they are, they must be of the same colour
-            // as the king. We ignored diagonally adjacent tiles with the opposite colour pieces
-            // because if they are able to attack the king in any way, the validation would fail
-            // above. However, if the validation above passed and we are at this point in the
-            // code, those pieces cannot attack the king directly. Due to the mechanics of the
-            // game, they also cannot be used in multi-jumps or capture-multi-jump below.
-            foreach (var tile in board.GetDiagonallyAdjacentTiles(kingTile)) {
-                if (!tile.IsOccupied() || !(tile.GetPiece().IsSameColor(kingChessman))) {
-                    tilesToCheckForLanding.Enqueue(tile);
-                    checkedTilesForLanding.Add(tile.id, true);
-                }
-            }
+            foreach (var diagTile in diagTilesOfKing) {
+                // A tile diagonally adjacent from the king could represent one of two things:
+                //
+                //    1. the tile that a piece lands on BEFORE capturing the king
+                //    2. same, but AFTER capturing the king
+                //
+                // `diagTile` will be #1.
 
-            while (tilesToCheckForLanding.Count > 0) {
-                Tile tileToCheck = tilesToCheckForLanding.Dequeue();
-                //Match.Log($"Checking tile: {tileToCheck.id}");
+                int diagRow = board.GetRow(diagTile);
+                int diagCol = board.GetColumn(diagTile);
 
-                if (tileToCheck.IsOccupied()) {
-                    Chessman occupant = tileToCheck.GetPiece();
+                // Get the tile that is 2 diagonal steps away from this tile,
+                // in the direction of the king.
+                int rowDiff = board.GetRow(kingTile) - diagRow;
+                int colDiff = board.GetColumn(kingTile) - diagCol;
 
-                    // We found a piece that is of the opposite colour.
-                    //
-                    if (occupant.color != kingChessman.color) {
-                        result.Add(tileToCheck);
-                        if (exitEarly) {
-                            return result;
-                        } else {
-                            continue;
-                        }
-                    }
+                Tile tileToLandOn = board.GetTileByRowColumn(diagRow + (2 * rowDiff), diagCol + (2 * colDiff));
 
-                    // If the tile is occupied by a piece of the same colour, then
-                    // we have to check if it can be captured.
-                    // If it can, then a capture-jump can occur.
-
-                    result = result.Concat(board.CanChessmanBeCaptured(occupant, exitEarly)).ToList();
-                    if (exitEarly && result.Count > 0) {
-                        return result;
-                    }
-
+                if (tileToLandOn == null) {
+                    // out of bounds
+                    continue;
+                } else if (tileToLandOn.IsOccupied()) {
+                    // Can't jump onto an occupied tile!
                     continue;
                 }
 
+                Match.Log($"Starting at: {diagTile.id}");
+                // Ignore the tile to land on because it was including it as part
+                // of a potential path, which is encapsulated by a different path
+                var crazyResult = RecursivelyFuckMeUp(
+                    diagTile,
+                    color,
+                    new HashSet<int> { tileToLandOn.id }
+                );
 
-                List<Tile> potentialJumpLocations = board.GetPotentialJumpLocationsForTile(tileToCheck);
-                foreach (Tile potentialJumpTile in potentialJumpLocations) {
-                    if (checkedTilesForLanding.ContainsKey(potentialJumpTile.id)) {
-                        continue;
-                    }
-
-                    //Match.Log($"    Potential jump location: {potentialJumpTile.id}");
-
-                    tilesToCheckForLanding.Enqueue(potentialJumpTile);
-                    checkedTilesForLanding.Add(potentialJumpTile.id, true);
+                foreach (var path in crazyResult) {
+                    Match.Log(string.Join(", ", path));
                 }
-
             }
 
             return result;

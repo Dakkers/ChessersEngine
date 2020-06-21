@@ -285,5 +285,32 @@ namespace ChessersEngine {
                 }
             };
         }
+
+        #region Bugs
+
+        /// <summary>
+        /// False positive on being in check via jumping.
+        /// </summary>
+        /// <returns>The bug20200405.</returns>
+        public static MatchData Bug20200405 () {
+            var checker = TestScenarios.CreateBlackChecker(Constants.ID_BLACK_PAWN_1, 1);
+            checker.isKinged = true;
+
+            return new MatchData {
+                currentTurn = Constants.ID_WHITE,
+                matchId = 1,
+                whitePlayerId = 0,
+                blackPlayerId = 1,
+                pieces = new List<ChessmanSchema> {
+                    TestScenarios.CreateWhiteKing(3),
+                    TestScenarios.CreateWhiteQueen(19),
+
+                    checker,
+                    TestScenarios.CreateBlackKing(56),
+                }
+            };
+        }
+
+        #endregion
     }
 }

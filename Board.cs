@@ -324,16 +324,32 @@ namespace ChessersEngine {
             return GetTile(column + ((numColumns - 1) * numRows));
         }
 
+        public Tile GetTopTileOfColumn (int row, int column) {
+            return GetTopTileOfColumn(column);
+        }
+
         public Tile GetBottomTileOfColumn (int column) {
             return GetTile(column);
+        }
+
+        public Tile GetBottomTileOfColumn (int row, int column) {
+            return GetBottomTileOfColumn(column);
         }
 
         public Tile GetLeftmostTileOfRow (int row) {
             return GetTile(row * numColumns);
         }
 
+        public Tile GetLeftmostTileOfRow (int row, int col) {
+            return GetLeftmostTileOfRow(row);
+        }
+
         public Tile GetRightmostTileOfRow (int row) {
             return GetTile((row * numColumns) + (numColumns - 1));
+        }
+
+        public Tile GetRightmostTileOfRow (int row, int col) {
+            return GetRightmostTileOfRow(row);
         }
 
         Tile GetEndTileOfDiagonal (int row, int col, int rowStep, int colStep) {
@@ -368,6 +384,102 @@ namespace ChessersEngine {
 
         public Tile GetTopRightmostTileOfDiagonal (int row, int col) {
             return GetEndTileOfDiagonal(row, col, 1, 1);
+        }
+
+        public List<Tile> GetTilesInDirection (
+            Tile baseTile,
+            Directionality dir
+        ) {
+            List<Tile> result = new List<Tile>();
+            (int row, int col) = GetRowColumn(baseTile);
+            int rowStart = row, colStart = col;
+
+            Func<int, int, Tile> f = null;
+
+            if (dir == Directionality.VERTICAL_ABOVE) {
+                rowStart = row + 1;
+                f = GetTopTileOfColumn;
+            } else if (dir == Directionality.VERTICAL_BELOW) {
+                rowStart = row - 1;
+                f = GetBottomTileOfColumn;
+            } else if (dir == Directionality.HORIZONTAL_LEFT) {
+                colStart = col - 1;
+                f = GetLeftmostTileOfRow;
+            } else if (dir == Directionality.HORIZONTAL_RIGHT) {
+                colStart = col + 1;
+                f = GetRightmostTileOfRow;
+            } else if (dir == Directionality.POSITIVE_DIAGONAL_ABOVE) {
+                colStart = col + 1;
+                rowStart = col + 1;
+                f = GetTopRightmostTileOfDiagonal;
+            } else if (dir == Directionality.POSITIVE_DIAGONAL_BELOW) {
+                colStart = col - 1;
+                rowStart = col - 1;
+                f = GetBottomLeftmostTileOfDiagonal;
+            } else if (dir == Directionality.NEGATIVE_DIAGONAL_ABOVE) {
+                colStart = col - 1;
+                rowStart = col + 1;
+                f = GetTopLeftmostTileOfDiagonal;
+            } else if (dir == Directionality.NEGATIVE_DIAGONAL_BELOW) {
+                colStart = col + 1;
+                rowStart = col - 1;
+                f = GetBottomRightmostTileOfDiagonal;
+            }
+
+            //Match.Log(dir);
+
+            Tile startTile = GetTileIfExists(rowStart, colStart);
+            if (startTile == null) {
+                Match.Log("  Exiting early");
+                return result;
+            }
+
+            Tile endTile = f(rowStart, colStart);
+            (int rowEnd, int colEnd) = GetRowColumn(endTile);
+
+            int rowStepSize = Math.Sign(rowEnd - rowStart);
+            int colStepSize = Math.Sign(colEnd - colStart);
+
+            if (rowStepSize == 0 && colStepSize == 0) {
+                return result;
+            }
+
+            Tile tileIter = startTile;
+            //Match.Log($"    {rowStepSize} {colStepSize} | {rowStart},{colStart} | {rowEnd},{colEnd}");
+
+            while (tileIter != null) {
+                result.Add(tileIter);
+                tileIter = GetTileIfExists(
+                    rowStart + (result.Count * rowStepSize),
+                    colStart + (result.Count * colStepSize)
+                );
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Gets a list of valid tiles for knight movement. Ignores occupation
+        /// of any kind.
+        /// </summary>
+        /// <returns>The tiles for knight movement.</returns>
+        /// <param name="baseTile">Base tile.</param>
+        public List<Tile> GetTilesForKnightMovement (Tile baseTile) {
+            (int row, int col) = GetRowColumn(baseTile);
+
+            List<Tile> potentialTiles = new List<Tile> {
+                GetTileByRowColumn(row - 2, col - 1),
+                GetTileByRowColumn(row + 2, col - 1),
+                GetTileByRowColumn(row - 2, col + 1),
+                GetTileByRowColumn(row + 2, col + 1),
+
+                GetTileByRowColumn(row - 1, col - 2),
+                GetTileByRowColumn(row + 1, col - 2),
+                GetTileByRowColumn(row - 1, col + 2),
+                GetTileByRowColumn(row + 1, col + 2),
+            };
+
+            return potentialTiles.Where((t) => t != null).ToList();
         }
 
         #endregion
@@ -434,6 +546,109 @@ namespace ChessersEngine {
 
         #region Can capture?
 
+        /// <summary>
+        /// Determine which tile a given chessman can be captured from if it were
+        /// to be attacked in a straight line from a given line of tiles. E.g. if
+        /// there was an opponent chessman within the same column. This does NOT
+        /// include jumping.
+        ///
+        /// Note that this is "generic" in that we aren't checking what type of
+        /// opponent chessman it is; so if we were checking tiles of the same ROW
+        /// and found an opponent KNIGHT then this would return true.
+        ///
+        /// It only returns a single tile, which is the closest tile to the target
+        /// chessman that has an opponent piece. No other tiles are needed because
+        /// the path would be blocked by the first opponent chessman that appears.
+        /// </summary>
+        /// <returns>The chessman be captured from direction subset2.</returns>
+        /// <param name="chessman">Chessman.</param>
+        /// <param name="tilesInDirection">Tiles in direction.</param>
+        Tile CanChessmanBeCapturedFromDirectionSubset2 (
+            Chessman chessman,
+            List<Tile> tilesInDirection
+        ) {
+            for (int i = 0; i < tilesInDirection.Count; i++) {
+                Tile t = tilesInDirection[i];
+                if (!t.IsOccupied()) {
+                    continue;
+                }
+
+                Chessman otherPiece = t.GetPiece();
+                if (otherPiece.IsSameColor(chessman)) {
+                    return null;
+                } else if (otherPiece.IsChecker()) {
+                    return null;
+                }
+
+                return t;
+            }
+
+            return null;
+        }
+
+        List<Tile> CanChessmanBeCapturedFromDirection2 (
+            Chessman chessman,
+            Directionality directionality
+        ) {
+            Tile baseTile = chessman.GetUnderlyingTile();
+            List<Tile> tilesToCheck = new List<Tile> { };
+
+            List<Directionality> directionalities = new List<Directionality>();
+            Func<Tile, bool> additionalValidator;
+
+            if (directionality == Directionality.HORIZONTAL) {
+                directionalities.Add(Directionality.HORIZONTAL_LEFT);
+                directionalities.Add(Directionality.HORIZONTAL_RIGHT);
+            } else if (directionality == Directionality.VERTICAL) {
+                directionalities.Add(Directionality.VERTICAL_ABOVE);
+                directionalities.Add(Directionality.VERTICAL_BELOW);
+            } else if (directionality == Directionality.POSITIVE_DIAGONAL) {
+                directionalities.Add(Directionality.POSITIVE_DIAGONAL_ABOVE);
+                directionalities.Add(Directionality.POSITIVE_DIAGONAL_BELOW);
+            } else if (directionality == Directionality.NEGATIVE_DIAGONAL) {
+                directionalities.Add(Directionality.NEGATIVE_DIAGONAL_ABOVE);
+                directionalities.Add(Directionality.NEGATIVE_DIAGONAL_BELOW);
+            }
+
+            if (
+                directionality == Directionality.POSITIVE_DIAGONAL ||
+                directionality == Directionality.NEGATIVE_DIAGONAL
+            ) {
+                additionalValidator = (t) => {
+                    (int rowDelta, int colDelta) = CalculateRowColumnDelta(baseTile, t);
+                    Chessman otherChessman = t.GetPiece();
+
+                    if (otherChessman.IsPawn()) {
+                        return (
+                            (otherChessman.IsBlack() ? (rowDelta == -1) : (rowDelta == 1)) &&
+                            (Math.Abs(colDelta) == 1)
+                        );
+                    }
+
+                    return otherChessman.IsBishop() || otherChessman.IsQueen();
+                };
+            } else {
+                additionalValidator = (t) => t.GetPiece().IsQueen() || t.GetPiece().IsRook();
+            }
+
+            foreach (Directionality partialDir in directionalities) {
+                tilesToCheck.Add(
+                    CanChessmanBeCapturedFromDirectionSubset2(
+                        chessman,
+                        GetTilesInDirection(baseTile, partialDir)
+                    )
+                );
+            }
+
+            return tilesToCheck.Where((Tile otherTile) => {
+                return (
+                    otherTile != null &&
+                    additionalValidator(otherTile)
+                );
+            }).ToList();
+        }
+
+        /*
         List<Tile> CanChessmanBeCapturedFromDirectionSubset (
             Chessman chessman,
             Tile startTile,
@@ -481,7 +696,7 @@ namespace ChessersEngine {
 
         List<Tile> CanChessmanBeCapturedFromDirection (
             Chessman chessman,
-            Directionalities dir,
+            Directionality dir,
             bool exitEarly
         ) {
             Tile tile = chessman.GetUnderlyingTile();
@@ -489,7 +704,7 @@ namespace ChessersEngine {
 
             List<Tile> capturableTiles = new List<Tile>();
 
-            if (dir == Directionalities.HORIZONTAL) {
+            if (dir == Directionality.HORIZONTAL) {
                 additionalValidator = (Chessman occupant) => {
                     return !occupant.IsQueen() && !occupant.IsRook();
                 };
@@ -514,7 +729,7 @@ namespace ChessersEngine {
                         exitEarly: exitEarly
                     ))
                     .ToList();
-            } else if (dir == Directionalities.VERTICAL) {
+            } else if (dir == Directionality.VERTICAL) {
                 additionalValidator = (Chessman occupant) => {
                     return !occupant.IsQueen() && !occupant.IsRook();
                 };
@@ -539,7 +754,7 @@ namespace ChessersEngine {
                         exitEarly: exitEarly
                     ))
                     .ToList();
-            } else if (dir == Directionalities.POSITIVE_DIAGONAL) {
+            } else if (dir == Directionality.POSITIVE_DIAGONAL) {
                 int stepSize = GetPositiveDiagonalDelta();
                 additionalValidator = (Chessman occupant) => {
                     return !occupant.IsQueen() && !occupant.IsBishop();
@@ -565,7 +780,7 @@ namespace ChessersEngine {
                         exitEarly: exitEarly
                     ))
                     .ToList();
-            } else if (dir == Directionalities.NEGATIVE_DIAGONAL) {
+            } else if (dir == Directionality.NEGATIVE_DIAGONAL) {
                 int stepSize = GetNegativeDiagonalDelta();
                 additionalValidator = (Chessman occupant) => {
                     return !occupant.IsQueen() && !occupant.IsBishop();
@@ -595,7 +810,7 @@ namespace ChessersEngine {
                 throw new Exception($"Invalid directionality: {dir}");
             }
 
-            if (dir == Directionalities.NEGATIVE_DIAGONAL || dir == Directionalities.POSITIVE_DIAGONAL) {
+            if (dir == Directionality.NEGATIVE_DIAGONAL || dir == Directionality.POSITIVE_DIAGONAL) {
                 List<Tile> pawnTilesToCheck = new List<Tile>();
                 if (chessman.IsWhite()) {
                     pawnTilesToCheck.Add(GetTileIfExists(GetRow(tile) + 1, GetColumn(tile) - 1));
@@ -621,31 +836,39 @@ namespace ChessersEngine {
 
             return capturableTiles;
         }
+        */
 
-        public List<Tile> CanChessmanBeCapturedVertically (Chessman chessman, bool exitEarly = true) {
-            return CanChessmanBeCapturedFromDirection(
+        public List<Tile> CanChessmanBeCapturedVertically (Chessman chessman) {
+            return CanChessmanBeCapturedFromDirection2(
                 chessman,
-                Directionalities.VERTICAL,
-                exitEarly
+                Directionality.VERTICAL
             );
         }
 
-        public List<Tile> CanChessmanBeCapturedHorizontally (Chessman chessman, bool exitEarly = true) {
-            return CanChessmanBeCapturedFromDirection(
+        public List<Tile> CanChessmanBeCapturedHorizontally (Chessman chessman) {
+            return CanChessmanBeCapturedFromDirection2(
                 chessman,
-                Directionalities.HORIZONTAL,
-                exitEarly
+                Directionality.HORIZONTAL
             );
         }
 
-        public List<Tile> CanChessmanBeCaptured (Chessman chessman, bool exitEarly = true) {
+        public List<Tile> CanChessmanBeCapturedDiagonally (Chessman chessman) {
+            return CanChessmanBeCapturedFromDirection2(
+                chessman,
+                Directionality.HORIZONTAL
+            );
+        }
+
+        public List<Tile> CanChessmanBeCaptured (Chessman chessman) {
             return (
-                CanChessmanBeCapturedVertically(chessman, exitEarly)
+                CanChessmanBeCapturedVertically(chessman)
+                .Concat(CanChessmanBeCapturedHorizontally(chessman))
+                .Concat(CanChessmanBeCapturedDiagonally(chessman))
                 .Concat(
-                    CanChessmanBeCapturedHorizontally(chessman, exitEarly)
+                    GetTilesForKnightMovement(chessman.GetUnderlyingTile())
+                    .Where((t) => (t.IsOccupied() && !t.GetPiece().IsSameColor(chessman)))
                 )
                 .ToList()
-            // TODO -- diagonal... -_-
             );
         }
 
@@ -653,62 +876,45 @@ namespace ChessersEngine {
 
         #region Can jump?
 
-        bool CanChessmanBeJumpedFromTile (Chessman targetChessman, Tile attackingTile) {
-            if (attackingTile == null) {
+        bool CanChessmanBeJumpedFromTile (Chessman targetChessman, Tile jumpFromTile) {
+            if (jumpFromTile == null || !jumpFromTile.IsOccupied()) {
                 return false;
             }
 
-            Tile tile = targetChessman.GetUnderlyingTile();
-
-            if (attackingTile == null || !attackingTile.IsOccupied()) {
-                return false;
-            }
-
-            // NOTE -- may be worse to do it this way, instead of the way below.
-            //List<int> validDeltas = new List<int> {
-            //    GetNegativeDiagonalDelta(),
-            //    GetPositiveDiagonalDelta(),
-            //    -(GetNegativeDiagonalDelta()),
-            //    -(GetPositiveDiagonalDelta()),
-            //};
-            //int delta = attackingTile.id - tile.id;
-
-            //if (!validDeltas.Contains(delta)) {
-            //    return false;
-            //}
+            Tile tileToJumpOver = targetChessman.GetUnderlyingTile();
 
             // -- Validate the position of the specified tile.
             // Ths includes it being 1 row, 1 column away, and that there is a
             // tile to jump onto (i.e. the chessman is not along a board edge)
 
             if (
-                (CalculateRowDelta(tile, attackingTile) != 1) ||
-                (CalculateColumnDelta(tile, attackingTile) != 1)
+                (CalculateRowDelta(tileToJumpOver, jumpFromTile) != 1) ||
+                (CalculateColumnDelta(tileToJumpOver, jumpFromTile) != 1)
             ) {
                 return false;
             }
 
-            int delta = attackingTile.id - tile.id;
+            int delta = jumpFromTile.id - tileToJumpOver.id;
 
             // The distance from the jumping tile to the tile being jumped
             // over is the same distance as the tile being jumped over to the
             // tile being jumped onto.
-            int tileJumpedOntoLocation = tile.id - delta;
+            int tileJumpedOntoLocation = tileToJumpOver.id - delta;
             if (tileJumpedOntoLocation < 0 || tileJumpedOntoLocation > GetMaxTileNumber()) {
                 return false;
             }
 
             Tile tileJumpedOnto = GetTile(tileJumpedOntoLocation);
             if (
-                (CalculateRowDelta(tile, tileJumpedOnto) != 1) ||
-                (CalculateColumnDelta(tile, tileJumpedOnto) != 1)
+                (CalculateRowDelta(tileToJumpOver, tileJumpedOnto) != 1) ||
+                (CalculateColumnDelta(tileToJumpOver, tileJumpedOnto) != 1)
             ) {
                 return false;
             }
 
             // -- Validate the attrs of the occupant doing the jump
             // (They have to be a different colour, and currently a checker)
-            Chessman jumpingChessman = attackingTile.GetPiece();
+            Chessman jumpingChessman = jumpFromTile.GetPiece();
             if (jumpingChessman.color == targetChessman.color || !jumpingChessman.IsChecker()) {
                 return false;
             }
@@ -718,17 +924,18 @@ namespace ChessersEngine {
                 return false;
             }
 
+            // -- All checks passed. Finally check that the movement itself is legal, depending
+            // on the kinged status of the jumping piece.
             if (jumpingChessman.isKinged) {
                 return true;
             }
 
-            // -- Validate that the checker doing the jump can jump in that direction
             if (targetChessman.IsWhite()) {
                 // The chkecer doing the jump can only jump from top towards bottom
-                return (GetRow(attackingTile) > GetRow(tile));
+                return (GetRow(jumpFromTile) > GetRow(tileToJumpOver));
             } else {
                 // Bottom towards top
-                return GetRow(attackingTile) < GetRow(tile);
+                return GetRow(jumpFromTile) < GetRow(tileToJumpOver);
             }
         }
 
@@ -758,27 +965,14 @@ namespace ChessersEngine {
         /// <returns>The diagonally adjacent tiles.</returns>
         /// <param name="tile">Tile.</param>
         public List<Tile> GetDiagonallyAdjacentTiles (Tile tile) {
-            List<Tile> tiles = new List<Tile>();
+            (int row, int col) = GetRowColumn(tile);
 
-            if (!IsTileInLeftmostColumn(tile)) {
-                if (!IsTileInTopRow(tile)) {
-                    tiles.Add(GetTile(tile.id + GetNegativeDiagonalDelta()));
-                }
-                if (!IsTileInBottomRow(tile)) {
-                    tiles.Add(GetTile(tile.id - GetPositiveDiagonalDelta()));
-                }
-            }
-
-            if (!IsTileInRightmostColumn(tile)) {
-                if (!IsTileInTopRow(tile)) {
-                    tiles.Add(GetTile(tile.id + GetPositiveDiagonalDelta()));
-                }
-                if (!IsTileInBottomRow(tile)) {
-                    tiles.Add(GetTile(tile.id - GetNegativeDiagonalDelta()));
-                }
-            }
-
-            return tiles;
+            return new List<Tile>() {
+                GetTileByRowColumn(row + 1, col + 1),
+                GetTileByRowColumn(row + 1, col - 1),
+                GetTileByRowColumn(row - 1, col + 1),
+                GetTileByRowColumn(row - 1, col - 1),
+            }.Where((t) => t != null).ToList();
         }
 
         public bool AreTilesDiagonallyAdjacent (Tile tile1, Tile tile2) {
@@ -838,13 +1032,13 @@ namespace ChessersEngine {
         bool IsPathBlockedByChessman (Tile fromTile, Tile toTile, int delta, int directionality) {
             int stepSize = 0;
 
-            if (directionality == (int) Directionalities.HORIZONTAL) {
+            if (directionality == (int) Directionality.HORIZONTAL) {
                 stepSize = 1;
-            } else if (directionality == (int) Directionalities.VERTICAL) {
+            } else if (directionality == (int) Directionality.VERTICAL) {
                 stepSize = 8;
-            } else if (directionality == (int) Directionalities.POSITIVE_DIAGONAL) {
+            } else if (directionality == (int) Directionality.POSITIVE_DIAGONAL) {
                 stepSize = 9;
-            } else if (directionality == (int) Directionalities.NEGATIVE_DIAGONAL) {
+            } else if (directionality == (int) Directionality.NEGATIVE_DIAGONAL) {
                 stepSize = 7;
             }
 
@@ -879,6 +1073,8 @@ namespace ChessersEngine {
 
             return false;
         }
+
+        //TODO -- this code fucking sucks. Maybe use an iterator (yield) instead or something??
 
         /// <summary>
         ///
@@ -1099,27 +1295,9 @@ namespace ChessersEngine {
         }
 
         List<Tile> GetPotentialTilesForKnightMovement (Chessman chessman) {
-            Tile tile = chessman.GetUnderlyingTile();
-            (int row, int col) = GetRowColumn(tile);
-
-            List<Tile> potentialTiles = new List<Tile> {
-                GetTileByRowColumn(row - 2, col - 1),
-                GetTileByRowColumn(row + 2, col - 1),
-                GetTileByRowColumn(row - 2, col + 1),
-                GetTileByRowColumn(row + 2, col + 1),
-
-                GetTileByRowColumn(row - 1, col - 2),
-                GetTileByRowColumn(row + 1, col - 2),
-                GetTileByRowColumn(row - 1, col + 2),
-                GetTileByRowColumn(row + 1, col + 2),
-            };
-
-            return potentialTiles.Where((t) => {
-                return (
-                    t != null &&
-                    (!t.IsOccupied() || t.GetPiece().color != chessman.color)
-                );
-            }).ToList();
+            return GetTilesForKnightMovement(chessman.GetUnderlyingTile())
+                .Where((t) => !t.IsOccupied() || (!t.GetPiece().IsSameColor(chessman.color)))
+                .ToList();
         }
 
         List<Tile> GetPotentialTilesForRookMovement (Chessman chessman) {
