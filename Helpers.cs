@@ -8,20 +8,20 @@ namespace ChessersEngine {
 
         public static int ConvertColorEnumToInt (ColorEnum color) {
             return color == ColorEnum.BLACK ?
-                                     Constants.ID_BLACK :
-                                     Constants.ID_WHITE;
+                Constants.ID_BLACK :
+                Constants.ID_WHITE;
         }
 
         public static ColorEnum ConvertColorIntToEnum (int colorId) {
             return colorId == Constants.ID_BLACK ?
-                                       ColorEnum.BLACK :
-                                       ColorEnum.WHITE;
+                ColorEnum.BLACK :
+                ColorEnum.WHITE;
         }
 
         public static int GetOppositeColor (int colorId) {
             return (colorId == Constants.ID_WHITE) ?
                 Constants.ID_BLACK :
-                 Constants.ID_WHITE;
+                Constants.ID_WHITE;
         }
 
         #endregion

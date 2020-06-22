@@ -16,7 +16,7 @@ namespace ChessersEngine {
             cs.location = location;
             return cs;
         }
-        public static ChessmanSchema CreateBlackKing (int location) {
+        public static ChessmanSchema CreateBlackKing (int location = 60) {
             ChessmanSchema cs = CreateKing(false);
             cs.location = location;
             return cs;
@@ -71,7 +71,7 @@ namespace ChessersEngine {
                 guid = id,
                 location = location,
                 isChecker = true,
-                isKinged = true
+                isKinged = false
             };
         }
 
@@ -110,7 +110,8 @@ namespace ChessersEngine {
                 pieces = new List<ChessmanSchema> {
                     CreateWhiteKing(3),
                     CreatePawn(Constants.ID_WHITE_PAWN_1, 18),
-                    CreateBlackQueen(58)
+                    CreateBlackQueen(58),
+                    CreateBlackKing()
                 }
             };
         }
@@ -140,7 +141,8 @@ namespace ChessersEngine {
                     CreatePawn(Constants.ID_WHITE_PAWN_1, 12),
                     CreatePawn(Constants.ID_WHITE_PAWN_2, 14),
 
-                    CreateBlackChecker(Constants.ID_BLACK_PAWN_1, 23)
+                    CreateBlackChecker(Constants.ID_BLACK_PAWN_1, 23),
+                    CreateBlackKing()
                 }
             };
         }
@@ -286,7 +288,7 @@ namespace ChessersEngine {
             };
         }
 
-        #region Bugs
+        #region bugs
 
         /// <summary>
         /// False positive on being in check via jumping.

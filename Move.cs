@@ -160,9 +160,8 @@ namespace ChessersEngine {
         ) {
             Match.Log($"Current: {tile.id}", depth);
             if (tile.IsOccupied()) {
-                // Regardless of which color piece is occupying the tile, this branch
-                // of the search tree ends as there is no way to jump onto an occupied
-                // tile.
+                // Regardless of which color piece is occupying the tile, this branch of the search
+                // tree ends as there is no way to jump onto an occupied tile.
 
                 if (!tile.GetPiece().IsSameColor(targetColor)) {
                     Match.Log("Found a potential multijump...", depth + 1);
@@ -170,8 +169,17 @@ namespace ChessersEngine {
                     result.Add(new List<int>(currentPath));
                 } else {
                     Match.Log("Found a potential capturejump...", depth + 1);
-                    // This piece could lead to a capture jump if it has the potential
-                    // to be captured
+                    // This piece could lead to a capture jump if it has the potential to be captured
+
+                    List<Tile> capturableTiles = board.CanChessmanBeCaptured(tile.GetPiece());
+                    foreach (Tile capturableTile in capturableTiles) {
+                        // For each of the tiles this piece can be captured from, add a copy of the
+                        // current path with this capturable tile included - we care about all potential
+                        // paths instead of just 1 because we need to check later if these paths are
+                        // valid (i.e. won't put attacking player in check)
+                        result.Add(new List<int>(currentPath) { capturableTile.id });
+                    }
+
                     if (board.CanChessmanBeCaptured(tile.GetPiece()).Count > 0) {
                         result.Add(new List<int>(currentPath));
                     }
@@ -214,7 +222,6 @@ namespace ChessersEngine {
                 }
 
                 currentPath.Add(diagTile.id);
-                //Match.Log($"    Recursing on: {diagTile.id}");
 
                 _RecursivelyFuckMeUp(
                     result,
@@ -234,8 +241,8 @@ namespace ChessersEngine {
             ColorEnum targetColor,
             HashSet<int> tilesToIgnore
         ) {
-            // A list of lists of tile ids!
-            // Each nested list is a path that the attacking player would take to (capture-)multijump
+            // Each nested list is a path that the attacking player would take
+            // to (capture-)multijump
             List<List<int>> result = new List<List<int>>();
 
             _RecursivelyFuckMeUp(
@@ -249,6 +256,16 @@ namespace ChessersEngine {
             return result;
         }
 
+        /// <summary>
+        /// Determine which tiles the specified player is in check from. For jumps,
+        /// the tile the king will be jumped FROM is returned.
+        ///
+        /// TODO -- should we return paths instead?
+        /// </summary>
+        /// <returns>The check tiles.</returns>
+        /// <param name="color">Color of the player.</param>
+        /// <param name="exitEarly">If set to <c>true</c> exit when the first tile
+        /// is found.</param>
         List<Tile> CalculateCheckTiles (ColorEnum color, bool exitEarly) {
             // -- DIRECT ATTACK
             // Check that the king cannot be attacked directly.
@@ -271,21 +288,14 @@ namespace ChessersEngine {
                 return result;
             }
 
-            // -- Validate jumping...
+            // -- Validate jumping (multijumping AND capture-jumping)
             Tile kingTile = kingChessman.GetUnderlyingTile();
-
-            // TODO: for capture-jumps, we only care about capture-jumps that are "direct", in that
-            // there is a piece diagonally adjacent to the king that gets captured, and then the king
-            // is jumped right after that.
-            //
-            // A capture jump that is also a multi jump (capture piece A, then jump piece B, then jump
-            // the king) is equivalent to a regular multi jump regarding the checks.
-            // As such, we'll split out the logic.
 
             List<Tile> diagTilesOfKing = board.GetDiagonallyAdjacentTiles(kingTile);
 
             foreach (var diagTile in diagTilesOfKing) {
-                // A tile diagonally adjacent from the king could represent one of two things:
+                // A tile diagonally adjacent from the king could represent one
+                // of two things:
                 //
                 //    1. the tile that a piece lands on BEFORE capturing the king
                 //    2. same, but AFTER capturing the king
@@ -319,8 +329,41 @@ namespace ChessersEngine {
                     new HashSet<int> { tileToLandOn.id }
                 );
 
-                foreach (var path in crazyResult) {
+                foreach (List<int> _path in crazyResult) {
+                    List<int> path = new List<int>(_path);
+                    path.Reverse();
+                    path.Add(diagTile.id);
+                    path.Add(tileToLandOn.id);
+
+                    // `path` represents a full set of moves that would win the
+                    // game for the attacking player. We have to determine if
+                    // excuting these moves would put them in check.
                     Match.Log(string.Join(", ", path));
+
+                    bool isGood = true;
+                    Board boardCopy = board.CreateCopy();
+                    for (int i = 0; i < path.Count - 1; i++) {
+                        Tile startTile = boardCopy.GetTile(path[i]);
+                        Tile endTile = boardCopy.GetTile(path[i + 1]);
+                        Chessman movingPiece = startTile.GetPiece();
+
+                        MoveResult _moveResult = boardCopy.MoveChessman(new MoveAttempt {
+                            pieceId = movingPiece.id,
+                            tileId = endTile.id
+                        });
+
+                        if (_moveResult == null || !_moveResult.valid) {
+                            isGood = false;
+                            break;
+                        }
+                    }
+
+                    if (isGood) {
+                        result.Add(diagTile);
+                        if (exitEarly) {
+                            return result;
+                        }
+                    }
                 }
             }
 
@@ -458,6 +501,10 @@ namespace ChessersEngine {
             //}
         }
 
+        /// <summary>
+        /// Gets the pseudo legal move result.
+        /// </summary>
+        /// <returns>The pseudo legal move result.</returns>
         MoveResult GetPseudoLegalMoveResult () {
             // -- Skip all piece-specific validation.
 
@@ -466,10 +513,10 @@ namespace ChessersEngine {
             toTile.SetPiece(chessman);
             chessman.SetUnderlyingTile(toTile);
 
-            //if (IsMovingPlayerInCheck()) {
-            //    Match.Log("            Player is in check.");
-            //    return null;
-            //}
+            if (IsMovingPlayerInCheck()) {
+                Match.Log("            Attacking player is in check.");
+                return null;
+            }
 
             PostValidationHandler();
             moveResult.valid = true;

@@ -3,8 +3,8 @@ using System.Collections.Generic;
 namespace ChessersEngine {
     public class MoveAttempt {
         public long playerId { get; set; }
+        public int pieceGuid { get; set; }
         public int pieceId { get; set; }
-        public long pieceGuid { get; set; }
         public int tileId { get; set; }
 
         public override string ToString () {
