@@ -11,7 +11,7 @@ namespace ChessersEngine {
             };
         }
 
-        public static ChessmanSchema CreateWhiteKing (int location) {
+        public static ChessmanSchema CreateWhiteKing (int location = 4) {
             ChessmanSchema cs = CreateKing();
             cs.location = location;
             return cs;
@@ -288,7 +288,33 @@ namespace ChessersEngine {
             };
         }
 
-        #region bugs
+        #region Castling
+
+        public static MatchData Castling () {
+            return new MatchData {
+                currentTurn = Constants.ID_WHITE,
+                matchId = 1,
+                whitePlayerId = 0,
+                blackPlayerId = 1,
+                pieces = new List<ChessmanSchema> {
+                    TestScenarios.CreateWhiteKing(),
+                    TestScenarios.CreateRook(Constants.ID_WHITE_ROOK_1, 0),
+                    TestScenarios.CreateRook(Constants.ID_WHITE_ROOK_2, 7),
+                    TestScenarios.CreatePawn(Constants.ID_WHITE_PAWN_1, 8),
+                    TestScenarios.CreatePawn(Constants.ID_WHITE_PAWN_2, 15),
+                    //TestScenarios.CreatePawn(Constants.ID_BLACK_PAWN_1, 8),
+                    //TestScenarios.CreatePawn(Constants.ID_BLACK_PAWN_2, 15),
+
+                    TestScenarios.CreateRook(Constants.ID_BLACK_ROOK_1, 56),
+                    TestScenarios.CreateRook(Constants.ID_BLACK_ROOK_2, 63),
+                    TestScenarios.CreateBlackKing(),
+                }
+            };
+        }
+
+        #endregion
+
+        #region Bugs
 
         /// <summary>
         /// False positive on being in check via jumping.

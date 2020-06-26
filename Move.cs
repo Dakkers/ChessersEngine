@@ -71,7 +71,7 @@ namespace ChessersEngine {
             };
 
             potentialTilesForMovement = board.GetPotentialTilesForMovement(chessman);
-            //Match.Log($"Potential for chessman @ {fromTile.id} ({toTile.id}): {string.Join(", ", potentialTilesForMovement.Select((t) => t.id))}");
+            Match.Log($"Potential for chessman @ {fromTile.id} ({toTile.id}): {string.Join(", ", potentialTilesForMovement.Select((t) => t.id))}");
         }
 
         #region Move types
@@ -276,14 +276,20 @@ namespace ChessersEngine {
                 board.GetWhiteKing() :
                 board.GetBlackKing();
 
-            result = result.Concat(board.CanChessmanBeCaptured(kingChessman)).ToList();
-            //Match.Log($"Can be captured from: {string.Join(", ", result)}");
+            List<Tile> captureResult = board.CanChessmanBeCaptured(kingChessman).ToList();
+            result = result.Concat(captureResult).ToList();
+            if (captureResult.Count > 0) {
+                Match.Log($"Can be captured from: {string.Join(", ", captureResult.Select((t) => t.id))}");
+            }
             if (exitEarly && result.Count > 0) {
                 return result;
             }
 
-            result = result.Concat(board.CanChessmanBeJumped(kingChessman)).ToList();
-            //Match.Log($"Can be jumped from: {string.Join(", ", result)}");
+            List<Tile> jumpResult = board.CanChessmanBeJumped(kingChessman).ToList();
+            result = result.Concat(jumpResult).ToList();
+            if (jumpResult.Count > 0) {
+                Match.Log($"Can be captured from: {string.Join(", ", jumpResult.Select((t) => t.id))}");
+            }
             if (exitEarly && result.Count > 0) {
                 return result;
             }
@@ -443,14 +449,16 @@ namespace ChessersEngine {
                 return;
             }
 
+            int rowDelta = toRow - fromRow;
+            int colDelta = toColumn - fromColumn;
             moveResult.valid = true;
 
             if (chessman.IsChecker()) {
                 // This was a valid movement - if the piece moved +/- 2 rows/columns, then
                 // a piece was jumped.
                 if (
-                    (Math.Abs(toRow - fromRow) == 2) ||
-                    (Math.Abs(toColumn - fromColumn) == 2)
+                    (Math.Abs(rowDelta) == 2) ||
+                    (Math.Abs(colDelta) == 2)
                 ) {
                     // `delta` will always be even in this case; this value will represent
                     // the movement amount from `fromTile` to the tile that the jumped piece
@@ -467,7 +475,6 @@ namespace ChessersEngine {
                 }
             }
 
-
             // -- Move the piece in a copy of the match's board.
             // We can then check for the Check status.
 
@@ -479,6 +486,33 @@ namespace ChessersEngine {
             fromTile.RemovePiece();
             toTile.SetPiece(chessman);
             chessman.SetUnderlyingTile(toTile);
+
+            // If this was a castling, the king was the one to move; now move the rook.
+            if (
+                chessman.IsKing() &&
+                (rowDelta == 0) &&
+                (Math.Abs(colDelta) == 2)
+            ) {
+                moveResult.isCastle = true;
+                Tile rookFromTile = null;
+                Tile rookToTile = null;
+
+                if (colDelta > 0) {
+                    rookFromTile = board.GetRightmostTileOfRow(toRow);
+                    rookToTile = board.GetTileIfExists(toRow, toColumn - 1);
+                } else {
+                    rookFromTile = board.GetLeftmostTileOfRow(toRow);
+                    rookToTile = board.GetTileIfExists(toRow, toColumn + 1);
+                }
+
+                Chessman rookChessman = rookFromTile.GetPiece();
+                Match.Log($"{board.GetRowColumn(rookFromTile)} | {board.GetRowColumn(rookToTile)} | {rookChessman != null}");
+                if (rookChessman != null) {
+                    rookFromTile.RemovePiece();
+                    rookToTile.SetPiece(rookChessman);
+                    rookChessman.SetUnderlyingTile(rookToTile);
+                }
+            }
 
             if (IsMovingPlayerInCheck()) {
                 moveResult.valid = false;

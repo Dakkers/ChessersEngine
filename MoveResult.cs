@@ -39,10 +39,16 @@ namespace ChessersEngine {
         public bool wasFirstMoveForPiece { get; set; }
 
         /// <summary>
-        /// Whether or not this move triggers a king-ing
+        /// Whether or not this move triggers a king-ing of a checkers piece
         /// </summary>
         /// <value><c>true</c> if kinged; otherwise, <c>false</c>.</value>
         public bool kinged { get; set; }
+
+        /// <summary>
+        /// Whether or not this move is a castle-ing of the king.
+        /// </summary>
+        /// <value><c>true</c> if is castle; otherwise, <c>false</c>.</value>
+        public bool isCastle { get; set; }
 
         // Whether or not this move triggers a Promotion
         public bool promotionOccurred { get; set; }
@@ -79,6 +85,7 @@ namespace ChessersEngine {
                 $"promotion = {promotionOccurred}, " +
                 $"turnChanged = {turnChanged}, " +
                 $"isWinningMove = {isWinningMove}, " +
+                $"isCastle = {isCastle}, " +
             "}}";
         }
 
