@@ -345,16 +345,20 @@ namespace ChessersEngine {
         /// Minimax!
         /// </summary>
         /// <param name="b">Board.</param>
-        /// <param name="depth">Depth.</param>
+        /// <param name="currentDepth">Depth.</param>
         /// <param name="isMaximizingPlayer">TRUE = WHITE, FALSE = BLACK</param>
         (List<MoveAttempt>, int) MinimaxHelper (
+            int maxDepth,
             Board board,
-            int depth,
+            int currentDepth,
             int alpha,
             int beta,
-            bool isMaximizingPlayer
+            bool isMaximizingPlayer,
+            Chessman movingChessman = null
         ) {
-            if (depth == 0 || board.IsGameOver()) {
+            bool isMultipleMoves = (movingChessman != null);
+
+            if (currentDepth == maxDepth || board.IsGameOver()) {
                 return (null, board.CalculateBoardValue());
             }
 
@@ -368,7 +372,10 @@ namespace ChessersEngine {
 
             MoveAttempt fallbackMove = null;
 
-            List<Chessman> availableChessmen = board.GetActiveChessmenOfColor(color);
+            List<Chessman> availableChessmen = isMultipleMoves ?
+                new List<Chessman> { movingChessman } :
+                board.GetActiveChessmenOfColor(color);
+
             Helpers.Shuffle(rng, availableChessmen);
 
             foreach (var chessman in availableChessmen) {
@@ -397,24 +404,49 @@ namespace ChessersEngine {
                         fallbackMove = moveAttempt;
                     }
 
-                    // Because the move might not have changed the turn, we need to determine if it's best
-                    // that the player stops here, or continues moving.
-                    // TODO! -- this should be doable by just passing in `isMaximizingPlayer` is the same value...
-
-                    // `moves` is a list of moves the current player (based off of `isMaximizingPlayer`) should
-                    // make to achieve a board value of `value`
-                    (List<MoveAttempt> _, int value) = MinimaxHelper(
+                    // This represents the scenario where the turn is ended after the move has been
+                    // made (either by choice or because there are no other options)
+                    (List<MoveAttempt> _, int valueEndTurn) = MinimaxHelper(
+                        maxDepth,
                         board,
-                        depth - 1,
+                        currentDepth + 1,
                         alpha,
                         beta,
                         !isMaximizingPlayer
                     );
 
+                    int value = valueEndTurn;
+                    List<MoveAttempt> movesToExecute = new List<MoveAttempt> { moveAttempt };
+
+                    if (!moveResult.turnChanged) {
+                        // Multijump/capturejump available - these strategies represent multiple moves
+                        // in a single turn. As such, keep the `depth` the same.
+                        (List<MoveAttempt> additionalMoves, int valueContinueTurn) = MinimaxHelper(
+                            maxDepth,
+                            board,
+                            currentDepth,
+                            alpha,
+                            beta,
+                            isMaximizingPlayer,
+                            chessman
+                        );
+
+                        Match.Log($"{valueEndTurn} | {valueContinueTurn}");
+
+                        bool swapValues = isMaximizingPlayer ?
+                            (valueContinueTurn > valueEndTurn) :
+                            (valueContinueTurn < valueEndTurn);
+
+                        if (swapValues) {
+                            value = valueContinueTurn;
+                            movesToExecute.AddRange(additionalMoves);
+                        }
+                    }
+
                     if (isMaximizingPlayer) {
                         if (value > bestValueSoFar) {
                             bestValueSoFar = value;
-                            bestMoves = new List<MoveAttempt>() { moveAttempt };
+                            bestMoves = movesToExecute;
                         }
 
                         alpha = System.Math.Max(alpha, value);
@@ -422,7 +454,7 @@ namespace ChessersEngine {
                         if (value < bestValueSoFar) {
                             //Match.Log($"  Overriding best choice: {value} {moves?.Count}");
                             bestValueSoFar = value;
-                            bestMoves = new List<MoveAttempt>() { moveAttempt };
+                            bestMoves = movesToExecute;
                         }
 
                         beta = System.Math.Min(beta, value);
@@ -455,19 +487,20 @@ namespace ChessersEngine {
             boardClone.CopyState(committedBoard);
 
             (List<MoveAttempt> moves, int value) = MinimaxHelper(
-                boardClone,
                 2,
+                boardClone,
+                0,
                 int.MinValue,
                 int.MaxValue,
                 isMaximizingPlayer: turnColor == ColorEnum.WHITE
             );
 
-            //Log($"BEST CALCULATION: {value} NUM MOVES TO MAKE: {moves?.Count}");
-            //if (moves?.Count > 0) {
-            //    foreach (var m in moves) {
-            //        Log(m);
-            //    }
-            //}
+            Log($"BEST CALCULATION: {value} NUM MOVES TO MAKE: {moves?.Count}");
+            if (moves?.Count > 0) {
+                foreach (var m in moves) {
+                    Log(m);
+                }
+            }
 
             return moves;
         }

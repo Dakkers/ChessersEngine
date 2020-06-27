@@ -1024,7 +1024,7 @@ namespace ChessersEngine {
                 }
 
                 (int rowDelta, int colDelta) = CalculateRowColumnDelta(tile, captureTile);
-                if (rowDelta != 1 || colDelta != 1) {
+                if (Math.Abs(rowDelta) != 1 || Math.Abs(colDelta) != 1) {
                     continue;
                 }
 
@@ -1116,7 +1116,6 @@ namespace ChessersEngine {
                         GetLeftmostTileOfRow(row);
 
                     Chessman rookChessman = rookTile.GetPiece();
-                    Match.Log($"Dank - {castlingTile.id} - {rookChessman == null} {rookChessman?.hasMoved}");
                     if (
                         rookChessman == null ||
                         rookChessman.hasMoved
@@ -1140,7 +1139,7 @@ namespace ChessersEngine {
                     for (int colIter = lower + 1; colIter < upper; colIter++) {
                         Tile inbetweenTile = GetTileByRowColumn(row, colIter);
                         if (inbetweenTile.IsOccupied()) {
-                            Match.Log($"  {inbetweenTile.id} is occupied :(");
+                            //Match.Log($"  {inbetweenTile.id} is occupied :(");
                             isValid = false;
                             break;
                         }
@@ -1153,19 +1152,19 @@ namespace ChessersEngine {
                     // Now check that all in-between tiles would not lead to a capture of the king.
                     List<ChessmanSchema> allSchemas = GetChessmanSchemas();
                     ChessmanSchema kingSchema = allSchemas.Find((otherCs) => otherCs.id == kingChessman.id);
-                    Match.Log(kingSchema.location);
+                    //Match.Log(kingSchema.location);
 
                     for (int colIter = lower + 1; colIter < upper; colIter++) {
                         // Forcefully place the king...
                         int iterTileId = GetTileByRowColumn(row, colIter).id;
                         kingSchema.location = iterTileId;
 
-                        Match.Log(allSchemas.Find((otherCs) => otherCs.id == kingChessman.id).location);
+                        //Match.Log(allSchemas.Find((otherCs) => otherCs.id == kingChessman.id).location);
                         Board boardCopy = new Board(allSchemas);
                         Chessman kingCopy = kingChessman.IsWhite() ? boardCopy.GetWhiteKing() : boardCopy.GetBlackKing();
 
                         if (boardCopy.CanChessmanBeCaptured(kingCopy).Count > 0) {
-                            Match.Log($"  {iterTileId} is threatened");
+                            //Match.Log($"  {iterTileId} is threatened");
                             isValid = false;
                             break;
                         }
@@ -1209,8 +1208,8 @@ namespace ChessersEngine {
                 (int rowDelta, int colDelta) = CalculateRowColumnDelta(tile, potentialTile);
                 if (
                     !potentialTile.IsOccupied() &&
-                    rowDelta == 1 &&
-                    colDelta == 1
+                    Math.Abs(rowDelta) == 1 &&
+                    Math.Abs(colDelta) == 1
                 ) {
                     potentialTiles.Add(potentialTile);
                 }
@@ -1228,10 +1227,10 @@ namespace ChessersEngine {
                     potentialTile.IsOccupied() ||
                     !jumpOverTile.IsOccupied() ||
                     jumpOverTile.GetPiece().IsSameColor(chessman) ||
-                    farRowDelta != 2 ||
-                    farColDelta != 2 ||
-                    shortRowDelta != 1 ||
-                    shortColDelta != 1
+                    Math.Abs(farRowDelta) != 2 ||
+                    Math.Abs(farColDelta) != 2 ||
+                    Math.Abs(shortRowDelta) != 1 ||
+                    Math.Abs(shortColDelta) != 1
                 ) {
                     continue;
                 }
@@ -1274,8 +1273,8 @@ namespace ChessersEngine {
             (int row2, int col2) = GetRowColumn(tile2);
 
             return (
-                Math.Abs(row1 - row2),
-                Math.Abs(col1 - col2)
+                (row1 - row2),
+                (col1 - col2)
             );
         }
 

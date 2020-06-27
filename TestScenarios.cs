@@ -29,6 +29,14 @@ namespace ChessersEngine {
                 location = location,
             };
         }
+        public static ChessmanSchema CreateKnight (int id, int location) {
+            return new ChessmanSchema {
+                kind = Constants.CHESSMAN_KIND_KNIGHT,
+                id = id,
+                guid = id,
+                location = location,
+            };
+        }
         public static ChessmanSchema CreateRook (int id, int location) {
             return new ChessmanSchema {
                 kind = Constants.CHESSMAN_KIND_ROOK,
@@ -55,7 +63,7 @@ namespace ChessersEngine {
             };
         }
 
-        public static ChessmanSchema CreateWhiteQueen (int location) {
+        public static ChessmanSchema CreateWhiteQueen (int location = 3) {
             return new ChessmanSchema {
                 kind = Constants.CHESSMAN_KIND_QUEEN,
                 id = Constants.ID_WHITE_QUEEN,
@@ -74,6 +82,8 @@ namespace ChessersEngine {
                 isKinged = false
             };
         }
+
+        #region Check
 
         public static MatchData InCheckFromJump () {
             return new MatchData {
@@ -146,6 +156,10 @@ namespace ChessersEngine {
                 }
             };
         }
+
+        #endregion
+
+        #region Checkmate
 
         public static MatchData Checkmate1 () {
             // If Rook @ 56 captures the pawn @ 32, White will be in checkmate.
@@ -231,6 +245,8 @@ namespace ChessersEngine {
             };
         }
 
+        #endregion
+
         public static MatchData Promotion () {
             ChessmanSchema pawnCS = CreatePawn(Constants.ID_WHITE_PAWN_1, 48);
             pawnCS.isChecker = true;
@@ -288,6 +304,34 @@ namespace ChessersEngine {
             };
         }
 
+        /// <summary>
+        /// Simple multijump, and also a helper for the AI to determine which move is better between
+        /// jumping over 2 knights or capturing 1 rook (the former is better from a Chess value standpoint.)
+        /// </summary>
+        /// <returns>The multijump1.</returns>
+        public static MatchData Multijump1 () {
+            var checkerCS = TestScenarios.CreateWhiteQueen(63);
+            checkerCS.isChecker = true;
+            checkerCS.isKinged = true;
+
+            return new MatchData {
+                currentTurn = Constants.ID_WHITE,
+                matchId = 1,
+                whitePlayerId = 0,
+                blackPlayerId = 1,
+                pieces = new List<ChessmanSchema> {
+                    TestScenarios.CreateWhiteKing(2),
+                    TestScenarios.CreatePawn(Constants.ID_WHITE_PAWN_1, 28),
+                    checkerCS,
+
+                    TestScenarios.CreateKnight(Constants.ID_BLACK_KNIGHT_1, 54),
+                    TestScenarios.CreateKnight(Constants.ID_BLACK_KNIGHT_2, 52),
+                    TestScenarios.CreateRook(Constants.ID_BLACK_ROOK_1, 37),
+                    TestScenarios.CreateBlackKing(56),
+                }
+            };
+        }
+
         #region Castling
 
         public static MatchData Castling () {
@@ -334,6 +378,28 @@ namespace ChessersEngine {
                     TestScenarios.CreateWhiteQueen(19),
 
                     checker,
+                    TestScenarios.CreateBlackKing(56),
+                }
+            };
+        }
+
+        /// <summary>
+        /// When I added logic to the "PostValidation" method in MoveResult I accidentally made it so
+        /// that if a capture occurred and the piece became a checker, the piece was allowed to move
+        /// again in the same turn even when there WASN'T a jump available. This is to test that.
+        /// </summary>
+        /// <returns>The minimax calculation20200627.</returns>
+        public static MatchData BugMinimaxCalculation20200627 () {
+            return new MatchData {
+                currentTurn = Constants.ID_WHITE,
+                matchId = 1,
+                whitePlayerId = 0,
+                blackPlayerId = 1,
+                pieces = new List<ChessmanSchema> {
+                    TestScenarios.CreateWhiteKing(2),
+                    TestScenarios.CreateRook(Constants.ID_WHITE_ROOK_1, 4),
+
+                    TestScenarios.CreateRook(Constants.ID_BLACK_ROOK_1, 60),
                     TestScenarios.CreateBlackKing(56),
                 }
             };

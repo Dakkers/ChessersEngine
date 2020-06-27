@@ -71,7 +71,7 @@ namespace ChessersEngine {
             };
 
             potentialTilesForMovement = board.GetPotentialTilesForMovement(chessman);
-            Match.Log($"Potential for chessman @ {fromTile.id} ({toTile.id}): {string.Join(", ", potentialTilesForMovement.Select((t) => t.id))}");
+            //Match.Log($"Potential for chessman @ {fromTile.id} ({toTile.id}): {string.Join(", ", potentialTilesForMovement.Select((t) => t.id))}");
         }
 
         #region Move types
@@ -158,7 +158,7 @@ namespace ChessersEngine {
             HashSet<int> tilesToIgnore,
             int depth = 1
         ) {
-            Match.Log($"Current: {tile.id}", depth);
+            //Match.Log($"Current: {tile.id}", depth);
             if (tile.IsOccupied()) {
                 // Regardless of which color piece is occupying the tile, this branch of the search
                 // tree ends as there is no way to jump onto an occupied tile.
@@ -168,7 +168,7 @@ namespace ChessersEngine {
                     // This is the piece that could capture the king!
                     result.Add(new List<int>(currentPath));
                 } else {
-                    Match.Log("Found a potential capturejump...", depth + 1);
+                    //Match.Log("Found a potential capturejump...", depth + 1);
                     // This piece could lead to a capture jump if it has the potential to be captured
 
                     List<Tile> capturableTiles = board.CanChessmanBeCaptured(tile.GetPiece());
@@ -279,7 +279,7 @@ namespace ChessersEngine {
             List<Tile> captureResult = board.CanChessmanBeCaptured(kingChessman).ToList();
             result = result.Concat(captureResult).ToList();
             if (captureResult.Count > 0) {
-                Match.Log($"Can be captured from: {string.Join(", ", captureResult.Select((t) => t.id))}");
+                //Match.Log($"Can be captured from: {string.Join(", ", captureResult.Select((t) => t.id))}");
             }
             if (exitEarly && result.Count > 0) {
                 return result;
@@ -288,7 +288,7 @@ namespace ChessersEngine {
             List<Tile> jumpResult = board.CanChessmanBeJumped(kingChessman).ToList();
             result = result.Concat(jumpResult).ToList();
             if (jumpResult.Count > 0) {
-                Match.Log($"Can be captured from: {string.Join(", ", jumpResult.Select((t) => t.id))}");
+                //Match.Log($"Can be captured from: {string.Join(", ", jumpResult.Select((t) => t.id))}");
             }
             if (exitEarly && result.Count > 0) {
                 return result;
@@ -326,7 +326,7 @@ namespace ChessersEngine {
                     continue;
                 }
 
-                Match.Log($"Starting at: {diagTile.id}");
+                //Match.Log($"Starting at: {diagTile.id}");
                 // Ignore the tile to land on because it was including it as part
                 // of a potential path, which is encapsulated by a different path
                 var crazyResult = RecursivelyFuckMeUp(
@@ -344,7 +344,7 @@ namespace ChessersEngine {
                     // `path` represents a full set of moves that would win the
                     // game for the attacking player. We have to determine if
                     // excuting these moves would put them in check.
-                    Match.Log(string.Join(", ", path));
+                    //Match.Log(string.Join(", ", path));
 
                     bool isGood = true;
                     Board boardCopy = board.CreateCopy();
@@ -506,7 +506,7 @@ namespace ChessersEngine {
                 }
 
                 Chessman rookChessman = rookFromTile.GetPiece();
-                Match.Log($"{board.GetRowColumn(rookFromTile)} | {board.GetRowColumn(rookToTile)} | {rookChessman != null}");
+                //Match.Log($"{board.GetRowColumn(rookFromTile)} | {board.GetRowColumn(rookToTile)} | {rookChessman != null}");
                 if (rookChessman != null) {
                     rookFromTile.RemovePiece();
                     rookToTile.SetPiece(rookChessman);
@@ -516,7 +516,7 @@ namespace ChessersEngine {
 
             if (IsMovingPlayerInCheck()) {
                 moveResult.valid = false;
-                Match.Log("Moving player is in check.");
+                //Match.Log("Moving player is in check.");
                 return;
             }
 
@@ -628,20 +628,28 @@ namespace ChessersEngine {
                 }
             }
 
-            // Most moves result in a change of whose turn it is, EXCEPT for jumping
-            bool shouldChangeTurns = !moveResult.WasPieceJumped();
+            // Most moves result in a change of whose turn it is, EXCEPT for jumping (leading to a
+            // potential multijump) or for capture-jumping
+            bool shouldChangeTurns = true;
+
             if (
-                moveResult.WasPieceCaptured() &&
-                moveResult.polarityChanged &&
-                chessman.IsChecker()
+                chessman.IsChecker() && (
+                    moveResult.WasPieceJumped() || (
+                        moveResult.WasPieceCaptured() &&
+                        moveResult.polarityChanged
+                    )
+                )
             ) {
-                // The piece moved, and captured another piece, and became a checker in the process
-                // We need to check for the potential of a capture-jump
+                // Determine if the piece that moved can now jump another piece (either through regular
+                // multijumping or through capture-jumping). In either case the moved piece must still
+                // be a checker.
+                //
+                // It can't just be any potential move after the previous move, it needs to be a jump!
                 List<Tile> nextMovePotentialTiles = board.GetPotentialTilesForMovement(chessman);
                 foreach (Tile nextTile in nextMovePotentialTiles) {
                     (int nextRowDelta, int nextColDelta) = board.CalculateRowColumnDelta(nextTile, toTile);
 
-                    if (nextRowDelta == 2 || nextColDelta == 2) {
+                    if (Math.Abs(nextRowDelta) == 2 && Math.Abs(nextColDelta) == 2) {
                         shouldChangeTurns = false;
                         break;
                     }
