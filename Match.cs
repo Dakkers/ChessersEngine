@@ -321,6 +321,12 @@ namespace ChessersEngine {
             for (int i = 0; i < movesOfLastTurn.Length; i++) {
                 string moveNotation = movesOfLastTurn[i];
                 MoveResult partialResult = MoveResult.CreatePartialMoveResultFromNotation(moveNotation);
+                if (partialResult.isCastle) {
+                    //Color
+                    ColorEnum c = Helpers.GetOppositeColor(GetCommittedTurnColor());
+                    partialResult.toRow = (c == ColorEnum.BLACK) ? (committedBoard.GetNumberOfRows() - 1) : 0;
+                    partialResult.fromRow = partialResult.toRow;
+                }
 
                 Tile fromTile = committedBoard.GetTileIfExists(partialResult.fromRow, partialResult.fromColumn);
                 Tile toTile = committedBoard.GetTileIfExists(partialResult.toRow, partialResult.toColumn);
@@ -339,7 +345,7 @@ namespace ChessersEngine {
 
         #endregion
 
-        #region Move generation?
+        #region Move generation
 
         /// <summary>
         /// Minimax!
@@ -495,6 +501,10 @@ namespace ChessersEngine {
                 isMaximizingPlayer: turnColor == ColorEnum.WHITE
             );
 
+            if (moves.Count == 0 || (moves.Count == 1 && moves[0] == null)) {
+                return null;
+            }
+
             Log($"BEST CALCULATION: {value} NUM MOVES TO MAKE: {moves?.Count}");
             if (moves?.Count > 0) {
                 foreach (var m in moves) {
@@ -507,6 +517,10 @@ namespace ChessersEngine {
 
         public List<MoveResult> DoBestMovesForCurrentPlayer () {
             List<MoveAttempt> moveAttempts = CalculateBestMove();
+            if (moveAttempts == null) {
+                return null;
+            }
+
             List<MoveResult> moveResults = new List<MoveResult>();
 
             foreach (var attempt in moveAttempts) {
@@ -559,17 +573,35 @@ namespace ChessersEngine {
 
         public MatchData CreateMatchData () {
             return new MatchData {
-                pieces = committedBoard.GetChessmanSchemas(),
                 blackPlayerId = blackPlayerId,
                 currentTurn = turnColor,
                 isDraw = isDraw,
                 isResignation = isResignation,
                 matchId = id,
                 moves = moves,
+                pieces = committedBoard.GetChessmanSchemas(),
                 whitePlayerId = whitePlayerId,
                 winningPlayerId = winningPlayerId,
             };
         }
+
+        public void Resign (ColorEnum color) {
+            isResignation = true;
+            if (color == ColorEnum.WHITE) {
+                winningPlayerId = blackPlayerId;
+            } else {
+                winningPlayerId = whitePlayerId;
+            }
+        }
+
+        /// <summary>
+        /// Resign as the current player.
+        /// </summary>
+        public void Resign () {
+            Resign(committedTurnColor);
+        }
+
+        #region Utils
 
         public static void Log (object s) {
 #if UNITY_EDITOR
@@ -582,5 +614,7 @@ namespace ChessersEngine {
         public static void Log (object s, int indent) {
             Log($"{string.Concat(System.Linq.Enumerable.Repeat("    ", indent))}{s}");
         }
+
+        #endregion Utils
     }
 }

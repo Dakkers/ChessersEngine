@@ -25,6 +25,7 @@ namespace ChessersEngine {
         public int tileId { get; set; }
         public bool turnChanged { get; set; }
         public int type { get; set; }
+        public ColorEnum color;
 
         /// <summary>
         /// Whether or not this move triggers a polarity flip (checker piece to chess piece or vice versa)
@@ -102,6 +103,16 @@ namespace ChessersEngine {
         }
 
         public string CreateNotation () {
+            int colDelta = (toColumn - fromColumn);
+            if (isCastle) {
+                if (colDelta > 0) {
+                    // Kingside/"short" castle
+                    return "O-O";
+                } else {
+                    return "O-O-O";
+                }
+            }
+
             // Start with e.g. "Qh4"
             string moveNotation = (
                 Helpers.ConvertChessmanKindToNotationSymbol(chessmanKind) +
@@ -140,6 +151,16 @@ namespace ChessersEngine {
         /// <param name="notation">Notation.</param>
         public static MoveResult CreatePartialMoveResultFromNotation (string notation) {
             MoveResult moveResult = new MoveResult();
+            bool _isCastle = (notation == "O-O") || (notation == "O-O-O");
+
+            if (_isCastle) {
+                moveResult.chessmanKind = ChessmanKindEnum.KING;
+                moveResult.isCastle = true;
+                moveResult.fromColumn = 4;
+                moveResult.toColumn = (notation == "O-O") ? 6 : 2;
+
+                return moveResult;
+            }
 
             Queue<char> chars = new Queue<char>(notation);
 

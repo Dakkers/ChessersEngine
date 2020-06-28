@@ -356,6 +356,35 @@ namespace ChessersEngine {
             };
         }
 
+        public static MatchData CastlingWhite () {
+            return new MatchData {
+                currentTurn = ColorEnum.WHITE,
+                matchId = 1,
+                whitePlayerId = 0,
+                blackPlayerId = 1,
+                pieces = new List<ChessmanSchema> {
+                    TestScenarios.CreateWhiteKing(),
+                    TestScenarios.CreateRook(Constants.ID_WHITE_ROOK_1, 0),
+                    TestScenarios.CreateRook(Constants.ID_WHITE_ROOK_2, 7),
+                    TestScenarios.CreateBlackKing(),
+                }
+            };
+        }
+        public static MatchData CastlingBlack () {
+            return new MatchData {
+                currentTurn = ColorEnum.BLACK,
+                matchId = 1,
+                whitePlayerId = 0,
+                blackPlayerId = 1,
+                pieces = new List<ChessmanSchema> {
+                    TestScenarios.CreateWhiteKing(),
+                    TestScenarios.CreateRook(Constants.ID_BLACK_ROOK_1, 56),
+                    TestScenarios.CreateRook(Constants.ID_BLACK_ROOK_2, 63),
+                    TestScenarios.CreateBlackKing(),
+                }
+            };
+        }
+
         #endregion
 
         #region Bugs
