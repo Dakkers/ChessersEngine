@@ -511,6 +511,7 @@ namespace ChessersEngine {
                     rookFromTile.RemovePiece();
                     rookToTile.SetPiece(rookChessman);
                     rookChessman.SetUnderlyingTile(rookToTile);
+                    rookChessman.SetHasMoved(true);
                 }
             }
 
@@ -548,7 +549,7 @@ namespace ChessersEngine {
             chessman.SetUnderlyingTile(toTile);
 
             if (IsMovingPlayerInCheck()) {
-                Match.Log("            Attacking player is in check.");
+                //Match.Log("            Attacking player is in check.");
                 return null;
             }
 

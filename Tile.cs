@@ -1,4 +1,4 @@
-﻿namespace ChessersEngine {
+namespace ChessersEngine {
     public class Tile {
 
         /// <summary>

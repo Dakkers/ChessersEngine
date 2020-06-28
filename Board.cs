@@ -1341,6 +1341,21 @@ namespace ChessersEngine {
                 toTile.SetPiece(capturedChessman);
                 capturedChessman.SetUnderlyingTile(toTile);
             }
+
+            if (moveResult.isCastle) {
+                int row = GetRow(toTile);
+                int toCol = GetColumn(toTile);
+                int colDelta = toCol - GetColumn(fromTile);
+                int rookToCol = colDelta > 0 ? (toCol - 1) : (toCol + 1);
+
+                Tile rookToTile = GetTileByRowColumn(row, rookToCol);
+                Chessman rookChessman = rookToTile.GetPiece();
+                rookToTile.RemovePiece();
+
+                Tile rookFromTile = colDelta > 0 ? GetRightmostTileOfRow(row) : GetLeftmostTileOfRow(row);
+                rookFromTile.SetPiece(rookChessman);
+                rookChessman.SetUnderlyingTile(rookFromTile);
+            }
         }
 
         #endregion
