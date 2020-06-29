@@ -241,15 +241,14 @@ namespace ChessersEngine {
             ColorEnum targetColor,
             HashSet<int> tilesToIgnore
         ) {
-            // Each nested list is a path that the attacking player would take
-            // to (capture-)multijump
+            // Each nested list is a path that the attacking player would take to (capture-)multijump
             List<List<int>> result = new List<List<int>>();
 
             _RecursivelyFuckMeUp(
                 result,
                 currentPath: new List<int>(),
-                targetColor,
-                baseTile,
+                targetColor: targetColor,
+                tile: baseTile,
                 tilesToIgnore: new HashSet<int>(tilesToIgnore) { baseTile.id }
             );
 
