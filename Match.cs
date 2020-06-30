@@ -550,6 +550,11 @@ namespace ChessersEngine {
             foreach (ChessmanSchema cs in newMatchData.pieces) {
                 Chessman committedChessman = GetCommittedChessman(cs.id);
 
+                if (committedChessman.GetUnderlyingTile() != null) {
+                    committedChessman.GetUnderlyingTile().RemovePiece();
+                    committedChessman.RemoveUnderlyingTileReference();
+                }
+
                 committedChessman.CopyFrom(cs);
 
                 if (!committedChessman.isActive) {
@@ -602,6 +607,10 @@ namespace ChessersEngine {
         }
 
         #region Utils
+
+        public List<Tile> GetPotentialTilesForMovement (Chessman c) {
+            return pendingBoard.GetPotentialTilesForMovement(c);
+        }
 
         public static void Log (object s) {
 #if UNITY_EDITOR

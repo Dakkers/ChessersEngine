@@ -905,7 +905,7 @@ namespace ChessersEngine {
         ///
         /// <returns>The tile iterator.</returns>
         /// <param name="chessman">Chessman.</param>
-        List<Tile> PotentialTileIterator2 (
+        List<Tile> PotentialTileIterator (
             Chessman chessman,
             List<Tile> tiles,
             int limit = int.MaxValue
@@ -931,12 +931,12 @@ namespace ChessersEngine {
             List<Tile> potentialTiles = new List<Tile>();
             Tile tile = chessman.GetUnderlyingTile();
 
-            potentialTiles.AddRange(PotentialTileIterator2(
+            potentialTiles.AddRange(PotentialTileIterator(
                 chessman,
                 GetTilesInDirection(tile, Directionality.HORIZONTAL_LEFT),
                 limit
             ));
-            potentialTiles.AddRange(PotentialTileIterator2(
+            potentialTiles.AddRange(PotentialTileIterator(
                 chessman,
                 GetTilesInDirection(tile, Directionality.HORIZONTAL_RIGHT),
                 limit
@@ -948,12 +948,12 @@ namespace ChessersEngine {
             List<Tile> potentialTiles = new List<Tile>();
             Tile tile = chessman.GetUnderlyingTile();
 
-            potentialTiles.AddRange(PotentialTileIterator2(
+            potentialTiles.AddRange(PotentialTileIterator(
                 chessman,
                 GetTilesInDirection(tile, Directionality.VERTICAL_ABOVE),
                 limit
             ));
-            potentialTiles.AddRange(PotentialTileIterator2(
+            potentialTiles.AddRange(PotentialTileIterator(
                 chessman,
                 GetTilesInDirection(tile, Directionality.VERTICAL_BELOW),
                 limit
@@ -965,22 +965,22 @@ namespace ChessersEngine {
             List<Tile> potentialTiles = new List<Tile>();
             Tile tile = chessman.GetUnderlyingTile();
 
-            potentialTiles.AddRange(PotentialTileIterator2(
+            potentialTiles.AddRange(PotentialTileIterator(
                 chessman,
                 GetTilesInDirection(tile, Directionality.NEGATIVE_DIAGONAL_ABOVE),
                 limit
             ));
-            potentialTiles.AddRange(PotentialTileIterator2(
+            potentialTiles.AddRange(PotentialTileIterator(
                 chessman,
                 GetTilesInDirection(tile, Directionality.NEGATIVE_DIAGONAL_BELOW),
                 limit
             ));
-            potentialTiles.AddRange(PotentialTileIterator2(
+            potentialTiles.AddRange(PotentialTileIterator(
                 chessman,
                 GetTilesInDirection(tile, Directionality.POSITIVE_DIAGONAL_ABOVE),
                 limit
             ));
-            potentialTiles.AddRange(PotentialTileIterator2(
+            potentialTiles.AddRange(PotentialTileIterator(
                 chessman,
                 GetTilesInDirection(tile, Directionality.POSITIVE_DIAGONAL_BELOW),
                 limit
