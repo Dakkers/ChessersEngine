@@ -164,7 +164,7 @@ namespace ChessersEngine {
                 // tree ends as there is no way to jump onto an occupied tile.
 
                 if (!tile.GetPiece().IsSameColor(targetColor)) {
-                    Match.Log("Found a potential multijump...", depth + 1);
+                    //Match.Log("Found a potential multijump...", depth + 1);
                     // This is the piece that could capture the king!
                     result.Add(new List<int>(currentPath));
                 } else {

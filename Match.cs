@@ -320,7 +320,7 @@ namespace ChessersEngine {
                 partialResult.fromTileId = fromTile.id;
                 result.Add(partialResult);
 
-                //Match.Log($"move_{i} | {moveNotation} | {result[i]}");
+                //Match.Log($"move_{i} | {moveNotation} | {result[i]}", 2);
             }
 
             return result;
