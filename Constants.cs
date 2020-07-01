@@ -9,10 +9,10 @@
         public const int RIGHT_COLUMN = 7;
         public const int LEFT_COLUMN = 0;
 
-        #region Piece IDs
-
         public const int ID_WHITE = 0;
         public const int ID_BLACK = 1;
+
+        #region Piece IDs
 
         public const int ID_WHITE_PAWN_1 = 0;
         public const int ID_BLACK_PAWN_1 = 1;

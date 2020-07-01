@@ -77,7 +77,7 @@ namespace ChessersEngine {
             if (data == null) {
                 whitePlayerId = Constants.DEFAULT_WHITE_PLAYER_ID;
                 blackPlayerId = Constants.DEFAULT_BLACK_PLAYER_ID;
-                turnColor = Constants.ID_WHITE;
+                turnColor = ColorEnum.WHITE;
             } else {
                 id = data.matchId;
                 pieces = data.pieces;
@@ -92,7 +92,7 @@ namespace ChessersEngine {
             committedBoard = new Board(pieces);
         }
 
-        void SetTurnColorFromPlayerId (long playerId) {
+        void SetTurnColorFromPlayerId (int playerId) {
             if (playerId == whitePlayerId) {
                 turnColor = ColorEnum.WHITE;
             } else if (playerId == blackPlayerId) {
@@ -191,11 +191,7 @@ namespace ChessersEngine {
         }
 
         public void ChangeTurn () {
-            if (turnColor == Constants.ID_WHITE) {
-                turnColor = ColorEnum.BLACK;
-            } else {
-                turnColor = ColorEnum.WHITE;
-            }
+            turnColor = Helpers.GetOppositeColor(turnColor);
         }
 
         public bool IsWhitePlayerSet () {
@@ -218,28 +214,16 @@ namespace ChessersEngine {
         /// Gets the ID of the player whose turn it is.
         /// </summary>
         /// <returns>The turn player identifier.</returns>
-        public long GetCommittedTurnPlayerId () {
-            if (committedTurnColor == Constants.ID_WHITE) {
+        public int GetCommittedTurnPlayerId () {
+            if (committedTurnColor == ColorEnum.WHITE) {
                 return whitePlayerId;
             } else {
                 return blackPlayerId;
             }
         }
 
-        public long GetWinner () {
-            return winningPlayerId;
-        }
-
-        public ColorEnum GetColorOfPlayer (long playerId) {
+        public ColorEnum GetColorOfPlayer (int playerId) {
             return (playerId == blackPlayerId) ? ColorEnum.BLACK : ColorEnum.WHITE;
-        }
-
-        public ColorEnum GetWinnerColor () {
-            return GetColorOfPlayer(winningPlayerId);
-        }
-
-        public bool HasWinner () {
-            return winningPlayerId >= 0;
         }
 
         #endregion
@@ -248,7 +232,7 @@ namespace ChessersEngine {
 
         public MoveResult MoveChessman (MoveAttempt moveAttempt) {
             // -- Base validation
-            if (turnColor == Constants.ID_WHITE) {
+            if (turnColor == ColorEnum.WHITE) {
                 if (moveAttempt.playerId == blackPlayerId) {
                     Match.Log("Invalid turn. (is WHITE)");
                     // White's turn, black is trying to move --> no!
@@ -310,7 +294,7 @@ namespace ChessersEngine {
         }
 
         public List<MoveResult> GetMovesForLastTurn () {
-            Match.Log($"moves.Count = {moves.Count}");
+            Match.Log($"moves.Count = {moves.Count} | {string.Join(" ", moves)}");
             if (moves.Count == 0) {
                 return null;
             }
@@ -322,7 +306,6 @@ namespace ChessersEngine {
                 string moveNotation = movesOfLastTurn[i];
                 MoveResult partialResult = MoveResult.CreatePartialMoveResultFromNotation(moveNotation);
                 if (partialResult.isCastle) {
-                    //Color
                     ColorEnum c = Helpers.GetOppositeColor(GetCommittedTurnColor());
                     partialResult.toRow = (c == ColorEnum.BLACK) ? (committedBoard.GetNumberOfRows() - 1) : 0;
                     partialResult.fromRow = partialResult.toRow;
@@ -505,12 +488,12 @@ namespace ChessersEngine {
                 return null;
             }
 
-            Log($"BEST CALCULATION: {value} NUM MOVES TO MAKE: {moves?.Count}");
-            if (moves?.Count > 0) {
-                foreach (var m in moves) {
-                    Log(m);
-                }
-            }
+            //Log($"BEST CALCULATION: {value} NUM MOVES TO MAKE: {moves?.Count}");
+            //if (moves?.Count > 0) {
+            //    foreach (var m in moves) {
+            //        Log(m);
+            //    }
+            //}
 
             return moves;
         }
@@ -542,6 +525,38 @@ namespace ChessersEngine {
                 pendingBoard.UndoMove(pendingMoveResults[i]);
             }
             pendingMoveResults.Clear();
+        }
+
+        #endregion
+
+        #region Match state
+
+        public void Resign (ColorEnum color) {
+            isResignation = true;
+            if (color == ColorEnum.WHITE) {
+                winningPlayerId = blackPlayerId;
+            } else {
+                winningPlayerId = whitePlayerId;
+            }
+        }
+
+        /// <summary>
+        /// Resign as the current player.
+        /// </summary>
+        public void Resign () {
+            Resign(committedTurnColor);
+        }
+
+        public ColorEnum GetWinnerColor () {
+            return GetColorOfPlayer(winningPlayerId);
+        }
+
+        public bool HasWinner () {
+            return winningPlayerId >= 0;
+        }
+
+        public int GetWinner () {
+            return winningPlayerId;
         }
 
         #endregion
@@ -588,22 +603,6 @@ namespace ChessersEngine {
                 whitePlayerId = whitePlayerId,
                 winningPlayerId = winningPlayerId,
             };
-        }
-
-        public void Resign (ColorEnum color) {
-            isResignation = true;
-            if (color == ColorEnum.WHITE) {
-                winningPlayerId = blackPlayerId;
-            } else {
-                winningPlayerId = whitePlayerId;
-            }
-        }
-
-        /// <summary>
-        /// Resign as the current player.
-        /// </summary>
-        public void Resign () {
-            Resign(committedTurnColor);
         }
 
         #region Utils

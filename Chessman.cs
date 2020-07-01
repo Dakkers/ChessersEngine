@@ -74,7 +74,7 @@
         }
 
         public void CopyFrom (ChessmanSchema chessmanSchema) {
-            this.color = Helpers.ConvertColorIntToEnum(chessmanSchema.colorId);
+            this.color = Helpers.ConvertIntToColorEnum(chessmanSchema.colorId);
             this.guid = chessmanSchema.guid;
             this.hasMoved = chessmanSchema.hasMoved;
             this.id = chessmanSchema.id;
@@ -168,7 +168,7 @@
 
         public ChessmanSchema CreateSchema () {
             return new ChessmanSchema {
-                colorId = Helpers.ConvertColorEnumToInt(this.color),
+                colorId = (int) color,
                 guid = guid,
                 hasMoved = hasMoved,
                 id = id,

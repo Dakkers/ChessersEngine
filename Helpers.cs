@@ -6,16 +6,8 @@ namespace ChessersEngine {
 
         #region Color helpers
 
-        public static int ConvertColorEnumToInt (ColorEnum color) {
-            return color == ColorEnum.BLACK ?
-                Constants.ID_BLACK :
-                Constants.ID_WHITE;
-        }
-
-        public static ColorEnum ConvertColorIntToEnum (int colorId) {
-            return colorId == Constants.ID_BLACK ?
-                ColorEnum.BLACK :
-                ColorEnum.WHITE;
+        public static ColorEnum ConvertIntToColorEnum (int val) {
+            return (val == Constants.ID_WHITE) ? ColorEnum.WHITE : ColorEnum.BLACK;
         }
 
         public static ColorEnum GetOppositeColor (ColorEnum color) {

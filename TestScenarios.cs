@@ -252,7 +252,7 @@ namespace ChessersEngine {
             pawnCS.isChecker = true;
 
             return new MatchData {
-                currentTurn = Constants.ID_WHITE,
+                currentTurn = ColorEnum.WHITE,
                 matchId = 1,
                 whitePlayerId = 0,
                 blackPlayerId = 1,
@@ -271,7 +271,7 @@ namespace ChessersEngine {
             checkerCS.isKinged = true;
 
             return new MatchData {
-                currentTurn = Constants.ID_WHITE,
+                currentTurn = ColorEnum.WHITE,
                 matchId = 1,
                 whitePlayerId = 0,
                 blackPlayerId = 1,
@@ -290,7 +290,7 @@ namespace ChessersEngine {
             checkerCS.isChecker = true;
 
             return new MatchData {
-                currentTurn = Constants.ID_WHITE,
+                currentTurn = ColorEnum.WHITE,
                 matchId = 1,
                 whitePlayerId = 0,
                 blackPlayerId = 1,
@@ -315,7 +315,7 @@ namespace ChessersEngine {
             checkerCS.isKinged = true;
 
             return new MatchData {
-                currentTurn = Constants.ID_WHITE,
+                currentTurn = ColorEnum.WHITE,
                 matchId = 1,
                 whitePlayerId = 0,
                 blackPlayerId = 1,
@@ -336,7 +336,7 @@ namespace ChessersEngine {
 
         public static MatchData Castling () {
             return new MatchData {
-                currentTurn = Constants.ID_WHITE,
+                currentTurn = ColorEnum.WHITE,
                 matchId = 1,
                 whitePlayerId = 0,
                 blackPlayerId = 1,
@@ -398,7 +398,7 @@ namespace ChessersEngine {
             checker.isKinged = true;
 
             return new MatchData {
-                currentTurn = Constants.ID_WHITE,
+                currentTurn = ColorEnum.WHITE,
                 matchId = 1,
                 whitePlayerId = 0,
                 blackPlayerId = 1,
@@ -420,7 +420,7 @@ namespace ChessersEngine {
         /// <returns>The minimax calculation20200627.</returns>
         public static MatchData BugMinimaxCalculation20200627 () {
             return new MatchData {
-                currentTurn = Constants.ID_WHITE,
+                currentTurn = ColorEnum.WHITE,
                 matchId = 1,
                 whitePlayerId = 0,
                 blackPlayerId = 1,
