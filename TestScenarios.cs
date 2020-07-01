@@ -3,6 +3,15 @@ using System.Collections.Generic;
 
 namespace ChessersEngine {
     public static class TestScenarios {
+        static MatchData CreateMatchData () {
+            return new MatchData {
+                currentTurn = ColorEnum.WHITE,
+                matchId = 1,
+                whitePlayerId = 0,
+                blackPlayerId = 1,
+            };
+        }
+
         static ChessmanSchema CreateKing (bool isWhite = true) {
             return new ChessmanSchema {
                 kind = Constants.CHESSMAN_KIND_KING,
@@ -169,14 +178,14 @@ namespace ChessersEngine {
                 whitePlayerId = 0,
                 blackPlayerId = 1,
                 pieces = new List<ChessmanSchema> {
-                    TestScenarios.CreateWhiteKing(0),
+                    CreateWhiteKing(0),
                     CreateWhiteQueen(7),
-                    TestScenarios.CreatePawn(Constants.ID_WHITE_PAWN_1, 32),
+                    CreatePawn(Constants.ID_WHITE_PAWN_1, 32),
 
-                    TestScenarios.CreateRook(Constants.ID_BLACK_ROOK_1, 15),
-                    TestScenarios.CreateRook(Constants.ID_BLACK_ROOK_2, 56),
-                    TestScenarios.CreateBlackQueen(57),
-                    TestScenarios.CreateBlackKing(58),
+                    CreateRook(Constants.ID_BLACK_ROOK_1, 15),
+                    CreateRook(Constants.ID_BLACK_ROOK_2, 56),
+                    CreateBlackQueen(57),
+                    CreateBlackKing(58),
                 }
             };
         }
@@ -190,14 +199,14 @@ namespace ChessersEngine {
                 whitePlayerId = 0,
                 blackPlayerId = 1,
                 pieces = new List<ChessmanSchema> {
-                    TestScenarios.CreateWhiteKing(0),
-                    TestScenarios.CreateRook(Constants.ID_WHITE_ROOK_1, 15),
-                    TestScenarios.CreatePawn(Constants.ID_WHITE_PAWN_1, 32),
+                    CreateWhiteKing(0),
+                    CreateRook(Constants.ID_WHITE_ROOK_1, 15),
+                    CreatePawn(Constants.ID_WHITE_PAWN_1, 32),
 
-                    TestScenarios.CreateRook(Constants.ID_BLACK_ROOK_1, 23),
-                    TestScenarios.CreateRook(Constants.ID_BLACK_ROOK_2, 56),
-                    TestScenarios.CreateBlackQueen(57),
-                    TestScenarios.CreateBlackKing(58),
+                    CreateRook(Constants.ID_BLACK_ROOK_1, 23),
+                    CreateRook(Constants.ID_BLACK_ROOK_2, 56),
+                    CreateBlackQueen(57),
+                    CreateBlackKing(58),
                 }
             };
         }
@@ -211,14 +220,14 @@ namespace ChessersEngine {
                 whitePlayerId = 0,
                 blackPlayerId = 1,
                 pieces = new List<ChessmanSchema> {
-                    TestScenarios.CreateWhiteKing(0),
-                    TestScenarios.CreateBishop(Constants.ID_WHITE_BISHOP_1, 22),
-                    TestScenarios.CreatePawn(Constants.ID_WHITE_PAWN_1, 32),
+                    CreateWhiteKing(0),
+                    CreateBishop(Constants.ID_WHITE_BISHOP_1, 22),
+                    CreatePawn(Constants.ID_WHITE_PAWN_1, 32),
 
-                    TestScenarios.CreateBishop(Constants.ID_BLACK_BISHOP_1, 43),
-                    TestScenarios.CreateRook(Constants.ID_BLACK_ROOK_2, 56),
-                    TestScenarios.CreateBlackQueen(57),
-                    TestScenarios.CreateBlackKing(58),
+                    CreateBishop(Constants.ID_BLACK_BISHOP_1, 43),
+                    CreateRook(Constants.ID_BLACK_ROOK_2, 56),
+                    CreateBlackQueen(57),
+                    CreateBlackKing(58),
                 }
             };
         }
@@ -232,15 +241,15 @@ namespace ChessersEngine {
                 whitePlayerId = 0,
                 blackPlayerId = 1,
                 pieces = new List<ChessmanSchema> {
-                    TestScenarios.CreateWhiteKing(27),
+                    CreateWhiteKing(27),
 
-                    TestScenarios.CreatePawn(Constants.ID_BLACK_PAWN_1, 52),
-                    TestScenarios.CreatePawn(Constants.ID_BLACK_PAWN_2, 45),
-                    TestScenarios.CreateBishop(Constants.ID_BLACK_BISHOP_1, 38),
-                    TestScenarios.CreateBishop(Constants.ID_BLACK_BISHOP_2, 46),
-                    TestScenarios.CreateRook(Constants.ID_BLACK_ROOK_2, 59),
-                    TestScenarios.CreateBlackQueen(58),
-                    TestScenarios.CreateBlackKing(56),
+                    CreatePawn(Constants.ID_BLACK_PAWN_1, 52),
+                    CreatePawn(Constants.ID_BLACK_PAWN_2, 45),
+                    CreateBishop(Constants.ID_BLACK_BISHOP_1, 38),
+                    CreateBishop(Constants.ID_BLACK_BISHOP_2, 46),
+                    CreateRook(Constants.ID_BLACK_ROOK_2, 59),
+                    CreateBlackQueen(58),
+                    CreateBlackKing(56),
                 }
             };
         }
@@ -257,16 +266,16 @@ namespace ChessersEngine {
                 whitePlayerId = 0,
                 blackPlayerId = 1,
                 pieces = new List<ChessmanSchema> {
-                    TestScenarios.CreateWhiteKing(0),
+                    CreateWhiteKing(0),
                     pawnCS,
 
-                    TestScenarios.CreateBlackKing(60),
+                    CreateBlackKing(60),
                 }
             };
         }
 
         public static MatchData Jump1 () {
-            var checkerCS = TestScenarios.CreateWhiteQueen(61);
+            var checkerCS = CreateWhiteQueen(61);
             checkerCS.isChecker = true;
             checkerCS.isKinged = true;
 
@@ -276,17 +285,17 @@ namespace ChessersEngine {
                 whitePlayerId = 0,
                 blackPlayerId = 1,
                 pieces = new List<ChessmanSchema> {
-                    TestScenarios.CreateWhiteKing(0),
+                    CreateWhiteKing(0),
                     checkerCS,
 
-                    TestScenarios.CreateBlackQueen(52),
-                    TestScenarios.CreateBlackKing(56),
+                    CreateBlackQueen(52),
+                    CreateBlackKing(56),
                 }
             };
         }
 
         public static MatchData Jump2 () {
-            var checkerCS = TestScenarios.CreateWhiteQueen(45);
+            var checkerCS = CreateWhiteQueen(45);
             checkerCS.isChecker = true;
 
             return new MatchData {
@@ -295,11 +304,11 @@ namespace ChessersEngine {
                 whitePlayerId = 0,
                 blackPlayerId = 1,
                 pieces = new List<ChessmanSchema> {
-                    TestScenarios.CreateWhiteKing(0),
+                    CreateWhiteKing(0),
                     checkerCS,
 
-                    TestScenarios.CreateBlackQueen(52),
-                    TestScenarios.CreateBlackKing(56),
+                    CreateBlackQueen(52),
+                    CreateBlackKing(56),
                 }
             };
         }
@@ -310,7 +319,7 @@ namespace ChessersEngine {
         /// </summary>
         /// <returns>The multijump1.</returns>
         public static MatchData Multijump1 () {
-            var checkerCS = TestScenarios.CreateWhiteQueen(63);
+            var checkerCS = CreateWhiteQueen(63);
             checkerCS.isChecker = true;
             checkerCS.isKinged = true;
 
@@ -320,14 +329,14 @@ namespace ChessersEngine {
                 whitePlayerId = 0,
                 blackPlayerId = 1,
                 pieces = new List<ChessmanSchema> {
-                    TestScenarios.CreateWhiteKing(2),
-                    TestScenarios.CreatePawn(Constants.ID_WHITE_PAWN_1, 28),
+                    CreateWhiteKing(2),
+                    CreatePawn(Constants.ID_WHITE_PAWN_1, 28),
                     checkerCS,
 
-                    TestScenarios.CreateKnight(Constants.ID_BLACK_KNIGHT_1, 54),
-                    TestScenarios.CreateKnight(Constants.ID_BLACK_KNIGHT_2, 52),
-                    TestScenarios.CreateRook(Constants.ID_BLACK_ROOK_1, 37),
-                    TestScenarios.CreateBlackKing(56),
+                    CreateKnight(Constants.ID_BLACK_KNIGHT_1, 54),
+                    CreateKnight(Constants.ID_BLACK_KNIGHT_2, 52),
+                    CreateRook(Constants.ID_BLACK_ROOK_1, 37),
+                    CreateBlackKing(56),
                 }
             };
         }
@@ -341,17 +350,17 @@ namespace ChessersEngine {
                 whitePlayerId = 0,
                 blackPlayerId = 1,
                 pieces = new List<ChessmanSchema> {
-                    TestScenarios.CreateWhiteKing(),
-                    TestScenarios.CreateRook(Constants.ID_WHITE_ROOK_1, 0),
-                    TestScenarios.CreateRook(Constants.ID_WHITE_ROOK_2, 7),
-                    TestScenarios.CreatePawn(Constants.ID_WHITE_PAWN_1, 8),
-                    TestScenarios.CreatePawn(Constants.ID_WHITE_PAWN_2, 15),
+                    CreateWhiteKing(),
+                    CreateRook(Constants.ID_WHITE_ROOK_1, 0),
+                    CreateRook(Constants.ID_WHITE_ROOK_2, 7),
+                    CreatePawn(Constants.ID_WHITE_PAWN_1, 8),
+                    CreatePawn(Constants.ID_WHITE_PAWN_2, 15),
                     //TestScenarios.CreatePawn(Constants.ID_BLACK_PAWN_1, 8),
                     //TestScenarios.CreatePawn(Constants.ID_BLACK_PAWN_2, 15),
 
-                    TestScenarios.CreateRook(Constants.ID_BLACK_ROOK_1, 56),
-                    TestScenarios.CreateRook(Constants.ID_BLACK_ROOK_2, 63),
-                    TestScenarios.CreateBlackKing(),
+                    CreateRook(Constants.ID_BLACK_ROOK_1, 56),
+                    CreateRook(Constants.ID_BLACK_ROOK_2, 63),
+                    CreateBlackKing(),
                 }
             };
         }
@@ -363,10 +372,10 @@ namespace ChessersEngine {
                 whitePlayerId = 0,
                 blackPlayerId = 1,
                 pieces = new List<ChessmanSchema> {
-                    TestScenarios.CreateWhiteKing(),
-                    TestScenarios.CreateRook(Constants.ID_WHITE_ROOK_1, 0),
-                    TestScenarios.CreateRook(Constants.ID_WHITE_ROOK_2, 7),
-                    TestScenarios.CreateBlackKing(),
+                    CreateWhiteKing(),
+                    CreateRook(Constants.ID_WHITE_ROOK_1, 0),
+                    CreateRook(Constants.ID_WHITE_ROOK_2, 7),
+                    CreateBlackKing(),
                 }
             };
         }
@@ -377,10 +386,10 @@ namespace ChessersEngine {
                 whitePlayerId = 0,
                 blackPlayerId = 1,
                 pieces = new List<ChessmanSchema> {
-                    TestScenarios.CreateWhiteKing(),
-                    TestScenarios.CreateRook(Constants.ID_BLACK_ROOK_1, 56),
-                    TestScenarios.CreateRook(Constants.ID_BLACK_ROOK_2, 63),
-                    TestScenarios.CreateBlackKing(),
+                    CreateWhiteKing(),
+                    CreateRook(Constants.ID_BLACK_ROOK_1, 56),
+                    CreateRook(Constants.ID_BLACK_ROOK_2, 63),
+                    CreateBlackKing(),
                 }
             };
         }
@@ -394,7 +403,7 @@ namespace ChessersEngine {
         /// </summary>
         /// <returns>The bug20200405.</returns>
         public static MatchData Bug20200405 () {
-            var checker = TestScenarios.CreateBlackChecker(Constants.ID_BLACK_PAWN_1, 1);
+            var checker = CreateBlackChecker(Constants.ID_BLACK_PAWN_1, 1);
             checker.isKinged = true;
 
             return new MatchData {
@@ -403,11 +412,11 @@ namespace ChessersEngine {
                 whitePlayerId = 0,
                 blackPlayerId = 1,
                 pieces = new List<ChessmanSchema> {
-                    TestScenarios.CreateWhiteKing(3),
-                    TestScenarios.CreateWhiteQueen(19),
+                    CreateWhiteKing(3),
+                    CreateWhiteQueen(19),
 
                     checker,
-                    TestScenarios.CreateBlackKing(56),
+                    CreateBlackKing(56),
                 }
             };
         }
@@ -419,20 +428,33 @@ namespace ChessersEngine {
         /// </summary>
         /// <returns>The minimax calculation20200627.</returns>
         public static MatchData BugMinimaxCalculation20200627 () {
-            return new MatchData {
-                currentTurn = ColorEnum.WHITE,
-                matchId = 1,
-                whitePlayerId = 0,
-                blackPlayerId = 1,
-                pieces = new List<ChessmanSchema> {
-                    TestScenarios.CreateWhiteKing(2),
-                    TestScenarios.CreateRook(Constants.ID_WHITE_ROOK_1, 4),
-
-                    TestScenarios.CreateRook(Constants.ID_BLACK_ROOK_1, 60),
-                    TestScenarios.CreateBlackKing(56),
-                }
+            var md = CreateMatchData();
+            md.pieces = new List<ChessmanSchema> {
+                CreateWhiteKing(2),
+                CreateRook(Constants.ID_WHITE_ROOK_1, 4),
+                CreateRook(Constants.ID_BLACK_ROOK_1, 60),
+                CreateBlackKing(56),
             };
+            return md;
         }
+
+        /// <summary>
+        /// Bug in determining potential tiles for a checker. The bug was that, when a piece was captured,
+        /// it also allowed them to move as a normal checker if they were able to do a capture-jump
+        /// (and chose not to).
+        /// </summary>
+        public static MatchData Bug20200701 () {
+            var md = CreateMatchData();
+            md.pieces = new List<ChessmanSchema> {
+                CreateWhiteKing(),
+                CreatePawn(Constants.ID_WHITE_PAWN_1, 24),
+                CreateRook(Constants.ID_BLACK_PAWN_1, 33),
+                CreateRook(Constants.ID_BLACK_PAWN_2, 42),
+                CreateBlackKing(63),
+            };
+            return md;
+        }
+
 
         #endregion
     }

@@ -51,131 +51,131 @@ namespace ChessersEngine {
 
         List<ChessmanSchema> CreateDefaultChessmen () {
             List<ChessmanSchema> chessmanSchemas = new List<ChessmanSchema> {
-                new ChessmanSchema () {
+                new ChessmanSchema  {
                     location = 0,
                     id = Constants.ID_WHITE_ROOK_1
                 },
-                new ChessmanSchema () {
+                new ChessmanSchema  {
                     location = 1,
                     id = Constants.ID_WHITE_KNIGHT_1
                 },
-                new ChessmanSchema () {
+                new ChessmanSchema  {
                     location = 2,
                     id = Constants.ID_WHITE_BISHOP_1
                 },
-                new ChessmanSchema () {
+                new ChessmanSchema  {
                     location = 3,
                     id = Constants.ID_WHITE_QUEEN
                 },
-                new ChessmanSchema () {
+                new ChessmanSchema  {
                     location = 4,
                     id = Constants.ID_WHITE_KING
                 },
-                new ChessmanSchema () {
+                new ChessmanSchema  {
                     location = 5,
                     id = Constants.ID_WHITE_BISHOP_2
                 },
-                new ChessmanSchema () {
+                new ChessmanSchema  {
                     location = 6,
                     id = Constants.ID_WHITE_KNIGHT_2
                 },
-                new ChessmanSchema () {
+                new ChessmanSchema  {
                     location = 7,
                     id = Constants.ID_WHITE_ROOK_2
                 },
-                new ChessmanSchema () {
+                new ChessmanSchema  {
                     location = 8,
                     id = Constants.ID_WHITE_PAWN_1
                 },
-                new ChessmanSchema () {
+                new ChessmanSchema  {
                     location = 9,
                     id = Constants.ID_WHITE_PAWN_2
                 },
-                new ChessmanSchema () {
+                new ChessmanSchema  {
                     location = 10,
                     id = Constants.ID_WHITE_PAWN_3
                 },
-                new ChessmanSchema () {
+                new ChessmanSchema  {
                     location = 11,
                     id = Constants.ID_WHITE_PAWN_4
                 },
-                new ChessmanSchema () {
+                new ChessmanSchema  {
                     location = 12,
                     id = Constants.ID_WHITE_PAWN_5
                 },
-                new ChessmanSchema () {
+                new ChessmanSchema  {
                     location = 13,
                     id = Constants.ID_WHITE_PAWN_6
                 },
-                new ChessmanSchema () {
+                new ChessmanSchema  {
                     location = 14,
                     id = Constants.ID_WHITE_PAWN_7
                 },
-                new ChessmanSchema () {
+                new ChessmanSchema  {
                     location = 15,
                     id = Constants.ID_WHITE_PAWN_8
                 },
-                new ChessmanSchema () {
+                new ChessmanSchema  {
                     location = 48,
                     id = Constants.ID_BLACK_PAWN_1
                 },
-                new ChessmanSchema () {
+                new ChessmanSchema  {
                     location = 49,
                     id = Constants.ID_BLACK_PAWN_2
                 },
-                new ChessmanSchema () {
+                new ChessmanSchema  {
                     location = 50,
                     id = Constants.ID_BLACK_PAWN_3
                 },
-                new ChessmanSchema () {
+                new ChessmanSchema  {
                     location = 51,
                     id = Constants.ID_BLACK_PAWN_4
                 },
-                new ChessmanSchema () {
+                new ChessmanSchema  {
                     location = 52,
                     id = Constants.ID_BLACK_PAWN_5
                 },
-                new ChessmanSchema () {
+                new ChessmanSchema  {
                     location = 53,
                     id = Constants.ID_BLACK_PAWN_6
                 },
-                new ChessmanSchema () {
+                new ChessmanSchema  {
                     location = 54,
                     id = Constants.ID_BLACK_PAWN_7
                 },
-                new ChessmanSchema () {
+                new ChessmanSchema  {
                     location = 55,
                     id = Constants.ID_BLACK_PAWN_8
                 },
-                new ChessmanSchema () {
+                new ChessmanSchema  {
                     location = 56,
                     id = Constants.ID_BLACK_ROOK_1
                 },
-                new ChessmanSchema () {
+                new ChessmanSchema  {
                     location = 57,
                     id = Constants.ID_BLACK_KNIGHT_1
                 },
-                new ChessmanSchema () {
+                new ChessmanSchema  {
                     location = 58,
                     id = Constants.ID_BLACK_BISHOP_1
                 },
-                new ChessmanSchema () {
+                new ChessmanSchema  {
                     location = 59,
                     id = Constants.ID_BLACK_QUEEN
                 },
-                new ChessmanSchema () {
+                new ChessmanSchema  {
                     location = 60,
                     id = Constants.ID_BLACK_KING
                 },
-                new ChessmanSchema () {
+                new ChessmanSchema  {
                     location = 61,
                     id = Constants.ID_BLACK_BISHOP_2
                 },
-                new ChessmanSchema () {
+                new ChessmanSchema  {
                     location = 62,
                     id = Constants.ID_BLACK_KNIGHT_2
                 },
-                new ChessmanSchema () {
+                new ChessmanSchema  {
                     location = 63,
                     id = Constants.ID_BLACK_ROOK_2
                 },
@@ -786,7 +786,7 @@ namespace ChessersEngine {
         public List<Tile> GetDiagonallyAdjacentTiles (Tile tile) {
             (int row, int col) = GetRowColumn(tile);
 
-            return new List<Tile>() {
+            return new List<Tile> {
                 GetTileByRowColumn(row + 1, col + 1),
                 GetTileByRowColumn(row + 1, col - 1),
                 GetTileByRowColumn(row - 1, col + 1),
@@ -1181,17 +1181,17 @@ namespace ChessersEngine {
             return potentialTiles;
         }
 
-        List<Tile> GetPotentialTilesForCheckerMovement (Chessman chessman) {
+        List<Tile> GetPotentialTilesForCheckerMovement (Chessman chessman, bool jumpsOnly = false) {
             List<Tile> potentialTiles = new List<Tile>();
             Tile tile = chessman.GetUnderlyingTile();
             int modifier = (chessman.IsBlack()) ? -1 : 1;
 
-            List<int> regularMovementDeltas = new List<int>() {
+            List<int> regularMovementDeltas = new List<int> {
                 modifier * rightDiagonalDelta,
                 modifier * leftDiagonalDelta,
             };
 
-            List<int> jumpMovementDeltas = new List<int>() {
+            List<int> jumpMovementDeltas = new List<int> {
                 2 * modifier * rightDiagonalDelta,
                 2 * modifier * leftDiagonalDelta,
             };
@@ -1203,7 +1203,10 @@ namespace ChessersEngine {
 
             foreach (int d in regularMovementDeltas) {
                 Tile potentialTile = GetTileIfExists(tile.id + d);
-                if (potentialTile == null) { continue; }
+                if (jumpsOnly || potentialTile == null) {
+                    //if (potentialTile == null) {
+                    continue;
+                }
 
                 (int rowDelta, int colDelta) = CalculateRowColumnDelta(tile, potentialTile);
                 if (
@@ -1218,7 +1221,9 @@ namespace ChessersEngine {
             foreach (int d in jumpMovementDeltas) {
                 Tile potentialTile = GetTileIfExists(tile.id + d);
                 Tile jumpOverTile = GetTileIfExists(tile.id + (d / 2));
-                if (potentialTile == null || jumpOverTile == null) { continue; }
+                if (potentialTile == null || jumpOverTile == null) {
+                    continue;
+                }
 
                 (int farRowDelta, int farColDelta) = CalculateRowColumnDelta(tile, potentialTile);
                 (int shortRowDelta, int shortColDelta) = CalculateRowColumnDelta(tile, jumpOverTile);
@@ -1242,11 +1247,11 @@ namespace ChessersEngine {
             return potentialTiles;
         }
 
-        public List<Tile> GetPotentialTilesForMovement (Chessman chessman) {
+        public List<Tile> GetPotentialTilesForMovement (Chessman chessman, bool jumpsOnly = false) {
             Func<Chessman, List<Tile>> potentialTilesGetter = null;
 
             if (chessman.IsChecker()) {
-                potentialTilesGetter = GetPotentialTilesForCheckerMovement;
+                potentialTilesGetter = (Chessman c) => GetPotentialTilesForCheckerMovement(c, jumpsOnly);
             } else if (chessman.IsPawn()) {
                 potentialTilesGetter = GetPotentialTilesForPawnMovement;
             } else if (chessman.IsKnight()) {
@@ -1282,11 +1287,11 @@ namespace ChessersEngine {
 
         #region Movements
 
-        public MoveResult MoveChessman (MoveAttempt moveAttempt) {
+        public MoveResult MoveChessman (MoveAttempt moveAttempt, bool jumpsOnly = false) {
             Board boardCopy = new Board(this.GetChessmanSchemas());
             boardCopy.CopyState(this);
 
-            Move move = new Move(boardCopy, moveAttempt);
+            Move move = new Move(boardCopy, moveAttempt, jumpsOnly);
             MovementValidationEndResult result = move.ExecuteMove();
 
             if (result.moveResult == null || !result.moveResult.valid) {

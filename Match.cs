@@ -268,7 +268,7 @@ namespace ChessersEngine {
                 return null;
             }
 
-            MoveResult moveResult = pendingBoard.MoveChessman(moveAttempt);
+            MoveResult moveResult = pendingBoard.MoveChessman(moveAttempt, jumpsOnly: (pendingMoveResults.Count > 0));
             if (moveResult == null || !moveResult.valid) {
                 return null;
             }
@@ -294,7 +294,7 @@ namespace ChessersEngine {
         }
 
         public List<MoveResult> GetMovesForLastTurn () {
-            Match.Log($"moves.Count = {moves.Count} | {string.Join(" ", moves)}");
+            //Match.Log($"moves.Count = {moves.Count} | {string.Join(" ", moves)}");
             if (moves.Count == 0) {
                 return null;
             }
@@ -320,7 +320,7 @@ namespace ChessersEngine {
                 partialResult.fromTileId = fromTile.id;
                 result.Add(partialResult);
 
-                Match.Log($"move_{i} | {moveNotation} | {result[i]}");
+                //Match.Log($"move_{i} | {moveNotation} | {result[i]}");
             }
 
             return result;
@@ -368,7 +368,7 @@ namespace ChessersEngine {
             Helpers.Shuffle(rng, availableChessmen);
 
             foreach (var chessman in availableChessmen) {
-                List<Tile> potentialTiles = board.GetPotentialTilesForMovement(chessman);
+                List<Tile> potentialTiles = board.GetPotentialTilesForMovement(chessman, jumpsOnly: isMultipleMoves);
                 Helpers.Shuffle(rng, potentialTiles);
                 //Match.Log($"Looking @ chessman for tile {committedBoard.GetRowColumn(chessman.GetUnderlyingTile())}. Found:" +
                 //$"{potentialTiles.Count} potential moves.");
@@ -609,6 +609,13 @@ namespace ChessersEngine {
 
         public List<Tile> GetPotentialTilesForMovement (Chessman c) {
             return pendingBoard.GetPotentialTilesForMovement(c);
+        }
+
+        public Board _GetPendingBoard () {
+            return pendingBoard;
+        }
+        public Board _GetCommittedBoard () {
+            return committedBoard;
         }
 
         public static void Log (object s) {

@@ -45,7 +45,7 @@ namespace ChessersEngine {
 
         readonly MoveResult moveResult;
 
-        public Move (Board _board, MoveAttempt moveAttempt) {
+        public Move (Board _board, MoveAttempt moveAttempt, bool jumpsOnly = false) {
             board = _board;
 
             chessman = board.GetChessman(moveAttempt.pieceId);
@@ -70,7 +70,7 @@ namespace ChessersEngine {
                 chessmanKind = chessman.kind,
             };
 
-            potentialTilesForMovement = board.GetPotentialTilesForMovement(chessman);
+            potentialTilesForMovement = board.GetPotentialTilesForMovement(chessman, jumpsOnly: jumpsOnly);
             //Match.Log($"Potential for chessman @ {fromTile.id} ({toTile.id}): {string.Join(", ", potentialTilesForMovement.Select((t) => t.id))}");
         }
 
@@ -645,15 +645,8 @@ namespace ChessersEngine {
                 // be a checker.
                 //
                 // It can't just be any potential move after the previous move, it needs to be a jump!
-                List<Tile> nextMovePotentialTiles = board.GetPotentialTilesForMovement(chessman);
-                foreach (Tile nextTile in nextMovePotentialTiles) {
-                    (int nextRowDelta, int nextColDelta) = board.CalculateRowColumnDelta(nextTile, toTile);
-
-                    if (Math.Abs(nextRowDelta) == 2 && Math.Abs(nextColDelta) == 2) {
-                        shouldChangeTurns = false;
-                        break;
-                    }
-                }
+                List<Tile> nextMovePotentialTiles = board.GetPotentialTilesForMovement(chessman, jumpsOnly: true);
+                shouldChangeTurns = (nextMovePotentialTiles.Count == 0);
             }
 
             if (shouldChangeTurns) {

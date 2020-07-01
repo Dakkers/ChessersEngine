@@ -199,14 +199,15 @@ namespace ChessersEngine {
             char fromRank = chars.Dequeue();
             moveResult.fromRow = Helpers.ConvertRankToRow(fromRank);
 
-            // -- Fourth letter can be jump or capture symbol
+            // -- Fourth letter can be jump or capture symbol (x, y respectively) so if it's either
+            // of those, the "to" file is actually the letter after that.
             char toFile = chars.Dequeue();
             if (toFile == 'x') {
                 //moveResult.capturedPieceId = int.MaxValue;
-                chars.Dequeue();
+                toFile = chars.Dequeue();
             } else if (toFile == 'y') {
                 //moveResult.jumpedPieceId = int.MaxValue;
-                chars.Dequeue();
+                toFile = chars.Dequeue();
             }
 
             moveResult.toColumn = Helpers.ConvertFileToColumn(toFile);
