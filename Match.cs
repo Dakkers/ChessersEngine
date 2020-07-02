@@ -57,8 +57,8 @@ namespace ChessersEngine {
         Board pendingBoard;
         Board committedBoard;
 
-        // If multiple moves are made in a single turn, they will be separated by commas
-        // Each element is a different turn
+        // Each element is a different turn; if multiple moves are made in a single turn, the element
+        // will be separated by commas
         List<string> moves = new List<string>();
 
         public int whitePlayerId = -1;
@@ -66,7 +66,7 @@ namespace ChessersEngine {
         int winningPlayerId = -1;
         bool isDraw = false;
         bool isResignation = false;
-        System.Random rng = new System.Random();
+        readonly System.Random rng = new System.Random();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="T:ChessersEngine.Match"/> class.
@@ -75,18 +75,56 @@ namespace ChessersEngine {
         public Match (MatchData data) {
             List<ChessmanSchema> pieces = null;
             if (data == null) {
-                whitePlayerId = Constants.DEFAULT_WHITE_PLAYER_ID;
                 blackPlayerId = Constants.DEFAULT_BLACK_PLAYER_ID;
                 turnColor = ColorEnum.WHITE;
+                whitePlayerId = Constants.DEFAULT_WHITE_PLAYER_ID;
             } else {
-                id = data.matchId;
-                pieces = data.pieces;
-                whitePlayerId = data.whitePlayerId;
                 blackPlayerId = data.blackPlayerId;
+                id = data.matchId;
+                isDraw = data.isDraw;
+                isResignation = data.isResignation;
+                moves = data.moves ?? new List<string>();
+                pieces = data.pieces;
                 turnColor = data.currentTurn;
+                whitePlayerId = data.whitePlayerId;
             }
 
             committedTurnColor = turnColor;
+
+            pieces = new List<ChessmanSchema> {
+                new ChessmanSchema { colorId = 0, id = 16, kind = 3, location = 0 },
+                new ChessmanSchema { colorId = 0, id = 20, kind = 1, location = 1 },
+                new ChessmanSchema { colorId = 0, hasMoved = true, id = 24, kind = 2, location = 16 },
+                new ChessmanSchema { colorId = 0, id = 28, kind = 4, location = 3 },
+                new ChessmanSchema { colorId = 0, id = 30, kind = 5, location = 4 },
+                new ChessmanSchema { colorId = 0, id = 26, kind = 2, location = 5 },
+                new ChessmanSchema { colorId = 0, hasMoved = true, id = 22, kind = 1, location = 21 },
+                new ChessmanSchema { colorId = 0, id = 18, kind = 3, location = 7 },
+                new ChessmanSchema { colorId = 0, hasMoved = true, id = 0, kind = 0, location = 24 },
+                new ChessmanSchema { colorId = 0, hasMoved = true, id = 2, kind = 0, location = 25 },
+                new ChessmanSchema { colorId = 0, id = 4, kind = 0, location = 10 },
+                new ChessmanSchema { colorId = 0, id = 6, kind = 0, location = 11 },
+                new ChessmanSchema { colorId = 0, id = 8, kind = 0, location = 12 },
+                new ChessmanSchema { colorId = 0, id = 10, kind = 0, location = 13 },
+                new ChessmanSchema { colorId = 0, id = 12, kind = 0, location = 14 },
+                new ChessmanSchema { colorId = 0, hasMoved = true, id = 14, kind = 0, location = 31 },
+                new ChessmanSchema { colorId = 1, hasMoved = true, id = 1, kind = 0, location = 32 },
+                new ChessmanSchema { colorId = 1, hasMoved = true, id = 3, kind = 0, location = 41 },
+                new ChessmanSchema { colorId = 1, id = 5, kind = 0, location = 50 },
+                new ChessmanSchema { colorId = 1, id = 7, kind = 0, location = 51 },
+                new ChessmanSchema { colorId = 1, hasMoved = true, id = 9, kind = 0, location = 36 },
+                new ChessmanSchema { colorId = 1, id = 11, kind = 0, location = 53 },
+                new ChessmanSchema { colorId = 1, id = 13, kind = 0, location = 54 },
+                new ChessmanSchema { colorId = 1, hasMoved = true, id = 15, kind = 0, location = 39 },
+                new ChessmanSchema { colorId = 1, id = 17, kind = 3, location = 56 },
+                new ChessmanSchema { colorId = 1, hasMoved = true, id = 21, kind = 1, location = 42 },
+                new ChessmanSchema { colorId = 1, id = 25, kind = 2, location = 58 },
+                new ChessmanSchema { colorId = 1, hasMoved = true, id = 29, kind = 4, location = 52 },
+                new ChessmanSchema { colorId = 1, id = 31, kind = 5, location = 60 },
+                new ChessmanSchema { colorId = 1, id = 23, kind = 1, location = 62 },
+                new ChessmanSchema { colorId = 1, id = 19, kind = 3, location = 63 },
+                new ChessmanSchema { colorId = 1, hasMoved = true, id = 27, kind = 2, location = 34 },
+            };
 
             pendingBoard = new Board(pieces);
             committedBoard = new Board(pieces);
@@ -124,6 +162,7 @@ namespace ChessersEngine {
             }
 
             moves.Add(string.Join(",", movesForTurn));
+            Match.Log(string.Join(" ", moves));
 
             pendingMoveResults.Clear();
         }
@@ -139,6 +178,8 @@ namespace ChessersEngine {
             pendingBoard.CopyState(committedBoard);
 
             pendingMoveResults.Clear();
+            Match.Log($"THE PIECE: {GetPendingChessman(27).isActive}");
+            Match.Log($"THE PIECE: {GetCommittedChessman(27).isActive}");
         }
 
         public void CommitTurn () {
@@ -313,6 +354,7 @@ namespace ChessersEngine {
 
                 Tile fromTile = committedBoard.GetTileIfExists(partialResult.fromRow, partialResult.fromColumn);
                 Tile toTile = committedBoard.GetTileIfExists(partialResult.toRow, partialResult.toColumn);
+                //Match.Log($"move_{i} | {moveNotation} | {fromTile.id} | {toTile.id}", 2);
                 Chessman chessmanThatMoved = toTile.GetPiece();
 
                 partialResult.pieceId = chessmanThatMoved.id;
@@ -420,7 +462,7 @@ namespace ChessersEngine {
                             chessman
                         );
 
-                        Match.Log($"{valueEndTurn} | {valueContinueTurn}");
+                        //Match.Log($"{valueEndTurn} | {valueContinueTurn}");
 
                         bool swapValues = isMaximizingPlayer ?
                             (valueContinueTurn > valueEndTurn) :
@@ -562,23 +604,26 @@ namespace ChessersEngine {
         #endregion
 
         public void UpdateMatch (MatchData newMatchData) {
+            foreach (var pair in GetAllCommittedChessmen()) {
+                if (pair.Value.GetUnderlyingTile() != null) {
+                    pair.Value.GetUnderlyingTile().RemovePiece();
+                }
+                pair.Value.RemoveUnderlyingTileReference();
+            }
+
             foreach (ChessmanSchema cs in newMatchData.pieces) {
                 Chessman committedChessman = GetCommittedChessman(cs.id);
+                //int currentloc = committedChessman.GetUnderlyingTile()?.id ?? -1;
+                //if (cs.isActive && (currentloc != cs.location)) {
+                //    Match.Log($"Moving {cs.id} from {currentloc} to {cs.location}");
+                //}
 
-                if (committedChessman.GetUnderlyingTile() != null) {
-                    committedChessman.GetUnderlyingTile().RemovePiece();
-                    committedChessman.RemoveUnderlyingTileReference();
+                if (!cs.isActive) {
+                    Match.Log($"Toggling {committedChessman.id} at {cs.location}");
                 }
-
                 committedChessman.CopyFrom(cs);
 
-                if (!committedChessman.isActive) {
-                    if (committedChessman.GetUnderlyingTile() != null) {
-                        committedChessman.GetUnderlyingTile().RemovePiece();
-                    }
-
-                    committedChessman.RemoveUnderlyingTileReference();
-                } else {
+                if (committedChessman.isActive) {
                     committedChessman.SetUnderlyingTile(GetCommittedTile(cs.location));
                     committedChessman.GetUnderlyingTile().SetPiece(committedChessman);
                 }

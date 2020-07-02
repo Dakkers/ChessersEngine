@@ -465,11 +465,13 @@ namespace ChessersEngine {
                     int halfDelta = delta / 2;
                     Tile jumpedTile = board.GetTile(fromTile.id + halfDelta);
 
+                    moveResult.wasPieceJumped = true;
                     moveResult.jumpedPieceId = jumpedTile.GetPiece().id;
                     moveResult.jumpedTileId = jumpedTile.id;
                 }
             } else {
                 if (toTile.IsOccupied()) {
+                    moveResult.wasPieceCaptured = true;
                     moveResult.capturedPieceId = toTile.GetPiece().id;
                 }
             }

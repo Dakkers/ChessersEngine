@@ -56,10 +56,12 @@ namespace ChessersEngine {
         public ChessmanKindEnum promotionRank { get; set; }
 
         // Piece that gets jumped, if applicable
+        public bool wasPieceJumped { get; set; } = false;
         public int jumpedPieceId { get; set; } = -1;
         public int jumpedTileId { get; set; } = -1;
 
         // Piece that gets captured, if applicable
+        public bool wasPieceCaptured { get; set; } = false;
         public int capturedPieceId { get; set; } = -1;
 
         public bool isWinningMove { get; set; } = false;
@@ -199,13 +201,15 @@ namespace ChessersEngine {
             char fromRank = chars.Dequeue();
             moveResult.fromRow = Helpers.ConvertRankToRow(fromRank);
 
-            // -- Fourth letter can be jump or capture symbol (x, y respectively) so if it's either
+            // -- Fourth letter can be capture or jump symbol (x, y respectively) so if it's either
             // of those, the "to" file is actually the letter after that.
             char toFile = chars.Dequeue();
             if (toFile == 'x') {
+                moveResult.wasPieceCaptured = true;
                 //moveResult.capturedPieceId = int.MaxValue;
                 toFile = chars.Dequeue();
             } else if (toFile == 'y') {
+                moveResult.wasPieceJumped = true;
                 //moveResult.jumpedPieceId = int.MaxValue;
                 toFile = chars.Dequeue();
             }

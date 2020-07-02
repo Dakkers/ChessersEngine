@@ -18,17 +18,21 @@
 
         public int guid;
         public bool hasMoved = false;
+        public int id;
         /// <summary>
         /// Represents whether or not the chessman is still in play.
         /// </summary>
         public bool isActive = true;
-        public int id;
         public bool isChecker = false;
         public bool isKinged = false;
         public bool isPromoted = false;
+        /// <summary>
+        /// Last location of the chessman when it was in play. (So if the chessman is no longer active,
+        /// it will return the location it was captured/jumped at.)
+        /// </summary>
+        public int location = -1;
         public ChessmanKindEnum kind;
 
-        // TODO -- should this be null if `isActive = false`?
         Tile underlyingTile;
 
         public Chessman (ChessmanSchema cs) {
@@ -42,6 +46,7 @@
             isChecker = cs.isChecker;
             isKinged = cs.isKinged;
             isPromoted = cs.isPromoted;
+            location = cs.location;
 
             color = ((id % 2) == 0) ?
                 ColorEnum.WHITE :
@@ -61,8 +66,8 @@
             SetActive(false);
         }
 
-        public void SetHasMoved (bool newHasMoved) {
-            hasMoved = newHasMoved;
+        public void SetHasMoved (bool val) {
+            hasMoved = val;
         }
 
         public static Chessman CreateFromSchema (ChessmanSchema cs) {
@@ -82,6 +87,7 @@
             this.isChecker = chessmanSchema.isChecker;
             this.isKinged = chessmanSchema.isKinged;
             this.isPromoted = chessmanSchema.isPromoted;
+            this.location = chessmanSchema.location;
             this.kind = (ChessmanKindEnum) chessmanSchema.kind;
         }
 
@@ -156,6 +162,7 @@
 
         public void SetUnderlyingTile (Tile tile) {
             underlyingTile = tile;
+            location = tile.id;
         }
 
         public void RemoveUnderlyingTileReference () {
@@ -177,7 +184,7 @@
                 isKinged = isKinged,
                 isPromoted = isPromoted,
                 kind = (int) kind,
-                location = underlyingTile?.id ?? -1
+                location = location,
             };
         }
     }
