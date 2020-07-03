@@ -307,8 +307,10 @@ namespace ChessersEngine {
 
             List<MoveResult> result = new List<MoveResult>();
             string[] movesOfLastTurn = moves[moves.Count - 1].Split(',');
+            bool isMultipleMoves = (movesOfLastTurn.Length > 0);
 
-            for (int i = 0; i < movesOfLastTurn.Length; i++) {
+            // Go in reverse order because the last move will have the piece on the tile
+            for (int i = movesOfLastTurn.Length - 1; i >= 0; i--) {
                 string moveNotation = movesOfLastTurn[i];
                 MoveResult partialResult = MoveResult.CreatePartialMoveResultFromNotation(moveNotation);
                 if (partialResult.isCastle) {
@@ -319,16 +321,20 @@ namespace ChessersEngine {
 
                 Tile fromTile = committedBoard.GetTileIfExists(partialResult.fromRow, partialResult.fromColumn);
                 Tile toTile = committedBoard.GetTileIfExists(partialResult.toRow, partialResult.toColumn);
-                //Match.Log($"move_{i} | {moveNotation} | {fromTile.id} | {toTile.id}", 2);
-                Chessman chessmanThatMoved = toTile.GetPiece();
 
-                partialResult.pieceId = chessmanThatMoved.id;
+                if (i == (movesOfLastTurn.Length - 1)) {
+                    Chessman chessmanThatMoved = toTile.GetPiece();
+                    partialResult.pieceId = chessmanThatMoved.id;
+                } else {
+                    partialResult.pieceId = result[0].pieceId;
+                }
+
                 partialResult.tileId = toTile.id;
                 partialResult.fromTileId = fromTile.id;
                 result.Add(partialResult);
-
-                //Match.Log($"move_{i} | {moveNotation} | {result[i]}", 2);
             }
+
+            result.Reverse();
 
             return result;
         }
