@@ -32,10 +32,11 @@ namespace ChessersEngine {
 
             foreach (ChessmanSchema cs in pieces) {
                 Chessman newChessman = Chessman.CreateFromSchema(cs);
-                Tile underlyingTile = GetTile(cs.location);
-
-                newChessman.SetUnderlyingTile(underlyingTile);
-                underlyingTile.SetPiece(newChessman);
+                if (newChessman.isActive) {
+                    Tile underlyingTile = GetTile(cs.location);
+                    newChessman.SetUnderlyingTile(underlyingTile);
+                    underlyingTile.SetPiece(newChessman);
+                }
 
                 chessmenById[newChessman.id] = newChessman;
             }
