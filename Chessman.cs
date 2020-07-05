@@ -55,11 +55,12 @@
             kind = (ChessmanKindEnum) cs.kind;
         }
 
-        public void SetActive (bool _active) {
-            isActive = _active;
+        public void SetActive (bool val) {
+            isActive = val;
         }
 
         public void Deactivate () {
+            RemoveUnderlyingTileReference();
             if (underlyingTile.GetPiece().id == this.id) {
                 underlyingTile.RemovePiece();
             }
