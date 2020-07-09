@@ -16,6 +16,21 @@ namespace ChessersEngine {
                 ColorEnum.BLACK;
         }
 
+        public static ColorEnum GetColorFromPieceId (int pieceId) {
+            if (
+                GetBlackPawnIds().Contains(pieceId) ||
+                GetBlackKnightIds().Contains(pieceId) ||
+                GetBlackRookIds().Contains(pieceId) ||
+                GetBlackBishopIds().Contains(pieceId) ||
+                (pieceId == Constants.ID_BLACK_QUEEN) ||
+                (pieceId == Constants.ID_BLACK_KING)
+            ) {
+                return ColorEnum.BLACK;
+            }
+
+            return ColorEnum.WHITE;
+        }
+
         #endregion
 
         #region Math
@@ -52,7 +67,7 @@ namespace ChessersEngine {
         #region Chessman ID related things
 
         public static List<int> GetBlackPawnIds () {
-            return new List<int>() {
+            return new List<int> {
                 Constants.ID_BLACK_PAWN_1,
                 Constants.ID_BLACK_PAWN_2,
                 Constants.ID_BLACK_PAWN_3,
@@ -86,7 +101,7 @@ namespace ChessersEngine {
         }
 
         public static List<int> GetWhitePawnIds () {
-            return new List<int>() {
+            return new List<int> {
                 Constants.ID_WHITE_PAWN_1,
                 Constants.ID_WHITE_PAWN_2,
                 Constants.ID_WHITE_PAWN_3,
@@ -117,22 +132,6 @@ namespace ChessersEngine {
                 Constants.ID_WHITE_ROOK_1,
                 Constants.ID_WHITE_ROOK_2
             };
-        }
-
-        #endregion
-
-        public static int GetTileIdFromCoords (int col, int row) {
-            return (8 * row) + col;
-        }
-
-        #region Chessman color
-
-        public static bool IsWhitePiece (int pieceId) {
-            return pieceId % 2 == 0;
-        }
-
-        public static bool IsBlackPiece (int pieceId) {
-            return pieceId % 2 == 1;
         }
 
         #endregion
@@ -203,14 +202,11 @@ namespace ChessersEngine {
             return tileId / 8;
         }
 
-        #endregion
-
-        public static bool IsValidPromotion (ChessmanKindEnum promotionRank) {
-            return (promotionRank == ChessmanKindEnum.QUEEN) ||
-                (promotionRank == ChessmanKindEnum.BISHOP) ||
-                (promotionRank == ChessmanKindEnum.ROOK) ||
-                (promotionRank == ChessmanKindEnum.KNIGHT);
+        public static int GetTileIdFromRowColumn (int row, int col) {
+            return (8 * row) + col;
         }
+
+        #endregion
 
         #region Notation
 

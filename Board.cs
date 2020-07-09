@@ -40,6 +40,12 @@ namespace ChessersEngine {
 
                 chessmenById[newChessman.id] = newChessman;
             }
+
+            //for (int i = 0; i < 64; i++) {
+            //    if (tilesById[i].IsOccupied()) {
+            //        Match.Log($"{i} -- occupied by {tilesById[i].occupant.id}");
+            //    }
+            //}
         }
 
         public List<ChessmanSchema> GetChessmanSchemas () {
@@ -303,20 +309,12 @@ namespace ChessersEngine {
             return GetTileIfExists(row, col);
         }
 
-        public int GetColumn (int tileId) {
-            return tileId % numColumns;
-        }
-
         public int GetColumn (Tile tile) {
-            return GetColumn(tile.id);
-        }
-
-        public int GetRow (int tileId) {
-            return tileId / numColumns;
+            return Helpers.GetColumn(tile.id);
         }
 
         public int GetRow (Tile tile) {
-            return GetRow(tile.id);
+            return Helpers.GetRow(tile.id);
         }
 
         public (int, int) GetRowColumn (Tile tile) {
@@ -487,7 +485,7 @@ namespace ChessersEngine {
         #endregion
 
         public int GetTileNumberFromRowColumn (int row, int col) {
-            return (numRows * row) + col;
+            return Helpers.GetTileIdFromRowColumn(row, col);
         }
 
         public int GetNumberOfColumns () {

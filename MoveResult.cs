@@ -25,7 +25,6 @@ namespace ChessersEngine {
         public int tileId { get; set; }
         public bool turnChanged { get; set; }
         public int type { get; set; }
-        public ColorEnum color;
 
         /// <summary>
         /// Whether or not this move triggers a polarity flip (checker piece to chess piece or vice versa)
@@ -219,6 +218,30 @@ namespace ChessersEngine {
             moveResult.toRow = Helpers.ConvertRankToRow(toRank);
 
             return moveResult;
+        }
+
+        public (int, int) GetRookCastleTileFromCoords () {
+            if (!isCastle) {
+                return (-1, -1);
+            }
+            return toColumn == 6 ? (toRow, 7) : (toRow, 0);
+        }
+
+        public (int, int) GetRookCastleTileToCoords () {
+            if (!isCastle) {
+                return (-1, -1);
+            }
+            return toColumn == 6 ? (toRow, 5) : (toRow, 3);
+        }
+
+        public int GetCastlingRookId () {
+            if (!isCastle) {
+                return -1;
+            } else if (Helpers.GetColorFromPieceId(pieceId) == ColorEnum.BLACK) {
+                return (toColumn == 6) ? Constants.ID_BLACK_ROOK_2 : Constants.ID_BLACK_ROOK_1;
+            } else {
+                return (toColumn == 6) ? Constants.ID_WHITE_ROOK_2 : Constants.ID_WHITE_ROOK_1;
+            }
         }
     }
 }

@@ -499,6 +499,51 @@ namespace ChessersEngine {
             return md;
         }
 
+        /// <summary>
+        /// A bug I found with Pieter. (One of the many...)
+        /// </summary>
+        /// <returns>Junk.</returns>
+        public static MatchData Bug20200705 () {
+            return new ChessersEngine.MatchData {
+                currentTurn = 0,
+                moves = new List<string>() { "Pd2d4", "Pb7b5", "Pc2c3", "Nb8c6", "Ng1f3", "Ph7h5", "Pg2g3", "Pg7g6", "Bf1h3", "Bf8h6", "Pa2a3", "Nc6a5", "O-O", "Ng8f6", "Pa3a4", "Pb5xa4", "Ra1xa4", "Bh6xc1", "Nb1a3", "Pg6g5", "Pe2e3", "Pg5g4", "Nf3h4", "Pc7c6", "Rf1e1", "Rh8g8", "Pe3e4", "Rg8g5", "Pe4e5", "Nf6d5", "Pc3c4", "Nd5b6", "Pf2f4", "Rg5g7" },
+                pieces = new List<ChessersEngine.ChessmanSchema>() {
+                    new ChessersEngine.ChessmanSchema { colorId = 0, hasMoved = true, id = 16, isActive = true, kind = 3, location = 24 },
+                    new ChessersEngine.ChessmanSchema { colorId = 0, hasMoved = true, id = 20, isActive = true, kind = 1, location = 16 },
+                    new ChessersEngine.ChessmanSchema { colorId = 0, id = 24, isActive = false, kind = 2, location = 2 },
+                    new ChessersEngine.ChessmanSchema { colorId = 0, id = 28, isActive = true, kind = 4, location = 3 },
+                    new ChessersEngine.ChessmanSchema { colorId = 0, hasMoved = true, id = 30, isActive = true, kind = 5, location = 6 },
+                    new ChessersEngine.ChessmanSchema { colorId = 0, hasMoved = true, id = 26, isActive = true, kind = 2, location = 23 },
+                    new ChessersEngine.ChessmanSchema { colorId = 0, hasMoved = true, id = 22, isActive = true, kind = 1, location = 31 },
+                    new ChessersEngine.ChessmanSchema { colorId = 0, hasMoved = true, id = 18, isActive = true, kind = 3, location = 4 },
+                    new ChessersEngine.ChessmanSchema { colorId = 0, hasMoved = true, id = 0, isActive = false, kind = 0, location = 24 },
+                    new ChessersEngine.ChessmanSchema { colorId = 0, id = 2, isActive = true, kind = 0, location = 9 },
+                    new ChessersEngine.ChessmanSchema { colorId = 0, hasMoved = true, id = 4, isActive = true, kind = 0, location = 26 },
+                    new ChessersEngine.ChessmanSchema { colorId = 0, hasMoved = true, id = 6, isActive = true, kind = 0, location = 27 },
+                    new ChessersEngine.ChessmanSchema { colorId = 0, hasMoved = true, id = 8, isActive = true, isChecker = true, kind = 0, location = 36 },
+                    new ChessersEngine.ChessmanSchema { colorId = 0, hasMoved = true, id = 10, isActive = true, kind = 0, location = 29 },
+                    new ChessersEngine.ChessmanSchema { colorId = 0, hasMoved = true, id = 12, isActive = true, kind = 0, location = 22 },
+                    new ChessersEngine.ChessmanSchema { colorId = 0, id = 14, isActive = true, kind = 0, location = 15 },
+                    new ChessersEngine.ChessmanSchema { colorId = 1, id = 1, isActive = true, kind = 0, location = 48 },
+                    new ChessersEngine.ChessmanSchema { colorId = 1, hasMoved = true, id = 3, isActive = false, isChecker = true, kind = 0, location = 24 },
+                    new ChessersEngine.ChessmanSchema { colorId = 1, hasMoved = true, id = 5, isActive = true, kind = 0, location = 42 },
+                    new ChessersEngine.ChessmanSchema { colorId = 1, id = 7, isActive = true, kind = 0, location = 51 },
+                    new ChessersEngine.ChessmanSchema { colorId = 1, id = 9, isActive = true, kind = 0, location = 52 },
+                    new ChessersEngine.ChessmanSchema { colorId = 1, id = 11, isActive = true, kind = 0, location = 53 },
+                    new ChessersEngine.ChessmanSchema { colorId = 1, hasMoved = true, id = 13, isActive = true, isChecker = true, kind = 0, location = 30 },
+                    new ChessersEngine.ChessmanSchema { colorId = 1, hasMoved = true, id = 15, isActive = true, kind = 0, location = 39 },
+                    new ChessersEngine.ChessmanSchema { colorId = 1, id = 17, isActive = true, kind = 3, location = 56 },
+                    new ChessersEngine.ChessmanSchema { colorId = 1, hasMoved = true, id = 21, isActive = true, kind = 1, location = 32 },
+                    new ChessersEngine.ChessmanSchema { colorId = 1, id = 25, isActive = true, kind = 2, location = 58 },
+                    new ChessersEngine.ChessmanSchema { colorId = 1, id = 29, isActive = true, kind = 4, location = 59 },
+                    new ChessersEngine.ChessmanSchema { colorId = 1, id = 31, isActive = true, kind = 5, location = 60 },
+                    new ChessersEngine.ChessmanSchema { colorId = 1, hasMoved = true, id = 27, isActive = true, isChecker = true, isKinged = true, kind = 2, location = 2 },
+                    new ChessersEngine.ChessmanSchema { colorId = 1, hasMoved = true, id = 23, isActive = true, kind = 1, location = 41 },
+                    new ChessersEngine.ChessmanSchema { colorId = 1, hasMoved = true, id = 19, isActive = true, kind = 3, location = 54 }
+                  },
+            };
+        }
+
         #endregion
     }
 }

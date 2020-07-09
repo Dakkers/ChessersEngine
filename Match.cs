@@ -264,7 +264,8 @@ namespace ChessersEngine {
             Tile toTile = GetPendingTile(moveAttempt.tileId);
 
             Chessman targetChessman = toTile.occupant;
-            if (targetChessman?.color == chessman.color) {
+            Log($"{moveAttempt.pieceId} - {toTile.id} - {targetChessman?.id}");
+            if (targetChessman != null && targetChessman.color == chessman.color) {
                 Match.Log("Trying to move to an occupied tile (by yourself)");
                 // Can't move to a tile occupied by the moving player
                 return null;
