@@ -550,6 +550,14 @@ namespace ChessersEngine {
             }
         }
 
+        public void Resign (int playerId) {
+            if (playerId == blackPlayerId) {
+                Resign(ColorEnum.BLACK);
+            } else if (playerId == whitePlayerId) {
+                Resign(ColorEnum.WHITE);
+            }
+        }
+
         /// <summary>
         /// Resign as the current player.
         /// </summary>
