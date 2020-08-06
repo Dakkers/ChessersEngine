@@ -120,14 +120,12 @@ namespace ChessersEngine {
                 winningPlayerId = blackPlayerId;
             }
 
-
             List<string> movesForTurn = new List<string>();
             foreach (MoveResult moveResult in pendingMoveResults) {
                 movesForTurn.Add(moveResult.CreateNotation());
             }
 
             moves.Add(string.Join(",", movesForTurn));
-            Match.Log(string.Join(" ", moves));
 
             pendingMoveResults.Clear();
         }
@@ -143,8 +141,6 @@ namespace ChessersEngine {
             pendingBoard.CopyState(committedBoard);
 
             pendingMoveResults.Clear();
-            Match.Log($"THE PIECE: {GetPendingChessman(27).isActive}");
-            Match.Log($"THE PIECE: {GetCommittedChessman(27).isActive}");
         }
 
         public void CommitTurn () {
@@ -240,7 +236,7 @@ namespace ChessersEngine {
             // -- Base validation
             if (turnColor == ColorEnum.WHITE) {
                 if (moveAttempt.playerId == blackPlayerId) {
-                    Match.Log("Invalid turn. (is WHITE)");
+                    //Match.Log("Invalid turn. (is WHITE)");
                     // White's turn, black is trying to move --> no!
                     return null;
                 }
@@ -248,7 +244,7 @@ namespace ChessersEngine {
 
             if (turnColor == ColorEnum.BLACK) {
                 if (moveAttempt.playerId == whitePlayerId) {
-                    Match.Log("Invalid turn. (is BLACK)");
+                    //Match.Log("Invalid turn. (is BLACK)");
                     // Black's turn, white is trying to move --> no!
                     return null;
                 }
@@ -256,7 +252,7 @@ namespace ChessersEngine {
 
             Chessman chessman = GetPendingChessman(moveAttempt.pieceId);
             if (chessman.color != turnColor) {
-                Match.Log("Invalid permission.");
+                //Match.Log("Invalid permission.");
                 // Make sure the moving piece belongs to the player.
                 return null;
             }
@@ -264,9 +260,9 @@ namespace ChessersEngine {
             Tile toTile = GetPendingTile(moveAttempt.tileId);
 
             Chessman targetChessman = toTile.occupant;
-            Log($"{moveAttempt.pieceId} - {toTile.id} - {targetChessman?.id}");
+            //Log($"{moveAttempt.pieceId} - {toTile.id} - {targetChessman?.id}");
             if (targetChessman != null && targetChessman.color == chessman.color) {
-                Match.Log("Trying to move to an occupied tile (by yourself)");
+                //Match.Log("Trying to move to an occupied tile (by yourself)");
                 // Can't move to a tile occupied by the moving player
                 return null;
             }
@@ -277,6 +273,11 @@ namespace ChessersEngine {
             }
 
             moveResult.playerId = moveAttempt.playerId;
+            if (moveAttempt.promote >= 0) {
+                moveResult.promotionOccurred = true;
+                moveResult.promotionRank = (ChessmanKindEnum) moveAttempt.promote;
+                Promote(moveResult);
+            }
 
             pendingMoveResults.Add(moveResult);
 
@@ -292,8 +293,8 @@ namespace ChessersEngine {
         /// </summary>
         /// <param name="moveResult">Move result.</param>
         public void Promote (MoveResult moveResult) {
-            Chessman c = pendingBoard.GetChessman(moveResult.pieceId);
-            c.kind = moveResult.promotionRank;
+            pendingBoard.Promote(moveResult.pieceId, moveResult.promotionRank);
+
         }
 
         public List<MoveResult> GetMovesForLastTurn () {
@@ -397,6 +398,19 @@ namespace ChessersEngine {
                     if (moveResult == null || !moveResult.valid) {
                         // This should not occur
                         continue;
+                    }
+
+                    if (
+                        chessman.IsPawn() &&
+                        !chessman.isPromoted && (
+                            ((color == ColorEnum.BLACK) && (Helpers.GetRow(tile.id) == 0)) ||
+                            ((color == ColorEnum.WHITE) && (Helpers.GetRow(tile.id) == 7))
+                        )
+                    ) {
+                        moveResult.promotionOccurred = true;
+                        moveResult.promotionRank = ChessmanKindEnum.QUEEN;
+                        board.Promote(chessman.id, moveResult.promotionRank);
+                        moveAttempt.promote = (int) moveResult.promotionRank;
                     }
 
                     if (fallbackMove == null) {
@@ -519,7 +533,6 @@ namespace ChessersEngine {
             foreach (var attempt in moveAttempts) {
                 MoveResult moveResult = MoveChessman(attempt);
                 //Match.Log(moveResult);
-
                 if (moveResult == null || !moveResult.valid) {
                     break;
                 }
@@ -594,9 +607,6 @@ namespace ChessersEngine {
                 //    Match.Log($"Moving {cs.id} from {currentloc} to {cs.location}");
                 //}
 
-                if (!cs.isActive) {
-                    Match.Log($"Toggling {committedChessman.id} at {cs.location}");
-                }
                 committedChessman.CopyFrom(cs);
 
                 if (committedChessman.isActive) {

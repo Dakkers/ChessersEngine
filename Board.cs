@@ -1314,7 +1314,8 @@ namespace ChessersEngine {
             movedChessman.SetUnderlyingTile(fromTile);
 
             if (moveResult.promotionOccurred) {
-                movedChessman.kind = moveResult.chessmanKind;
+                movedChessman.kind = ChessmanKindEnum.PAWN;
+                movedChessman.isPromoted = false;
             }
 
             if (moveResult.kinged) {
@@ -1360,6 +1361,11 @@ namespace ChessersEngine {
                 rookFromTile.SetPiece(rookChessman);
                 rookChessman.SetUnderlyingTile(rookFromTile);
             }
+        }
+
+        public void Promote (int pieceId, ChessmanKindEnum promotionRank) {
+            var c = GetChessman(pieceId);
+            c.Promote(promotionRank);
         }
 
         #endregion

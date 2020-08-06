@@ -7,6 +7,10 @@ namespace ChessersEngine {
         public int pieceId { get; set; }
         public int tileId { get; set; }
 
+        /// <summary>Only used internally for AI.</summary>
+        /// <value>The promote.</value>
+        public int promote { get; set; } = -1;
+
         public override string ToString () {
             return $"{{ " +
                 $"pieceId = {pieceId}, " +

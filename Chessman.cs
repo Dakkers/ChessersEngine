@@ -151,6 +151,7 @@
 
         public void Promote (ChessmanKindEnum newKind) {
             kind = newKind;
+            isPromoted = true;
         }
 
         public bool IsChecker () {
