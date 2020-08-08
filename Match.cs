@@ -580,6 +580,11 @@ namespace ChessersEngine {
             return winningPlayerId;
         }
 
+        public void SetPlayerIds (int whiteId, int blackId) {
+            whitePlayerId = whiteId;
+            blackPlayerId = blackId;
+        }
+
         #endregion
 
         public void UpdateMatch (MatchData newMatchData) {
