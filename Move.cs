@@ -57,6 +57,11 @@ namespace ChessersEngine {
             (fromRow, fromColumn) = board.GetRowColumn(fromTile);
             (toRow, toColumn) = board.GetRowColumn(toTile);
 
+            ChessmanKindEnum? promotionRank = null;
+            if (moveAttempt.promotionRank >= 0 && Enum.IsDefined(typeof(ChessmanKindEnum), moveAttempt.promotionRank)) {
+                promotionRank = (ChessmanKindEnum?) moveAttempt.promotionRank;
+            }
+
             moveResult = new MoveResult {
                 pieceGuid = chessman.guid,
                 pieceId = chessman.id,
@@ -68,6 +73,7 @@ namespace ChessersEngine {
                 fromColumn = fromColumn,
                 toColumn = toColumn,
                 chessmanKind = chessman.kind,
+                promotionRank = promotionRank,
             };
 
             potentialTilesForMovement = board.GetPotentialTilesForMovement(chessman, jumpsOnly: jumpsOnly);
@@ -615,17 +621,17 @@ namespace ChessersEngine {
             }
 
             // -- Handle capturing/jump chessman removal
-            Chessman pieceToRemove = null;
+            Chessman chessmanToRemove = null;
 
             if (moveResult.WasPieceJumped()) {
-                pieceToRemove = board.GetChessman(moveResult.jumpedPieceId);
+                chessmanToRemove = board.GetChessman(moveResult.jumpedPieceId);
             } else if (moveResult.WasPieceCaptured()) {
-                pieceToRemove = board.GetChessman(moveResult.capturedPieceId);
+                chessmanToRemove = board.GetChessman(moveResult.capturedPieceId);
             }
 
-            if (pieceToRemove != null) {
-                pieceToRemove.Deactivate();
-                if (pieceToRemove.IsKing()) {
+            if (chessmanToRemove != null) {
+                chessmanToRemove.Deactivate();
+                if (chessmanToRemove.IsKing()) {
                     moveResult.isWinningMove = true;
                 }
             }
@@ -653,6 +659,20 @@ namespace ChessersEngine {
 
             if (shouldChangeTurns) {
                 moveResult.turnChanged = true;
+            }
+
+            // -- Validate promotion
+            if (
+                moveResult.promotionRank == null ||
+                !Helpers.CanBePromoted(chessman, toTile) ||
+                moveResult.promotionRank == ChessmanKindEnum.KING ||
+                moveResult.promotionRank == ChessmanKindEnum.PAWN
+            ) {
+                moveResult.promotionRank = null;
+            }
+
+            if (moveResult.promotionRank != null) {
+                chessman.Promote((ChessmanKindEnum) moveResult.promotionRank);
             }
         }
     }

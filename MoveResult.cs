@@ -7,9 +7,7 @@ namespace ChessersEngine {
         public int pieceId { get; set; }
         public int tileId { get; set; }
 
-        /// <summary>Only used internally for AI.</summary>
-        /// <value>The promote.</value>
-        public int promote { get; set; } = -1;
+        public int promotionRank { get; set; } = -1;
 
         public override string ToString () {
             return $"{{ " +
@@ -56,7 +54,7 @@ namespace ChessersEngine {
 
         // Whether or not this move triggers a Promotion
         public bool promotionOccurred { get; set; }
-        public ChessmanKindEnum promotionRank { get; set; }
+        public ChessmanKindEnum? promotionRank { get; set; }
 
         // Piece that gets jumped, if applicable
         public bool wasPieceJumped { get; set; } = false;
@@ -142,7 +140,7 @@ namespace ChessersEngine {
 
             if (promotionOccurred) {
                 // "h7h8" becomes "h7h8Q"
-                moveNotation += Helpers.ConvertChessmanKindToNotationSymbol(promotionRank);
+                moveNotation += Helpers.ConvertChessmanKindToNotationSymbol((ChessmanKindEnum) promotionRank);
             }
 
             return moveNotation;
@@ -171,32 +169,7 @@ namespace ChessersEngine {
 
             // -- First letter = the chessman kind that moved
             char kindChar = chars.Dequeue();
-            ChessmanKindEnum kind = ChessmanKindEnum.PAWN;
-
-            switch (kindChar) {
-                case 'P':
-                    kind = ChessmanKindEnum.PAWN;
-                    break;
-                case 'R':
-                    kind = ChessmanKindEnum.ROOK;
-                    break;
-                case 'N':
-                    kind = ChessmanKindEnum.KNIGHT;
-                    break;
-                case 'K':
-                    kind = ChessmanKindEnum.KING;
-                    break;
-                case 'Q':
-                    kind = ChessmanKindEnum.QUEEN;
-                    break;
-                case 'B':
-                    kind = ChessmanKindEnum.BISHOP;
-                    break;
-                default:
-                    throw new System.Exception($"Invalid chessman letter: {notation[0]}");
-            }
-
-            moveResult.chessmanKind = kind;
+            moveResult.chessmanKind = Helpers.ConvertNotationSymbolToChessmanKind(kindChar);
 
             // -- Second/third letter = FROM tile (file/rank)
             char fromFile = chars.Dequeue();
@@ -220,6 +193,12 @@ namespace ChessersEngine {
             moveResult.toColumn = Helpers.ConvertFileToColumn(toFile);
             char toRank = chars.Dequeue();
             moveResult.toRow = Helpers.ConvertRankToRow(toRank);
+
+            // -- Last letter could be promotion
+            if (chars.Count > 0) {
+                char promotionRank = chars.Dequeue();
+                moveResult.promotionRank = Helpers.ConvertNotationSymbolToChessmanKind(promotionRank);
+            }
 
             return moveResult;
         }

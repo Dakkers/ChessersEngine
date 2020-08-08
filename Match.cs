@@ -273,9 +273,9 @@ namespace ChessersEngine {
             }
 
             moveResult.playerId = moveAttempt.playerId;
-            if (moveAttempt.promote >= 0) {
+            if (moveAttempt.promotionRank >= 0) {
                 moveResult.promotionOccurred = true;
-                moveResult.promotionRank = (ChessmanKindEnum) moveAttempt.promote;
+                moveResult.promotionRank = (ChessmanKindEnum) moveAttempt.promotionRank;
                 Promote(moveResult);
             }
 
@@ -293,8 +293,7 @@ namespace ChessersEngine {
         /// </summary>
         /// <param name="moveResult">Move result.</param>
         public void Promote (MoveResult moveResult) {
-            pendingBoard.Promote(moveResult.pieceId, moveResult.promotionRank);
-
+            pendingBoard.Promote(moveResult.pieceId, (ChessmanKindEnum) moveResult.promotionRank);
         }
 
         public List<MoveResult> GetMovesForLastTurn () {
@@ -394,23 +393,14 @@ namespace ChessersEngine {
                         tileId = tile.id
                     };
 
+                    if (Helpers.CanBePromoted(chessman, tile)) {
+                        moveAttempt.promotionRank = (int) ChessmanKindEnum.QUEEN;
+                    }
+
                     MoveResult moveResult = board.MoveChessman(moveAttempt);
                     if (moveResult == null || !moveResult.valid) {
                         // This should not occur
                         continue;
-                    }
-
-                    if (
-                        chessman.IsPawn() &&
-                        !chessman.isPromoted && (
-                            ((color == ColorEnum.BLACK) && (Helpers.GetRow(tile.id) == 0)) ||
-                            ((color == ColorEnum.WHITE) && (Helpers.GetRow(tile.id) == 7))
-                        )
-                    ) {
-                        moveResult.promotionOccurred = true;
-                        moveResult.promotionRank = ChessmanKindEnum.QUEEN;
-                        board.Promote(chessman.id, moveResult.promotionRank);
-                        moveAttempt.promote = (int) moveResult.promotionRank;
                     }
 
                     if (fallbackMove == null) {

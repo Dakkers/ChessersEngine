@@ -283,6 +283,25 @@ namespace ChessersEngine {
             }
         }
 
+        public static ChessmanKindEnum ConvertNotationSymbolToChessmanKind (char kindChar) {
+            switch (kindChar) {
+                case 'P':
+                    return ChessmanKindEnum.PAWN;
+                case 'R':
+                    return ChessmanKindEnum.ROOK;
+                case 'N':
+                    return ChessmanKindEnum.KNIGHT;
+                case 'K':
+                    return ChessmanKindEnum.KING;
+                case 'Q':
+                    return ChessmanKindEnum.QUEEN;
+                case 'B':
+                    return ChessmanKindEnum.BISHOP;
+                default:
+                    throw new System.Exception($"Invalid chessman letter: {kindChar}");
+            }
+        }
+
         #endregion
 
         public static void Shuffle<T> (Random rng, List<T> array) {
@@ -293,6 +312,16 @@ namespace ChessersEngine {
                 array[n] = array[k];
                 array[k] = temp;
             }
+        }
+
+        public static bool CanBePromoted (Chessman chessman, Tile tile) {
+            return (
+                chessman.IsPawn() &&
+                !chessman.isPromoted && (
+                    ((chessman.color == ColorEnum.BLACK) && (GetRow(tile.id) == 0)) ||
+                    ((chessman.color == ColorEnum.WHITE) && (GetRow(tile.id) == 7))
+                )
+            );
         }
     }
 }
