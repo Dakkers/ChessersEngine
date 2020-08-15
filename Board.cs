@@ -1441,7 +1441,7 @@ namespace ChessersEngine {
                     !isOpening
                 ) {
                     modifierChecker = 1f;
-                    int upperLimitThing = -1;
+                    float upperLimitThing = -1;
 
                     if (c.IsKnight()) {
                         // Knights are better off when they're not against the edges

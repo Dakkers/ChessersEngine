@@ -274,6 +274,8 @@ namespace ChessersEngine {
             };
         }
 
+        #region Jumps
+
         public static MatchData Jump1 () {
             var checkerCS = CreateWhiteQueen(61);
             checkerCS.isChecker = true;
@@ -340,6 +342,8 @@ namespace ChessersEngine {
                 }
             };
         }
+
+        #endregion
 
         #region Castling
 
@@ -541,6 +545,21 @@ namespace ChessersEngine {
                     new ChessersEngine.ChessmanSchema { colorId = 1, hasMoved = true, id = 23, isActive = true, kind = 1, location = 41 },
                     new ChessersEngine.ChessmanSchema { colorId = 1, hasMoved = true, id = 19, isActive = true, kind = 3, location = 54 }
                   },
+            };
+        }
+
+        #endregion
+
+        #region Scoring
+
+        public static MatchData RookOpenTest () {
+            return new MatchData {
+                currentTurn = ColorEnum.BLACK,
+                pieces = new List<ChessmanSchema> {
+                    CreateWhiteKing(),
+                    CreateBlackKing(),
+                    CreateRook(Constants.ID_BLACK_ROOK_1, 56),
+                }
             };
         }
 
