@@ -26,8 +26,8 @@ namespace ChessersEngine {
     }
 
     public struct MatchCloningResult {
-        public Dictionary<int, Tile> tilesById;
         public Dictionary<int, Chessman> chessmenById;
+        public Dictionary<int, Tile> tilesById;
     }
 
     public class Match {
@@ -340,6 +340,12 @@ namespace ChessersEngine {
 
         #region Move generation
 
+        class MoveOptimizationConfig {
+            public bool allowMultijumps;
+            public bool allowCapturejumps;
+            public int maxDepth;
+        }
+
         /// <summary>
         /// Minimax!
         /// </summary>
@@ -347,8 +353,8 @@ namespace ChessersEngine {
         /// <param name="currentDepth">Depth.</param>
         /// <param name="isMaximizingPlayer">TRUE = WHITE, FALSE = BLACK</param>
         (List<MoveAttempt>, int) MinimaxHelper (
-            int maxDepth,
             Board board,
+            MoveOptimizationConfig config,
             int currentDepth,
             int alpha,
             int beta,
@@ -357,8 +363,8 @@ namespace ChessersEngine {
         ) {
             bool isMultipleMoves = (movingChessman != null);
 
-            if (currentDepth == maxDepth || board.IsGameOver()) {
-                return (null, board.CalculateBoardValue());
+            if (currentDepth == config.maxDepth || board.IsGameOver()) {
+                return (null, board.CalculateBoardValue(moves.Count + currentDepth));
             }
 
             ColorEnum color = isMaximizingPlayer ? ColorEnum.WHITE : ColorEnum.BLACK;
@@ -384,6 +390,7 @@ namespace ChessersEngine {
                 //$"{potentialTiles.Count} potential moves.");
 
                 bool exitEarly = false;
+                bool startedAsChecker = chessman.IsChecker();
 
                 foreach (var tile in potentialTiles) {
                     MoveAttempt moveAttempt = new MoveAttempt {
@@ -410,8 +417,8 @@ namespace ChessersEngine {
                     // This represents the scenario where the turn is ended after the move has been
                     // made (either by choice or because there are no other options)
                     (List<MoveAttempt> _, int valueEndTurn) = MinimaxHelper(
-                        maxDepth,
                         board,
+                        config,
                         currentDepth + 1,
                         alpha,
                         beta,
@@ -421,12 +428,15 @@ namespace ChessersEngine {
                     int value = valueEndTurn;
                     List<MoveAttempt> movesToExecute = new List<MoveAttempt> { moveAttempt };
 
-                    if (!moveResult.turnChanged) {
+                    if (
+                        !moveResult.turnChanged &&
+                        (startedAsChecker ? config.allowMultijumps : config.allowCapturejumps)
+                    ) {
                         // Multijump/capturejump available - these strategies represent multiple moves
                         // in a single turn. As such, keep the `depth` the same.
                         (List<MoveAttempt> additionalMoves, int valueContinueTurn) = MinimaxHelper(
-                            maxDepth,
                             board,
+                            config,
                             currentDepth,
                             alpha,
                             beta,
@@ -485,13 +495,30 @@ namespace ChessersEngine {
         /// <summary>
         /// Calculates the best move for the current player.
         /// </summary>
-        public List<MoveAttempt> CalculateBestMove () {
+        public List<MoveAttempt> CalculateBestMove (int level = 0) {
             Board boardClone = new Board(committedBoard.GetChessmanSchemas());
             boardClone.CopyState(committedBoard);
 
+            MoveOptimizationConfig config = new MoveOptimizationConfig {
+                allowMultijumps = false,
+                allowCapturejumps = false,
+                maxDepth = 2,
+            };
+
+            switch (level) {
+                case 1:
+                    config.allowMultijumps = true;
+                    break;
+                case 2:
+                    config.allowMultijumps = true;
+                    config.allowCapturejumps = true;
+                    config.maxDepth = 4;
+                    break;
+            }
+
             (List<MoveAttempt> moves, int value) = MinimaxHelper(
-                2,
                 boardClone,
+                config,
                 0,
                 int.MinValue,
                 int.MaxValue,
@@ -512,8 +539,8 @@ namespace ChessersEngine {
             return moves;
         }
 
-        public List<MoveResult> DoBestMovesForCurrentPlayer () {
-            List<MoveAttempt> moveAttempts = CalculateBestMove();
+        public List<MoveResult> DoBestMovesForCurrentPlayer (int level = 0) {
+            List<MoveAttempt> moveAttempts = CalculateBestMove(level);
             if (moveAttempts == null) {
                 return null;
             }

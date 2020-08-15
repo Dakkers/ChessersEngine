@@ -484,6 +484,38 @@ namespace ChessersEngine {
 
         #endregion
 
+        #region Tile location checkers
+
+        public bool IsTileInLeftmostColumn (Tile tile) {
+            return GetColumn(tile) == 0;
+        }
+
+        public bool IsTileInBottomRow (Tile tile) {
+            return GetRow(tile) == 0;
+        }
+
+        public bool IsTileInTopRow (Tile tile) {
+            return GetRow(tile) == (numRows - 1);
+        }
+
+        public bool IsTileInRightmostColumn (Tile tile) {
+            return GetColumn(tile) == (numColumns - 1);
+        }
+
+        public bool IsTileInEndColumn (Tile tile) {
+            return IsTileInRightmostColumn(tile) || IsTileInLeftmostColumn(tile);
+        }
+
+        public bool IsTileInEndRow (Tile tile) {
+            return IsTileInBottomRow(tile) || IsTileInTopRow(tile);
+        }
+
+        public bool IsTileInCorner (Tile tile) {
+            return IsTileInEndColumn(tile) && IsTileInEndRow(tile);
+        }
+
+        #endregion
+
         public int GetTileNumberFromRowColumn (int row, int col) {
             return Helpers.GetTileIdFromRowColumn(row, col);
         }
@@ -514,22 +546,6 @@ namespace ChessersEngine {
         /// <returns>The positive diagonal delta.</returns>
         public int GetNegativeDiagonalDelta () {
             return (numColumns - 1);
-        }
-
-        public bool IsTileInLeftmostColumn (Tile tile) {
-            return GetColumn(tile) == 0;
-        }
-
-        public bool IsTileInBottomRow (Tile tile) {
-            return GetRow(tile) == 0;
-        }
-
-        public bool IsTileInTopRow (Tile tile) {
-            return GetRow(tile) == (numRows - 1);
-        }
-
-        public bool IsTileInRightmostColumn (Tile tile) {
-            return GetColumn(tile) == (numColumns - 1);
         }
 
         public int CalculateRowDelta (Tile tile1, Tile tile2) {
@@ -1370,14 +1386,20 @@ namespace ChessersEngine {
 
         #endregion
 
+        #region Board value calculations
+
+        const int VALUE_CHECKER = 90;
         const int VALUE_PAWN = 100;
-        const int VALUE_KNIGHT = 350;
-        const int VALUE_BISHOP = 350;
-        const int VALUE_ROOK = 525;
-        const int VALUE_QUEEN = 1000;
+        const int VALUE_CHECKER_KINGED = 180;
+        const int VALUE_KNIGHT = 320;
+        const int VALUE_BISHOP = 333;
+        const int VALUE_ROOK = 510;
+        const int VALUE_QUEEN = 880;
         const int VALUE_KING = 10000;
 
-        public int CalculateBoardValue () {
+        public int CalculateBoardValue (
+            int numMoves
+        ) {
             if (!GetWhiteKing().isActive) {
                 return int.MinValue;
             } else if (!GetBlackKing().isActive) {
@@ -1385,33 +1407,109 @@ namespace ChessersEngine {
             }
 
             int result = 0;
+            bool isOpening = (numMoves <= 24);
 
             foreach (Chessman c in GetActiveChessmen()) {
-                int temp = 0;
+                Tile tile = c.GetUnderlyingTile();
+                (int row, int col) = GetRowColumn(tile);
+
+                int baseValue = 0;
+                int modifierColor = 1;
+                float modifierChecker = 0.75f;
+                float modifierPlacement = 1f;
+
                 if (c.IsPawn()) {
-                    temp = VALUE_PAWN;
+                    baseValue = VALUE_PAWN;
+                    if (c.IsChecker()) {
+                        baseValue = c.isKinged ? VALUE_CHECKER_KINGED : VALUE_CHECKER;
+                        modifierChecker = 1f;
+                    }
                 } else if (c.IsKnight()) {
-                    temp = VALUE_KNIGHT;
+                    baseValue = VALUE_KNIGHT;
                 } else if (c.IsBishop()) {
-                    temp = VALUE_BISHOP;
+                    baseValue = VALUE_BISHOP;
                 } else if (c.IsRook()) {
-                    temp = VALUE_ROOK;
+                    baseValue = VALUE_ROOK;
                 } else if (c.IsQueen()) {
-                    temp = VALUE_QUEEN;
+                    baseValue = VALUE_QUEEN;
                 } else if (c.IsKing()) {
-                    temp = VALUE_KING;
+                    baseValue = VALUE_KING;
+                }
+
+                if (
+                    !c.IsChecker() &&
+                    !isOpening
+                ) {
+                    modifierChecker = 1f;
+                    int upperLimitThing = -1;
+
+                    if (c.IsKnight()) {
+                        // Knights are better off when they're not against the edges
+                        modifierPlacement = (IsTileInCorner(tile)) ? 0.90f
+                            : (IsTileInEndRow(tile) || IsTileInEndColumn(tile)) ? 0.95f :
+                            1f;
+                    } else if (c.IsRook()) {
+                        upperLimitThing = 14;
+                    } else if (c.IsBishop()) {
+                        upperLimitThing = 13;
+                    } else if (c.IsQueen()) {
+                        upperLimitThing = 27;
+                    }
+
+                    if (upperLimitThing > 0) {
+                        float ratio = (GetPotentialTilesForMovement(c).Count / upperLimitThing);
+                        modifierPlacement = (ratio > 0.75f) ? 1f
+                            : (ratio > 0.5f) ? 0.95f
+                            : (ratio > 0.25f) ? 0.9f
+                            : 0.85f;
+                    }
                 } else if (c.IsChecker()) {
-                    //TODO
+                    if (c.IsKinged()) {
+                        // Kinged checkers are better off closer to the chess side of the board because
+                        // they already got kinged - they don't need to go to the other side, and chess
+                        // pieces are better than checkers anyway
+                        if (c.IsWhite()) {
+                            modifierPlacement = (row == Constants.RANK_8) ? 0.85f
+                                : (row == Constants.RANK_7) ? 0.90f
+                                : (row == Constants.RANK_6) ? 0.95f
+                                : 1f;
+                        } else {
+                            modifierPlacement = (row == Constants.RANK_1) ? 0.85f
+                                : (row == Constants.RANK_2) ? 0.90f
+                                : (row == Constants.RANK_3) ? 0.95f
+                                : 1f;
+                        }
+                    } else {
+                        // Non-kinged checkers are better off closer to the end of the board because then
+                        // they can become kinged and start moving back
+                        if (c.IsWhite()) {
+                            modifierPlacement = (row == Constants.RANK_5) ? 0.85f
+                                : (row == Constants.RANK_6) ? 0.90f
+                                : (row == Constants.RANK_7) ? 0.95f
+                                : 1f;
+                        } else {
+                            modifierPlacement = (row == Constants.RANK_4) ? 0.85f
+                                : (row == Constants.RANK_3) ? 0.90f
+                                : (row == Constants.RANK_2) ? 0.95f
+                                : 1f;
+                        }
+                    }
                 }
 
                 if (c.IsBlack()) {
-                    temp = -1 * temp;
+                    modifierColor = -1;
                 }
-
-                result += temp;
+                result += (int) Math.Round(
+                    modifierColor *
+                    modifierChecker *
+                    modifierPlacement *
+                    baseValue
+                );
             }
 
             return result;
         }
+
+        #endregion
     }
 }

@@ -158,6 +158,10 @@
             return isChecker;
         }
 
+        public bool IsKinged () {
+            return isKinged;
+        }
+
         public Tile GetUnderlyingTile () {
             return underlyingTile;
         }
