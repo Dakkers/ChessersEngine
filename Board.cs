@@ -602,7 +602,7 @@ namespace ChessersEngine {
             return null;
         }
 
-        List<Tile> CanChessmanBeCapturedFromDirection2 (
+        List<Tile> CanChessmanBeCapturedFromDirection (
             Chessman chessman,
             Directionality directionality
         ) {
@@ -665,24 +665,24 @@ namespace ChessersEngine {
         }
 
         public List<Tile> CanChessmanBeCapturedVertically (Chessman chessman) {
-            return CanChessmanBeCapturedFromDirection2(
+            return CanChessmanBeCapturedFromDirection(
                 chessman,
                 Directionality.VERTICAL
             );
         }
 
         public List<Tile> CanChessmanBeCapturedHorizontally (Chessman chessman) {
-            return CanChessmanBeCapturedFromDirection2(
+            return CanChessmanBeCapturedFromDirection(
                 chessman,
                 Directionality.HORIZONTAL
             );
         }
 
         public List<Tile> CanChessmanBeCapturedDiagonally (Chessman chessman) {
-            return CanChessmanBeCapturedFromDirection2(
+            return CanChessmanBeCapturedFromDirection(
                 chessman,
                 Directionality.POSITIVE_DIAGONAL
-            ).Concat(CanChessmanBeCapturedFromDirection2(
+            ).Concat(CanChessmanBeCapturedFromDirection(
                 chessman,
                 Directionality.NEGATIVE_DIAGONAL
             )).ToList();
@@ -1286,6 +1286,31 @@ namespace ChessersEngine {
             }
 
             return new List<Tile>();
+        }
+
+        public List<Tile> GetValidTilesForMovement (Chessman chessman, bool jumpsOnly = false) {
+            List<Tile> tiles = GetPotentialTilesForMovement(chessman, jumpsOnly);
+            Board boardCopy = this.CreateCopy();
+
+            List<Tile> result = new List<Tile>();
+            foreach (var tile in tiles) {
+                Move move = new Move(
+                    boardCopy,
+                    new MoveAttempt {
+                        pieceId = chessman.id,
+                        tileId = tile.id
+                    }
+                );
+
+                MoveResult moveResult = move.GetPseudoLegalMoveResult();
+
+                if (moveResult != null) {
+                    result.Add(tile);
+                    boardCopy.UndoMove(moveResult);
+                }
+            }
+
+            return result;
         }
 
         public (int, int) CalculateRowColumnDelta (Tile tile1, Tile tile2) {

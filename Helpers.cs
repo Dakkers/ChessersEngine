@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ChessersEngine {
     public static class Helpers {
@@ -204,6 +205,10 @@ namespace ChessersEngine {
 
         public static int GetTileIdFromRowColumn (int row, int col) {
             return (8 * row) + col;
+        }
+
+        public static string FormatTiles (List<Tile> tiles) {
+            return string.Join(",", tiles.Select((t) => t.id));
         }
 
         #endregion

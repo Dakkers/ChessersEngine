@@ -279,6 +279,10 @@ namespace ChessersEngine {
                 Promote(moveResult);
             }
 
+            if (moveResult.isWinningMove) {
+                winningPlayerId = (turnColor == ColorEnum.WHITE) ? whitePlayerId : blackPlayerId;
+            }
+
             pendingMoveResults.Add(moveResult);
 
             if (moveResult.turnChanged) {

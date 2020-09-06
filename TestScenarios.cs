@@ -166,12 +166,35 @@ namespace ChessersEngine {
             };
         }
 
+        /// <summary>
+        /// White moves queen from d1 to d8 to capture a queen. The queen would then LIKE to jump a
+        /// pawn at c7, but there's a bishop at b8 that puts White in check as the king is at h4.
+        /// </summary>
+        /// <returns>The check from attempted capture jump.</returns>
+        public static MatchData InCheckFromAttemptedCaptureJump () {
+            return new MatchData {
+                currentTurn = ColorEnum.WHITE,
+                matchId = 1,
+                whitePlayerId = 0,
+                blackPlayerId = 1,
+                pieces = new List<ChessmanSchema> {
+                    CreateWhiteQueen(3),
+                    CreateWhiteKing(15),
+
+                    CreatePawn(Constants.ID_BLACK_PAWN_1, 50),
+                    CreateBishop(Constants.ID_BLACK_BISHOP_1, 57),
+                    CreateBlackQueen(59),
+                    CreateBlackKing(63),
+                }
+            };
+        }
+
         #endregion
 
         #region Checkmate
 
         public static MatchData Checkmate1 () {
-            // If Rook @ 56 captures the pawn @ 32, White will be in checkmate.
+            // If Rook @ 56 (a8) captures the pawn @ 32 (a5), White will be in checkmate.
             return new MatchData {
                 currentTurn = ColorEnum.BLACK,
                 matchId = 1,
