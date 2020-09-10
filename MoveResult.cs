@@ -2,12 +2,11 @@ using System.Collections.Generic;
 
 namespace ChessersEngine {
     public class MoveAttempt {
-        public int playerId { get; set; }
         public int pieceGuid { get; set; }
         public int pieceId { get; set; }
-        public int tileId { get; set; }
-
+        public int playerId { get; set; }
         public int promotionRank { get; set; } = -1;
+        public int tileId { get; set; }
 
         public override string ToString () {
             return $"{{ " +
@@ -104,6 +103,8 @@ namespace ChessersEngine {
         public bool WasPieceJumped () {
             return jumpedPieceId != -1;
         }
+
+        #region Notation
 
         public string CreateNotation () {
             int colDelta = (toColumn - fromColumn);
@@ -203,6 +204,10 @@ namespace ChessersEngine {
             return moveResult;
         }
 
+        #endregion
+
+        #region Castling
+
         public (int, int) GetRookCastleTileFromCoords () {
             if (!isCastle) {
                 return (-1, -1);
@@ -225,6 +230,19 @@ namespace ChessersEngine {
             } else {
                 return (toColumn == 6) ? Constants.ID_WHITE_ROOK_2 : Constants.ID_WHITE_ROOK_1;
             }
+        }
+
+        #endregion
+
+        public MoveAttempt CreateMoveAttempt () {
+            return new MoveAttempt {
+                pieceId = pieceId,
+                playerId = playerId,
+                pieceGuid = pieceGuid,
+                tileId = tileId,
+
+                promotionRank = promotionRank == null ? -1 : (int) promotionRank,
+            };
         }
     }
 }

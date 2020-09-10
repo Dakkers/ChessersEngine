@@ -208,7 +208,11 @@ namespace ChessersEngine {
         }
 
         public static string FormatTiles (List<Tile> tiles) {
-            return string.Join(",", tiles.Select((t) => t.id));
+            return string.Join(",", (tiles ?? new List<Tile>()).Select((t) => t?.id.ToString() ?? "x"));
+        }
+
+        public static void PrintTiles (List<Tile> tiles, int indent = 0) {
+            Match.Log(FormatTiles(tiles), indent);
         }
 
         #endregion

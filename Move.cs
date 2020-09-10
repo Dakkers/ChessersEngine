@@ -77,7 +77,6 @@ namespace ChessersEngine {
             };
 
             potentialTilesForMovement = board.GetPotentialTilesForMovement(chessman, jumpsOnly: jumpsOnly);
-            //Match.Log($"Potential for chessman @ {fromTile.id} ({toTile.id}): {string.Join(", ", potentialTilesForMovement.Select((t) => t.id))}");
         }
 
         #region Move types
@@ -194,13 +193,10 @@ namespace ChessersEngine {
                 return;
             }
 
-            // Generate tiles that are 2 diagonal spaces away
+            // Generate tiles that are 2 diagonal spaces away - tiles that the piece would land on
             (int row, int col) = board.GetRowColumn(tile);
 
-            int deltaNeg = board.GetNegativeDiagonalDelta();
-            int deltaPos = board.GetPositiveDiagonalDelta();
-
-            List<Tile> diagTiles = new List<Tile> {
+            List<Tile> tilesToLandOn = new List<Tile> {
                 board.GetTileByRowColumn(row + 2, col + 2),
                 board.GetTileByRowColumn(row + 2, col - 2),
                 board.GetTileByRowColumn(row - 2, col + 2),
@@ -211,28 +207,38 @@ namespace ChessersEngine {
             int halfwayPointThreshold = (board.GetNumberOfRows() / 2) * board.GetNumberOfColumns();
             //Match.Log($"{row},{col} -- {string.Join(" | ", diagTiles.Select((t) => $"{board.GetRow(t)},{board.GetColumn(t)}"))}");
 
-            foreach (Tile diagTile in diagTiles) {
-                if (diagTile == null || tilesToIgnore.Contains(diagTile.id)) {
+            foreach (Tile tileToLandOn in tilesToLandOn) {
+                if (tileToLandOn == null || tilesToIgnore.Contains(tileToLandOn.id)) {
+                    continue;
+                }
+
+                (int landingRow, int landingCol) = board.GetRowColumn(tileToLandOn);
+                Tile tileToJumpOver = board.GetTileByRowColumn(
+                    row + (landingRow - row) / 2,
+                    col + (landingCol - col) / 2
+                );
+
+                if (tileToJumpOver == null || !tileToJumpOver.IsOccupied()) {
                     continue;
                 }
 
                 // The tile needs to be on the opposite side of the attacker in order for the
                 // attacker's pieces to actually jump
                 if (
-                    ((targetColor == ColorEnum.BLACK) && (diagTile.id < halfwayPointThreshold)) ||
-                    ((targetColor == ColorEnum.WHITE) && (diagTile.id >= halfwayPointThreshold))
+                    ((targetColor == ColorEnum.BLACK) && (tileToLandOn.id < halfwayPointThreshold)) ||
+                    ((targetColor == ColorEnum.WHITE) && (tileToLandOn.id >= halfwayPointThreshold))
                 ) {
                     continue;
                 }
 
-                currentPath.Add(diagTile.id);
+                currentPath.Add(tileToLandOn.id);
 
                 _CalculateJumpPaths(
                     result,
                     currentPath,
                     targetColor,
-                    diagTile,
-                    new HashSet<int>(tilesToIgnore) { diagTile.id },
+                    tileToLandOn,
+                    new HashSet<int>(tilesToIgnore) { tileToLandOn.id },
                     depth: depth + 1
                 );
 
@@ -245,6 +251,7 @@ namespace ChessersEngine {
             ColorEnum targetColor,
             HashSet<int> tilesToIgnore
         ) {
+            //Match.Log($"CalculateJumpPaths() {baseTile.id}");
             // Each nested list is a path that the attacking player would take to (capture-)multijump
             List<List<int>> result = new List<List<int>>();
 
@@ -329,39 +336,57 @@ namespace ChessersEngine {
                     continue;
                 }
 
-                //Match.Log($"Starting at: {diagTile.id}");
                 // Ignore the tile to land on because it was including it as part
                 // of a potential path, which is encapsulated by a different path
-                var crazyResult = CalculateJumpPaths(
+                List<List<int>> paths = CalculateJumpPaths(
                     diagTile,
                     color,
                     new HashSet<int> { tileToLandOn.id }
                 );
 
-                foreach (List<int> _path in crazyResult) {
+                foreach (List<int> _path in paths) {
                     List<int> path = new List<int>(_path);
                     path.Reverse();
                     path.Add(diagTile.id);
                     path.Add(tileToLandOn.id);
 
-                    // `path` represents a full set of moves that would win the
-                    // game for the attacking player. We have to determine if
-                    // excuting these moves would put them in check.
-                    //Match.Log(string.Join(", ", path));
+                    // `path` represents a full set of moves that would win the game for the attacking
+                    // player. We have to determine if executing these moves would put them in check.
 
                     bool isGood = true;
                     Board boardCopy = board.CreateCopy();
                     for (int i = 0; i < path.Count - 1; i++) {
                         Tile startTile = boardCopy.GetTile(path[i]);
                         Tile endTile = boardCopy.GetTile(path[i + 1]);
-                        Chessman movingPiece = startTile.GetPiece();
+                        Chessman movingChessman = startTile.GetPiece();
 
-                        MoveResult _moveResult = boardCopy.MoveChessman(new MoveAttempt {
-                            pieceId = movingPiece.id,
+                        // Ok so this took me a while to figure out but here's the gist:
+                        //      - if it's player A's turn, then player B is not in check
+                        //      - you can place pieces to check the opponent such that if you were to
+                        //          actually move the piece, you yourself would be in check
+                        //          (see: https://chess.stackexchange.com/a/2350 )
+                        //
+                        // We want to determine here if our king can be jumped. If we're WHITE then
+                        // we will check for all the movements BLACK can make and we DON'T NEED TO VERIFY
+                        // if BLACK will actually be in check or not by any of these moves.
+                        //
+                        //  This was causing a stack overflow error that was like:
+                        //      - ExecuteLegalMove()
+                        //      - IsMovingPlayerInCheck()
+                        //      - DetermineCheckTiles()
+                        //      - GetPseudoLegalMoveResult()
+                        //      - IsMovingPlayerInCheck()
+                        //      - ...
+
+                        var move = new Move(boardCopy, new MoveAttempt {
+                            pieceId = movingChessman.id,
                             tileId = endTile.id
                         });
 
-                        if (_moveResult == null || !_moveResult.valid) {
+                        var otherMoveResult = move.DoTheCrazyMove();
+
+                        //MoveResult otherMoveResult = move.GetPseudoLegalMoveResult();
+                        if (otherMoveResult != null && otherMoveResult.valid) {
                             isGood = false;
                             break;
                         }
@@ -392,7 +417,6 @@ namespace ChessersEngine {
         bool IsOpposingPlayerCheckmated (List<Tile> tilesThatCheckOpposingPlayer) {
             List<Chessman> chessmenForOpposingPlayer = board.GetActiveChessmenOfColor(Helpers.GetOppositeColor(chessman.color));
             Board boardCopy = board.CreateCopy();
-            //Match.Log($"Checking for checkmate...");
 
             // Sort by King, Queen, Rook, Bishop, Knight, Pawn.
 
@@ -400,10 +424,8 @@ namespace ChessersEngine {
 
             foreach (Chessman otherChessman in chessmenForOpposingPlayer) {
                 List<Tile> potentialTiles = boardCopy.GetPotentialTilesForMovement(otherChessman);
-                //Match.Log($"Chessman: {otherChessman.id} {otherChessman.kind} | {Helpers.FormatTiles(potentialTiles)}", 1);
 
                 foreach (Tile tile in potentialTiles) {
-                    //Match.Log($"Tile: {tile.id}", 2);
                     // Use `new Move` instead of `boardClone.MoveChessman` so we can use the
                     // `GetPseudoLegalMoveResult` method
 
@@ -425,7 +447,8 @@ namespace ChessersEngine {
                     // be able to continue the moves. As such we don't need to do anything fancy with
                     // recursing or anything like that.
 
-                    boardCopy.UndoMove(moveResult);
+                    // No need to undo the move because if the move was legal, then the player is not
+                    // checkmated.
                 }
             }
 
@@ -436,8 +459,6 @@ namespace ChessersEngine {
 
         void ExecuteGenericMove () {
             //Match.Log($"{chessman.kind} | {string.Join(",", potentialTilesForMovement.Select((t) => t.id))}");
-            moveResult.valid = true;
-
             if (!chessman.hasMoved) {
                 moveResult.wasFirstMoveForPiece = true;
                 chessman.SetHasMoved(true);
@@ -450,9 +471,9 @@ namespace ChessersEngine {
             if (
                 chessman.IsKing() &&
                 (rowDelta == 0) &&
-                (Math.Abs(colDelta) == 2)
+                (Math.Abs(colDelta) == 2) &&
+                !chessman.IsChecker()
             ) {
-                moveResult.isCastle = true;
                 Tile rookFromTile = null;
                 Tile rookToTile = null;
 
@@ -465,12 +486,13 @@ namespace ChessersEngine {
                 }
 
                 Chessman rookChessman = rookFromTile.GetPiece();
-                //Match.Log($"{board.GetRowColumn(rookFromTile)} | {board.GetRowColumn(rookToTile)} | {rookChessman != null}");
                 if (rookChessman != null) {
                     rookFromTile.RemovePiece();
                     rookToTile.SetPiece(rookChessman);
                     rookChessman.SetUnderlyingTile(rookToTile);
                     rookChessman.SetHasMoved(true);
+
+                    moveResult.isCastle = true;
                 }
             }
 
@@ -479,7 +501,7 @@ namespace ChessersEngine {
                 // This was a valid movement - if the piece moved +/- 2 rows/columns, then
                 // a piece was jumped.
                 if (
-                    (Math.Abs(rowDelta) == 2) ||
+                    (Math.Abs(rowDelta) == 2) &&
                     (Math.Abs(colDelta) == 2)
                 ) {
                     // `delta` will always be even in this case; this value will represent
@@ -487,11 +509,17 @@ namespace ChessersEngine {
                     // was occupying
                     int halfDelta = delta / 2;
                     Tile jumpedTile = board.GetTile(fromTile.id + halfDelta);
-                    //Match.Log($"{chessman.kind} | {fromTile.id} -> {toTile.id} | {jumpedTile.id}");
+                    Match.Log($"{chessman.kind} | {fromTile.id} -> {toTile.id} | {jumpedTile.id} | delta={delta} | {Helpers.FormatTiles(potentialTilesForMovement)}");
 
-                    moveResult.wasPieceJumped = true;
-                    moveResult.jumpedPieceId = jumpedTile.GetPiece().id;
-                    moveResult.jumpedTileId = jumpedTile.id;
+                    try {
+                        moveResult.wasPieceJumped = true;
+                        moveResult.jumpedPieceId = jumpedTile.GetPiece().id;
+                        moveResult.jumpedTileId = jumpedTile.id;
+
+                    } catch (Exception e) {
+                        board.PrintPieces();
+                        throw e;
+                    }
                 }
             } else {
                 if (toTile.IsOccupied()) {
@@ -590,6 +618,7 @@ namespace ChessersEngine {
         /// <returns>The move result.</returns>
         void ExecuteLegalMove () {
             if (!(potentialTilesForMovement.Exists((t) => t.id == toTile.id))) {
+                //Match.Log("Not a legal move.");
                 // Not a legal move to the specified tile.
                 return;
             }
@@ -605,14 +634,25 @@ namespace ChessersEngine {
             // Completely valid!
             PostValidationHandler();
 
-            List<Tile> tilesThatCheckOpposingPlayer = CalculateCheckTiles(Helpers.GetOppositeColor(chessman.color), exitEarly: false);
+            if (!moveResult.isWinningMove) {
+                // Redundant check here as an attempt to prevent stack overflow :'(
+                // (Probably not a solution to the issue but whatever)
 
-            // -- Now see if this player has won.
-            if (tilesThatCheckOpposingPlayer.Count > 0) {
-                if (IsOpposingPlayerCheckmated(tilesThatCheckOpposingPlayer)) {
-                    moveResult.isWinningMove = true;
+                List<Tile> tilesThatCheckOpposingPlayer = CalculateCheckTiles(Helpers.GetOppositeColor(chessman.color), exitEarly: false);
+
+                // -- Now see if this player has won.
+                if (tilesThatCheckOpposingPlayer.Count > 0) {
+                    if (IsOpposingPlayerCheckmated(tilesThatCheckOpposingPlayer)) {
+                        moveResult.isWinningMove = true;
+                    }
                 }
             }
+        }
+
+        public MoveResult DoTheCrazyMove () {
+            ExecuteGenericMove();
+            PostValidationHandler();
+            return moveResult;
         }
 
         /// <summary>
@@ -624,12 +664,10 @@ namespace ChessersEngine {
             ExecuteGenericMove();
 
             if (IsMovingPlayerInCheck()) {
-                //Match.Log("            Attacking player is in check.");
                 return null;
             }
 
             PostValidationHandler();
-            moveResult.valid = true;
 
             return moveResult;
         }
@@ -669,6 +707,8 @@ namespace ChessersEngine {
             if (shouldChangeTurns) {
                 moveResult.turnChanged = true;
             }
+
+            moveResult.valid = true;
         }
     }
 }

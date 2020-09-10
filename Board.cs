@@ -196,7 +196,6 @@ namespace ChessersEngine {
         }
 
         public void CopyState (Board otherBoard) {
-            //Match.Log($"Copying {otherBoard.id} to {this.id}");
             // Update the states of the Chessmen
             foreach (KeyValuePair<int, Chessman> pair in chessmenById) {
                 int chessmanId = pair.Key;
@@ -395,6 +394,7 @@ namespace ChessersEngine {
             Directionality dir
         ) {
             List<Tile> result = new List<Tile>();
+            //Match.Log($"GetTiles() {baseTile?.id.ToString() ?? "x"}");
             (int row, int col) = GetRowColumn(baseTile);
             int rowStart = row, colStart = col;
 
@@ -1133,6 +1133,7 @@ namespace ChessersEngine {
                     Chessman rookChessman = rookTile.GetPiece();
                     if (
                         rookChessman == null ||
+                        !rookChessman.isActive ||
                         rookChessman.hasMoved
                     ) {
                         // `hasMoved` is a sufficient check to determine if the piece on this tile
@@ -1154,7 +1155,6 @@ namespace ChessersEngine {
                     for (int colIter = lower + 1; colIter < upper; colIter++) {
                         Tile inbetweenTile = GetTileByRowColumn(row, colIter);
                         if (inbetweenTile.IsOccupied()) {
-                            //Match.Log($"  {inbetweenTile.id} is occupied :(");
                             isValid = false;
                             break;
                         }
@@ -1174,12 +1174,10 @@ namespace ChessersEngine {
                         int iterTileId = GetTileByRowColumn(row, colIter).id;
                         kingSchema.location = iterTileId;
 
-                        //Match.Log(allSchemas.Find((otherCs) => otherCs.id == kingChessman.id).location);
                         Board boardCopy = new Board(allSchemas);
                         Chessman kingCopy = kingChessman.IsWhite() ? boardCopy.GetWhiteKing() : boardCopy.GetBlackKing();
 
                         if (boardCopy.CanChessmanBeCaptured(kingCopy).Count > 0) {
-                            //Match.Log($"  {iterTileId} is threatened");
                             isValid = false;
                             break;
                         }
@@ -1533,6 +1531,20 @@ namespace ChessersEngine {
             }
 
             return result;
+        }
+
+        #endregion
+
+        #region Utils
+
+        public void PrintPieces () {
+            var result = new List<string>();
+            foreach (var item in chessmenById) {
+                if (item.Value.isActive) {
+                    result.Add($"{item.Key} {item.Value.kind} | {item.Value.GetUnderlyingTile()?.id}");
+                }
+            }
+            Match.Log(string.Join("\n", result));
         }
 
         #endregion

@@ -301,7 +301,6 @@ namespace ChessersEngine {
         }
 
         public List<MoveResult> GetMovesForLastTurn () {
-            //Match.Log($"moves.Count = {moves.Count} | {string.Join(" ", moves)}");
             if (moves.Count == 0) {
                 return null;
             }
@@ -390,8 +389,6 @@ namespace ChessersEngine {
             foreach (var chessman in availableChessmen) {
                 List<Tile> potentialTiles = board.GetPotentialTilesForMovement(chessman, jumpsOnly: isMultipleMoves);
                 Helpers.Shuffle(rng, potentialTiles);
-                //Match.Log($"Looking @ chessman for tile {committedBoard.GetRowColumn(chessman.GetUnderlyingTile())}. Found:" +
-                //$"{potentialTiles.Count} potential moves.");
 
                 bool exitEarly = false;
                 bool startedAsChecker = chessman.IsChecker();
@@ -410,7 +407,6 @@ namespace ChessersEngine {
 
                     MoveResult moveResult = board.MoveChessman(moveAttempt);
                     if (moveResult == null || !moveResult.valid) {
-                        // This should not occur
                         continue;
                     }
 
@@ -469,7 +465,6 @@ namespace ChessersEngine {
                         alpha = System.Math.Max(alpha, value);
                     } else {
                         if (value < bestValueSoFar) {
-                            //Match.Log($"  Overriding best choice: {value} {moves?.Count}");
                             bestValueSoFar = value;
                             bestMoves = movesToExecute;
                         }
@@ -516,7 +511,7 @@ namespace ChessersEngine {
                 case 2:
                     config.allowMultijumps = true;
                     config.allowCapturejumps = true;
-                    config.maxDepth = 4;
+                    //config.maxDepth = 4;
                     break;
             }
 
@@ -553,7 +548,6 @@ namespace ChessersEngine {
 
             foreach (var attempt in moveAttempts) {
                 MoveResult moveResult = MoveChessman(attempt);
-                //Match.Log(moveResult);
                 if (moveResult == null || !moveResult.valid) {
                     break;
                 }
