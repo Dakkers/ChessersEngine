@@ -392,6 +392,7 @@ namespace ChessersEngine {
 
                 bool exitEarly = false;
                 bool startedAsChecker = chessman.IsChecker();
+                //Log($"{chessman.kind} @ {chessman.GetUnderlyingTile().id} | {Helpers.FormatTiles(potentialTiles)}");
 
                 foreach (var tile in potentialTiles) {
                     MoveAttempt moveAttempt = new MoveAttempt {
@@ -410,6 +411,7 @@ namespace ChessersEngine {
                         continue;
                     }
 
+                    //Match.Log(moveAttempt);
                     if (fallbackMove == null) {
                         fallbackMove = moveAttempt;
                     }

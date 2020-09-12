@@ -1302,7 +1302,7 @@ namespace ChessersEngine {
 
                 MoveResult moveResult = move.GetPseudoLegalMoveResult();
 
-                if (moveResult != null) {
+                if (moveResult?.valid ?? false) {
                     result.Add(tile);
                     boardCopy.UndoMove(moveResult);
                 }

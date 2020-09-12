@@ -457,7 +457,17 @@ namespace ChessersEngine {
 
         #endregion
 
-        void ExecuteGenericMove () {
+        /// <summary>
+        /// This function DOES:
+        ///     - Moves the piece
+        ///     - Removes jumped/captured pieces
+        ///     - Sets promotion, polarity, kinging
+        ///
+        /// This function does NOT:
+        ///     - ensure the movement itself is legal
+        ///     - validate for "check" or "checkmate"
+        /// </summary>
+        void ExecuteBaseMove () {
             //Match.Log($"{chessman.kind} | {string.Join(",", potentialTilesForMovement.Select((t) => t.id))}");
             if (!chessman.hasMoved) {
                 moveResult.wasFirstMoveForPiece = true;
@@ -509,17 +519,11 @@ namespace ChessersEngine {
                     // was occupying
                     int halfDelta = delta / 2;
                     Tile jumpedTile = board.GetTile(fromTile.id + halfDelta);
-                    Match.Log($"{chessman.kind} | {fromTile.id} -> {toTile.id} | {jumpedTile.id} | delta={delta} | {Helpers.FormatTiles(potentialTilesForMovement)}");
+                    //Match.Log($"{chessman.kind} | {fromTile.id} -> {toTile.id} | {jumpedTile.id} | delta={delta} | {Helpers.FormatTiles(potentialTilesForMovement)}");
 
-                    try {
-                        moveResult.wasPieceJumped = true;
-                        moveResult.jumpedPieceId = jumpedTile.GetPiece().id;
-                        moveResult.jumpedTileId = jumpedTile.id;
-
-                    } catch (Exception e) {
-                        board.PrintPieces();
-                        throw e;
-                    }
+                    moveResult.wasPieceJumped = true;
+                    moveResult.jumpedPieceId = jumpedTile.GetPiece().id;
+                    moveResult.jumpedTileId = jumpedTile.id;
                 }
             } else {
                 if (toTile.IsOccupied()) {
@@ -612,27 +616,49 @@ namespace ChessersEngine {
         }
 
         /// <summary>
-        /// Gets the result of the move that was confiugred. This does NOT modify the
-        /// match state in any way.
+        /// Does `ExecuteBaseMove` but also validates for check (but NOT checkmate)
         /// </summary>
-        /// <returns>The move result.</returns>
-        void ExecuteLegalMove () {
+        MoveResult ExecuteBaseMoveWithCheckValidation () {
             if (!(potentialTilesForMovement.Exists((t) => t.id == toTile.id))) {
-                //Match.Log("Not a legal move.");
                 // Not a legal move to the specified tile.
-                return;
+                //Match.Log("Not a legal move.");
+                return null;
             }
 
-            ExecuteGenericMove();
+            ExecuteBaseMove();
 
             if (IsMovingPlayerInCheck()) {
-                moveResult.valid = false;
                 //Match.Log("Moving player is in check.");
-                return;
+                return null;
             }
 
-            // Completely valid!
             PostValidationHandler();
+            return moveResult;
+        }
+
+        /// <summary>
+        /// `ExecuteBaseMove` + `PostValidationHandler`. To be used when a move needs to be made but
+        /// we don't care about the check/checkmate validations.
+        /// </summary>
+        /// <returns>The the crazy move.</returns>
+        public MoveResult DoTheCrazyMove () {
+            ExecuteBaseMove();
+            PostValidationHandler();
+            return moveResult;
+        }
+
+        /// <summary>
+        /// Gets the pseudo legal move result. Skips the piece-specific validation - only checks that
+        /// the player is not in  check.
+        /// </summary>
+        /// <returns>The pseudo legal move result.</returns>
+        public MoveResult GetPseudoLegalMoveResult () {
+            ExecuteBaseMoveWithCheckValidation();
+            return moveResult;
+        }
+
+        public MovementValidationEndResult ExecuteMove () {
+            ExecuteBaseMoveWithCheckValidation();
 
             if (!moveResult.isWinningMove) {
                 // Redundant check here as an attempt to prevent stack overflow :'(
@@ -647,33 +673,6 @@ namespace ChessersEngine {
                     }
                 }
             }
-        }
-
-        public MoveResult DoTheCrazyMove () {
-            ExecuteGenericMove();
-            PostValidationHandler();
-            return moveResult;
-        }
-
-        /// <summary>
-        /// Gets the pseudo legal move result. Skips the piece-specific validation - only checks that
-        /// the player is not in  check.
-        /// </summary>
-        /// <returns>The pseudo legal move result.</returns>
-        public MoveResult GetPseudoLegalMoveResult () {
-            ExecuteGenericMove();
-
-            if (IsMovingPlayerInCheck()) {
-                return null;
-            }
-
-            PostValidationHandler();
-
-            return moveResult;
-        }
-
-        public MovementValidationEndResult ExecuteMove () {
-            ExecuteLegalMove();
 
             return new MovementValidationEndResult(board, moveResult);
         }

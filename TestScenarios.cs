@@ -217,7 +217,7 @@ namespace ChessersEngine {
             // Black Rook @ 39 captures pawn @ 32.
             // White Rook @ 15 moves to 8 to block.
             return new MatchData {
-                currentTurn = ColorEnum.BLACK,
+                currentTurn = ColorEnum.WHITE,
                 matchId = 1,
                 whitePlayerId = 0,
                 blackPlayerId = 1,
@@ -586,7 +586,6 @@ namespace ChessersEngine {
         /// <summary>
         /// The stack overflow bug.
         /// </summary>
-        /// <returns>The bug20200908.</returns>
         public static MatchData Bug20200908 () {
             var md = CreateMatchData();
             md.currentTurn = ColorEnum.BLACK;
@@ -615,6 +614,27 @@ namespace ChessersEngine {
                 new ChessmanSchema { colorId = 1, id = 27, isActive = true, kind = 2, location = 61 },
                 new ChessmanSchema { colorId = 1, id = 23, isActive = true, kind = 1, location = 62 },
                 new ChessmanSchema { colorId = 1, hasMoved = true, id = 19, isActive = true, kind = 3, location = 40 },
+            };
+            return md;
+        }
+
+        /// <summary>
+        /// A very weird bug where a piece is trying to jump over an empty tile.
+        ///
+        /// THE CAUSE: the computer was attempting to do a move that was illegal (in terms of how the
+        /// piece can move). It was trying to move a bishop along a diagonal that was blocked.
+        ///
+        /// THE SOLUTION: always validate the movements even if it *seems* redundant.
+        /// </summary>
+        public static MatchData Bug20200910 () {
+            var md = CreateMatchData();
+            md.currentTurn = ColorEnum.WHITE;
+            md.pieces = new List<ChessmanSchema> {
+                new ChessmanSchema { colorId= 0, hasMoved= true, id= 26, isActive= true, kind= 2, location= 12 },
+                new ChessmanSchema { colorId= 0, hasMoved= true, id= 30, isActive= true, kind= 5, location= 13 },
+                new ChessmanSchema { colorId= 1, hasMoved= true, id= 13, isActive= true, isChecker= true, kind= 0, location= 30 },
+                new ChessmanSchema { colorId= 1, hasMoved= true, id= 15, isActive= true, isChecker= true, kind= 0, location= 31 },
+                new ChessmanSchema { colorId= 1, hasMoved= true, id= 31, isActive= true, kind= 5, location= 63 },
             };
             return md;
         }
