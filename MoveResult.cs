@@ -65,6 +65,8 @@ namespace ChessersEngine {
         public int capturedPieceId { get; set; } = -1;
 
         public bool isWinningMove { get; set; } = false;
+        public bool isInCheck { get; set; } = false;
+        public bool isStalemate { get; set; } = false;
 
         public bool valid { get; set; }
 

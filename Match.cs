@@ -268,8 +268,8 @@ namespace ChessersEngine {
             }
 
             MoveResult moveResult = pendingBoard.MoveChessman(moveAttempt, jumpsOnly: (pendingMoveResults.Count > 0));
-            if (moveResult == null || !moveResult.valid) {
-                return null;
+            if (!moveResult.valid) {
+                return moveResult;
             }
 
             moveResult.playerId = moveAttempt.playerId;
@@ -281,6 +281,8 @@ namespace ChessersEngine {
 
             if (moveResult.isWinningMove) {
                 winningPlayerId = (turnColor == ColorEnum.WHITE) ? whitePlayerId : blackPlayerId;
+            } else if (moveResult.isStalemate) {
+                isDraw = true;
             }
 
             pendingMoveResults.Add(moveResult);
@@ -407,7 +409,9 @@ namespace ChessersEngine {
                     }
 
                     MoveResult moveResult = board.MoveChessman(moveAttempt);
-                    if (moveResult == null || !moveResult.valid) {
+                    if (!moveResult.valid) {
+                        continue;
+                    } else if (moveResult.isStalemate) {
                         continue;
                     }
 
@@ -550,7 +554,7 @@ namespace ChessersEngine {
 
             foreach (var attempt in moveAttempts) {
                 MoveResult moveResult = MoveChessman(attempt);
-                if (moveResult == null || !moveResult.valid) {
+                if (!moveResult.valid) {
                     break;
                 }
 
@@ -570,6 +574,22 @@ namespace ChessersEngine {
         #endregion
 
         #region Match state
+
+        public int GetWinner () {
+            return winningPlayerId;
+        }
+
+        public ColorEnum GetWinnerColor () {
+            return GetColorOfPlayer(winningPlayerId);
+        }
+
+        public bool HasWinner () {
+            return winningPlayerId >= 0;
+        }
+
+        public bool IsDraw () {
+            return isDraw;
+        }
 
         public void Resign (ColorEnum color) {
             isResignation = true;
@@ -593,18 +613,6 @@ namespace ChessersEngine {
         /// </summary>
         public void Resign () {
             Resign(committedTurnColor);
-        }
-
-        public ColorEnum GetWinnerColor () {
-            return GetColorOfPlayer(winningPlayerId);
-        }
-
-        public bool HasWinner () {
-            return winningPlayerId >= 0;
-        }
-
-        public int GetWinner () {
-            return winningPlayerId;
         }
 
         public void SetPlayerIds (int whiteId, int blackId) {
@@ -639,7 +647,10 @@ namespace ChessersEngine {
 
             turnColor = newMatchData.currentTurn;
             committedTurnColor = turnColor;
+
+            isDraw = newMatchData.isDraw;
             moves = newMatchData.moves;
+            winningPlayerId = newMatchData.winningPlayerId;
 
             ResetMatchState();
         }

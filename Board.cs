@@ -1292,17 +1292,11 @@ namespace ChessersEngine {
 
             List<Tile> result = new List<Tile>();
             foreach (var tile in tiles) {
-                Move move = new Move(
-                    boardCopy,
-                    new MoveAttempt {
-                        pieceId = chessman.id,
-                        tileId = tile.id
-                    }
-                );
+                Move move = new Move(boardCopy, chessman.id, tile.id);
 
                 MoveResult moveResult = move.GetPseudoLegalMoveResult();
 
-                if (moveResult?.valid ?? false) {
+                if (moveResult.valid) {
                     result.Add(tile);
                     boardCopy.UndoMove(moveResult);
                 }
@@ -1332,8 +1326,8 @@ namespace ChessersEngine {
             Move move = new Move(boardCopy, moveAttempt, jumpsOnly);
             MovementValidationEndResult result = move.ExecuteMove();
 
-            if (result.moveResult == null || !result.moveResult.valid) {
-                return null;
+            if (!result.moveResult.valid) {
+                return result.moveResult;
             }
 
             result.moveResult.playerId = moveAttempt.playerId;

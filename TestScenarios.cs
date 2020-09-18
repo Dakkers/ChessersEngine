@@ -279,6 +279,29 @@ namespace ChessersEngine {
 
         #endregion
 
+        #region Stalemate
+
+        /// <summary>
+        /// If Black rook moves from 33 to 57, then White is in stalemate.
+        /// </summary>
+        public static MatchData Stalemate1 () {
+            var md = CreateMatchData();
+            md.currentTurn = ColorEnum.BLACK;
+
+            var whiteKingCS = CreateWhiteKing(52);
+            whiteKingCS.isChecker = true;
+
+            md.pieces = new List<ChessmanSchema> {
+                whiteKingCS,
+
+                CreateBlackKing(56),
+                CreateRook(Constants.ID_BLACK_ROOK_1, 33),
+            };
+            return md;
+        }
+
+        #endregion
+
         public static MatchData Promotion () {
             ChessmanSchema pawnCS = CreatePawn(Constants.ID_WHITE_PAWN_1, 48);
             pawnCS.isChecker = true;

@@ -79,6 +79,15 @@ namespace ChessersEngine {
             potentialTilesForMovement = board.GetPotentialTilesForMovement(chessman, jumpsOnly: jumpsOnly);
         }
 
+        public Move (Board _board, int pieceId, int tileId, bool jumpsOnly = false) : this(
+            _board,
+            new MoveAttempt {
+                pieceId = pieceId,
+                tileId = tileId
+            },
+            jumpsOnly
+        ) { }
+
         #region Move types
 
         bool IsHorizontalMove () {
@@ -416,16 +425,17 @@ namespace ChessersEngine {
 
         bool IsOpposingPlayerCheckmated (List<Tile> tilesThatCheckOpposingPlayer) {
             List<Chessman> chessmenForOpposingPlayer = board.GetActiveChessmenOfColor(Helpers.GetOppositeColor(chessman.color));
-            Board boardCopy = board.CreateCopy();
 
             // Sort by King, Queen, Rook, Bishop, Knight, Pawn.
 
             chessmenForOpposingPlayer.Sort((c1, c2) => ConvertChessmanToSortScore(c1) - ConvertChessmanToSortScore(c2));
 
             foreach (Chessman otherChessman in chessmenForOpposingPlayer) {
-                List<Tile> potentialTiles = boardCopy.GetPotentialTilesForMovement(otherChessman);
+                List<Tile> potentialTiles = board.GetPotentialTilesForMovement(otherChessman);
 
                 foreach (Tile tile in potentialTiles) {
+                    Board boardCopy = board.CreateCopy();
+
                     // Use `new Move` instead of `boardClone.MoveChessman` so we can use the
                     // `GetPseudoLegalMoveResult` method
 
@@ -438,7 +448,7 @@ namespace ChessersEngine {
                     );
 
                     MoveResult otherMoveResult = move.GetPseudoLegalMoveResult();
-                    if (otherMoveResult != null && otherMoveResult.valid) {
+                    if (otherMoveResult.valid) {
                         return false;
                     }
 
@@ -447,11 +457,31 @@ namespace ChessersEngine {
                     // be able to continue the moves. As such we don't need to do anything fancy with
                     // recursing or anything like that.
 
-                    // No need to undo the move because if the move was legal, then the player is not
-                    // checkmated.
+                    // No need to undo the move because we create a new board each iteration.
                 }
             }
 
+            return true;
+        }
+
+        bool IsOpposingPlayerStalemated () {
+            List<Chessman> chessmenForOpposingPlayer = board.GetActiveChessmenOfColor(Helpers.GetOppositeColor(chessman.color));
+
+            foreach (Chessman otherChessman in chessmenForOpposingPlayer) {
+                List<Tile> potentialTiles = board.GetPotentialTilesForMovement(otherChessman);
+
+                foreach (Tile tile in potentialTiles) {
+                    Board boardCopy = board.CreateCopy();
+
+                    // Use `new Move` instead of `boardClone.MoveChessman` so we can use the
+                    // `GetPseudoLegalMoveResult` method
+                    Move move = new Move(boardCopy, otherChessman.id, tile.id);
+                    MoveResult otherMoveResult = move.GetPseudoLegalMoveResult();
+                    if (!otherMoveResult.isInCheck) {
+                        return false;
+                    }
+                }
+            }
             return true;
         }
 
@@ -622,14 +652,16 @@ namespace ChessersEngine {
             if (!(potentialTilesForMovement.Exists((t) => t.id == toTile.id))) {
                 // Not a legal move to the specified tile.
                 //Match.Log("Not a legal move.");
-                return null;
+                moveResult.valid = false;
+                return moveResult;
             }
 
             ExecuteBaseMove();
 
             if (IsMovingPlayerInCheck()) {
-                //Match.Log("Moving player is in check.");
-                return null;
+                moveResult.isInCheck = true;
+                moveResult.valid = false;
+                return moveResult;
             }
 
             PostValidationHandler();
@@ -661,16 +693,19 @@ namespace ChessersEngine {
             ExecuteBaseMoveWithCheckValidation();
 
             if (!moveResult.isWinningMove) {
-                // Redundant check here as an attempt to prevent stack overflow :'(
-                // (Probably not a solution to the issue but whatever)
+                // Redundant check here as an attempt to prevent stack overflow :'( Probably not a
+                // solution to the issue but whatever. We'll check here for checkmate and stalemate.
 
                 List<Tile> tilesThatCheckOpposingPlayer = CalculateCheckTiles(Helpers.GetOppositeColor(chessman.color), exitEarly: false);
 
-                // -- Now see if this player has won.
                 if (tilesThatCheckOpposingPlayer.Count > 0) {
                     if (IsOpposingPlayerCheckmated(tilesThatCheckOpposingPlayer)) {
                         moveResult.isWinningMove = true;
                     }
+                } else {
+                    // Stalemate can only occur if the opposing player is NOT in check right now, but
+                    // all of their moves will make them end up in check.
+                    moveResult.isStalemate = IsOpposingPlayerStalemated();
                 }
             }
 
