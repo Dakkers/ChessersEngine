@@ -591,6 +591,10 @@ namespace ChessersEngine {
             return isDraw;
         }
 
+        public bool IsGameOver () {
+            return IsDraw() || HasWinner();
+        }
+
         public void Resign (ColorEnum color) {
             isResignation = true;
             if (color == ColorEnum.WHITE) {
