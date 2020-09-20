@@ -517,7 +517,7 @@ namespace ChessersEngine {
                 case 2:
                     config.allowMultijumps = true;
                     config.allowCapturejumps = true;
-                    //config.maxDepth = 4;
+                    config.maxDepth = 4;
                     break;
             }
 
