@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ChessersEngine {
     public static class TestScenarios {
@@ -375,14 +376,33 @@ namespace ChessersEngine {
 
             md.pieces = new List<ChessmanSchema> {
                 CreateWhiteKing(2),
-                //CreatePawn(Constants.ID_WHITE_PAWN_1, 28),
-                //checkerCS,
+                CreatePawn(Constants.ID_WHITE_PAWN_1, 28),
+                checkerCS,
 
-                //CreateKnight(Constants.ID_BLACK_KNIGHT_1, 54),
-                //CreateKnight(Constants.ID_BLACK_KNIGHT_2, 52),
+                CreateKnight(Constants.ID_BLACK_KNIGHT_1, 54),
+                CreateKnight(Constants.ID_BLACK_KNIGHT_2, 52),
                 CreateRook(Constants.ID_BLACK_ROOK_1, 37),
                 CreateBlackKing(56),
 
+            };
+            return md;
+        }
+
+        public static MatchData CaptureMultijump1 () {
+            var md = CreateMatchData();
+            md.pieces = new List<ChessmanSchema>() {
+                CreateWhiteKing(0),
+                CreateRook(Constants.ID_WHITE_ROOK_1, 8),
+                CreateWhiteQueen(1),
+                CreateKnight(Constants.ID_WHITE_KNIGHT_1, 21),
+                CreateKnight(Constants.ID_WHITE_KNIGHT_2, 31),
+
+                CreatePawn(Constants.ID_BLACK_PAWN_1, 41),
+                CreateKnight(Constants.ID_BLACK_KNIGHT_1, 50),
+                CreateKnight(Constants.ID_BLACK_KNIGHT_2, 52),
+                CreatePawn(Constants.ID_BLACK_PAWN_2, 36),
+                CreateRook(Constants.ID_BLACK_ROOK_1, 55),
+                CreateBlackKing(63)
             };
             return md;
         }
@@ -662,6 +682,32 @@ namespace ChessersEngine {
             return md;
         }
 
+        /// <summary>
+        /// A bug where a tile was not correctly marked as a potential movement. In this state, Black
+        /// is in check and moving the knight to e7 should be valid to block the bishop. The knight
+        /// *CAN* move there but it doesn't get marked as such.
+        ///
+        /// THE CAUSE: `ChessersEngine.Board.GetValidTilesForMovement` was only undoing the move if
+        /// the move was valid. This is bad because the board's methods mutate the board (which is bad
+        /// in itself).
+        ///
+        /// THE SOLUTION: always call `UndoMove`.
+        /// </summary>
+        /// <returns>The 01.</returns>
+        public static MatchData Bug20200924_01 () {
+            var md = CreateMatchData();
+            md.currentTurn = ColorEnum.BLACK;
+            md.pieces = new List<ChessmanSchema> {
+                CreateWhiteKing(4),
+                CreateBishop(Constants.ID_WHITE_BISHOP_1, 16),
+
+                CreateKnight(Constants.ID_BLACK_KNIGHT_1, 42),
+                CreateKnight(Constants.ID_BLACK_KNIGHT_2, 62),
+                CreateBlackKing(61),
+            };
+            return md;
+        }
+
         #endregion
 
         #region Scoring
@@ -675,6 +721,35 @@ namespace ChessersEngine {
                     CreateRook(Constants.ID_BLACK_ROOK_1, 56),
                 }
             };
+        }
+
+        #endregion
+
+        #region Utils
+
+        public static MatchData AllKings () {
+            var md = CreateMatchData();
+            md.pieces = new List<ChessmanSchema> {
+                CreateWhiteKing(56),
+                CreateWhiteQueen(57),
+                CreateRook(Constants.ID_WHITE_ROOK_1, 58),
+                CreateKnight(Constants.ID_WHITE_KNIGHT_1, 59),
+                CreateBishop(Constants.ID_WHITE_BISHOP_1, 60),
+                CreatePawn(Constants.ID_WHITE_PAWN_1, 61),
+
+                CreateBlackKing(0),
+                CreateBlackQueen(1),
+                CreateRook(Constants.ID_BLACK_ROOK_1, 2),
+                CreateKnight(Constants.ID_BLACK_KNIGHT_1, 3),
+                CreateBishop(Constants.ID_BLACK_BISHOP_1, 4),
+                CreatePawn(Constants.ID_BLACK_PAWN_1, 5),
+            };
+            for (int i = 0; i < md.pieces.Count; i++) {
+                md.pieces[i].isChecker = true;
+                md.pieces[i].isKinged = true;
+            }
+
+            return md;
         }
 
         #endregion

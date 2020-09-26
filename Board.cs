@@ -1291,15 +1291,16 @@ namespace ChessersEngine {
             Board boardCopy = this.CreateCopy();
 
             List<Tile> result = new List<Tile>();
-            foreach (var tile in tiles) {
+            foreach (Tile tile in tiles) {
                 Move move = new Move(boardCopy, chessman.id, tile.id);
 
                 MoveResult moveResult = move.GetPseudoLegalMoveResult();
 
                 if (moveResult.valid) {
                     result.Add(tile);
-                    boardCopy.UndoMove(moveResult);
                 }
+
+                boardCopy.UndoMove(moveResult);
             }
 
             return result;

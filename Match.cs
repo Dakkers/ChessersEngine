@@ -341,6 +341,8 @@ namespace ChessersEngine {
             return result;
         }
 
+        public string GetLastMove () => (moves.Count == 0) ? null : moves[moves.Count - 1];
+
         #endregion
 
         #region Move generation
