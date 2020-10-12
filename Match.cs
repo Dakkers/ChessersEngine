@@ -8,12 +8,12 @@ namespace ChessersEngine {
         OFF,
         SIDES,
         BACK,
-        ALL
+        ALL,
     };
 
     public enum MovejumpSetting {
         OFF,
-        ON
+        ON,
     }
 
     public class MatchData {
@@ -25,9 +25,8 @@ namespace ChessersEngine {
         public int deathjumpSetting;
         public bool isDraw = false;
         public bool isResignation = false;
-        public int matchId;
         public string matchGuid;
-        public int movejumpSetting;
+        public int matchId;
         public List<string> moves;
         public List<ChessmanSchema> pieces;
         public List<ChessmanSchemaMinified> piecesMinified;
