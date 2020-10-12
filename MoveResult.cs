@@ -135,11 +135,16 @@ namespace ChessersEngine {
                 moveNotation += "y";
             }
 
-            // "Qh4" becomes "Qh4e7"
-            moveNotation += (
-                Helpers.ConvertColumnToFile(toColumn) +
-                Helpers.ConvertRowToRank(toRow)
-            );
+            if (tileId < 0) {
+                // Deathjump; "Qh4y" becomes "Qh4y11"
+                moveNotation += System.Math.Abs(tileId).ToString().PadLeft(2, '0');
+            } else {
+                // "Qh4" becomes "Qh4e7"
+                moveNotation += (
+                    Helpers.ConvertColumnToFile(toColumn) +
+                    Helpers.ConvertRowToRank(toRow)
+                );
+            }
 
             if (promotionOccurred) {
                 // "h7h8" becomes "h7h8Q"
@@ -182,20 +187,34 @@ namespace ChessersEngine {
 
             // -- Fourth letter can be capture or jump symbol (x, y respectively) so if it's either
             // of those, the "to" file is actually the letter after that.
-            char toFile = chars.Dequeue();
-            if (toFile == 'x') {
-                moveResult.wasPieceCaptured = true;
-                //moveResult.capturedPieceId = int.MaxValue;
-                toFile = chars.Dequeue();
-            } else if (toFile == 'y') {
-                moveResult.wasPieceJumped = true;
-                //moveResult.jumpedPieceId = int.MaxValue;
-                toFile = chars.Dequeue();
+            {
+                char nextChar = chars.Peek();
+                if (nextChar == 'x') {
+                    moveResult.wasPieceCaptured = true;
+                    chars.Dequeue();
+                } else if (nextChar == 'y') {
+                    moveResult.wasPieceJumped = true;
+                    chars.Dequeue();
+                }
             }
 
-            moveResult.toColumn = Helpers.ConvertFileToColumn(toFile);
-            char toRank = chars.Dequeue();
-            moveResult.toRow = Helpers.ConvertRankToRow(toRank);
+            // For the "to" tile, if it was a deathjump then it will be 2 numbers.
+            // If it's any other kind of movement then it will be letter-number.
+            {
+                char nextChar = chars.Dequeue();
+                bool isInt = int.TryParse(nextChar.ToString(), out int charAsInt);
+
+                if (isInt) {
+                    int secondDigit = int.Parse(chars.Dequeue().ToString());
+                    int deathjumpTileId = -1 * ((10 * charAsInt) + secondDigit);
+
+                    moveResult.toColumn = Helpers.GetColumn(deathjumpTileId);
+                    moveResult.toRow = Helpers.GetRow(deathjumpTileId);
+                } else {
+                    moveResult.toColumn = Helpers.ConvertFileToColumn(nextChar);
+                    moveResult.toRow = Helpers.ConvertRankToRow(chars.Dequeue());
+                }
+            }
 
             // -- Last letter could be promotion
             if (chars.Count > 0) {

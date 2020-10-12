@@ -392,7 +392,7 @@ namespace ChessersEngine {
                             tileId = endTile.id
                         });
 
-                        var otherMoveResult = move.DoTheCrazyMove();
+                        var otherMoveResult = move.ExecuteMoveWithoutCheckValidations();
 
                         //MoveResult otherMoveResult = move.GetPseudoLegalMoveResult();
                         if (otherMoveResult != null && otherMoveResult.valid) {
@@ -548,12 +548,17 @@ namespace ChessersEngine {
                     // the movement amount from `fromTile` to the tile that the jumped piece
                     // was occupying
                     int halfDelta = delta / 2;
-                    Tile jumpedTile = board.GetTile(fromTile.id + halfDelta);
+
+                    Tile jumpedOverTile = board.GetTileByRowColumn(
+                        //fromTile.id + halfDelta
+                        fromRow + (rowDelta / 2),
+                        fromColumn + (colDelta / 2)
+                    );
                     //Match.Log($"{chessman.kind} | {fromTile.id} -> {toTile.id} | {jumpedTile.id} | delta={delta} | {Helpers.FormatTiles(potentialTilesForMovement)}");
 
                     moveResult.wasPieceJumped = true;
-                    moveResult.jumpedPieceId = jumpedTile.GetPiece().id;
-                    moveResult.jumpedTileId = jumpedTile.id;
+                    moveResult.jumpedPieceId = jumpedOverTile.GetPiece().id;
+                    moveResult.jumpedTileId = jumpedOverTile.id;
                 }
             } else {
                 if (toTile.IsOccupied()) {
@@ -628,7 +633,12 @@ namespace ChessersEngine {
             // -- Actually move piece
             fromTile.RemovePiece();
             toTile.SetPiece(chessman);
-            chessman.SetUnderlyingTile(toTile);
+            if (toTile.IsDeathjumpTile()) {
+                chessman.Deactivate();
+            } else {
+                chessman.SetUnderlyingTile(toTile);
+            }
+
 
             // -- Validate promotion
             if (
@@ -673,7 +683,7 @@ namespace ChessersEngine {
         /// we don't care about the check/checkmate validations.
         /// </summary>
         /// <returns>The the crazy move.</returns>
-        public MoveResult DoTheCrazyMove () {
+        public MoveResult ExecuteMoveWithoutCheckValidations () {
             ExecuteBaseMove();
             PostValidationHandler();
             return moveResult;
@@ -718,13 +728,14 @@ namespace ChessersEngine {
         /// </summary>
         void PostValidationHandler () {
             // Most moves result in a change of whose turn it is, EXCEPT for jumping (leading to a
-            // potential multijump) or for capture-jumping
+            // potential multijump), move-jumping, or capture-jumping
             bool shouldChangeTurns = true;
 
             if (
+                chessman.isActive &&
                 chessman.IsChecker() && (
                     moveResult.WasPieceJumped() || (
-                        moveResult.WasPieceCaptured() &&
+                        //moveResult.WasPieceCaptured() &&
                         moveResult.polarityChanged
                     )
                 )

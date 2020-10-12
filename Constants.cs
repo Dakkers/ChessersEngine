@@ -95,5 +95,13 @@
         public const int FILE_H = 7;
 
         #endregion
+
+        #region Deathjump tiles
+
+        public const int DEATHJUMP_NUM_ROW_TILES = 10;
+        public const int DEATHJUMP_TOP_ROW_START_ID = -27;
+
+        #endregion
+
     }
 }

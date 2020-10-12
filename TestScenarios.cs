@@ -407,6 +407,63 @@ namespace ChessersEngine {
             return md;
         }
 
+        /// <summary>
+        /// Same as `CaptureMultijump1` but the Queen moves to 41 instead of capturing at 41.
+        /// </summary>
+        /// <returns>The jump.</returns>
+        public static MatchData MoveJump1 () {
+            var md = CaptureMultijump1();
+            md.pieces = md.pieces.Where((p) => p.id != Constants.ID_BLACK_PAWN_1).ToList();
+            return md;
+        }
+
+
+        /// <summary>
+        /// A checker that can do a deathjump.
+        /// </summary>
+        public static MatchData DeathJump1 () {
+            var md = CreateMatchData();
+            md.deathjumpSetting = (int) DeathjumpSetting.ALL;
+
+            var checkerCS = CreateWhiteQueen(52);
+            checkerCS.isChecker = true;
+
+            md.pieces = new List<ChessmanSchema> {
+                CreateWhiteKing(0),
+                checkerCS,
+
+                CreateBlackQueen(61),
+                CreateBlackKing(56),
+            };
+            return md;
+        }
+
+        /// <summary>
+        /// A queen that can do a move-deathjump.
+        /// </summary>
+        /// <returns>The jump.</returns>
+        public static MatchData DeathJump2 () {
+            var md = CreateMatchData();
+            md.pieces = new List<ChessmanSchema>() {
+                CreateWhiteKing(0),
+                CreateWhiteQueen(1),
+
+                CreatePawn(Constants.ID_BLACK_PAWN_1, 58),
+                CreateBlackKing(63)
+            };
+            return md;
+        }
+
+        /// <summary>
+        /// A queen that can do a capture-deathjump.
+        /// </summary>
+        /// <returns>The jump.</returns>
+        public static MatchData DeathJump3 () {
+            var md = DeathJump2();
+            md.pieces.Add(CreatePawn(Constants.ID_BLACK_PAWN_2, 49));
+            return md;
+        }
+
         #endregion
 
         #region Castling

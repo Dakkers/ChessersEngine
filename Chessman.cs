@@ -60,7 +60,7 @@
         }
 
         public void Deactivate () {
-            if (underlyingTile.GetPiece().id == this.id) {
+            if (underlyingTile?.GetPiece()?.id == this.id) {
                 underlyingTile.RemovePiece();
             }
             RemoveUnderlyingTileReference();

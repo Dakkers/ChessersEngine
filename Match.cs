@@ -4,20 +4,30 @@ using UnityEngine;
 #endif
 
 namespace ChessersEngine {
+    public enum DeathjumpSetting {
+        OFF,
+        SIDES,
+        BACK,
+        ALL
+    };
+
+    public enum MovejumpSetting {
+        OFF,
+        ON
+    }
+
     public class MatchData {
         public int blackPlayerId;
-
         /// <summary>
         /// The ID of the user whose turn it is. (One of blackPlayerId, whitePlayerId)
         /// </summary>
-        public ChessersEngine.ColorEnum currentTurn;
-
+        public ColorEnum currentTurn;
+        public int deathjumpSetting;
         public bool isDraw = false;
         public bool isResignation = false;
-
         public int matchId;
         public string matchGuid;
-
+        public int movejumpSetting;
         public List<string> moves;
         public List<ChessmanSchema> pieces;
         public List<ChessmanSchemaMinified> piecesMinified;
@@ -30,8 +40,14 @@ namespace ChessersEngine {
         public Dictionary<int, Tile> tilesById;
     }
 
+    public class MatchConfig {
+        public DeathjumpSetting deathjumpSetting;
+        public MovejumpSetting movejumpSetting;
+    }
+
     public class Match {
         int id = -1;
+        readonly MatchConfig config;
 
         /// <summary>
         /// The "effective" turn color. When a player's turn begins and they make a move
@@ -72,14 +88,20 @@ namespace ChessersEngine {
         /// Initializes a new instance of the <see cref="T:ChessersEngine.Match"/> class.
         /// </summary>
         /// <param name="data">The data to initialize the match with. If null, a new match is created.</param>
-        public Match (MatchData data) {
+        public Match (MatchData data, MatchConfig _config = null) {
             List<ChessmanSchema> pieces = null;
+            config = _config;
+
             if (data == null) {
                 blackPlayerId = Constants.DEFAULT_BLACK_PLAYER_ID;
                 turnColor = ColorEnum.WHITE;
                 whitePlayerId = Constants.DEFAULT_WHITE_PLAYER_ID;
             } else {
                 blackPlayerId = data.blackPlayerId;
+                config = new MatchConfig {
+                    deathjumpSetting = (DeathjumpSetting) data.deathjumpSetting,
+                    movejumpSetting = (MovejumpSetting) data.movejumpSetting,
+                };
                 id = data.matchId;
                 isDraw = data.isDraw;
                 isResignation = data.isResignation;
@@ -89,6 +111,7 @@ namespace ChessersEngine {
                 whitePlayerId = data.whitePlayerId;
             }
 
+            config = _config;
             committedTurnColor = turnColor;
 
             pendingBoard = new Board(pieces);
@@ -259,11 +282,17 @@ namespace ChessersEngine {
 
             Tile toTile = GetPendingTile(moveAttempt.tileId);
 
-            Chessman targetChessman = toTile.occupant;
-            //Log($"{moveAttempt.pieceId} - {toTile.id} - {targetChessman?.id}");
-            if (targetChessman != null && targetChessman.color == chessman.color) {
+            Chessman targetChessman = toTile.GetPiece();
+            //Log($"{moveAttempt.pieceId} - {toTile.id} - {targetChessman?.id} - {toTile.IsDeathjumpTile()}");
+            if (
+                !toTile.IsDeathjumpTile() &&
+                (targetChessman != null) &&
+                (targetChessman.color == chessman.color)
+            ) {
+                // A piece cannot move to a tile that is occupied by the same color as itself, except
+                // for deathjump tiles because they're still occupied by the last piece that moved onto
+                // them.
                 //Match.Log("Trying to move to an occupied tile (by yourself)");
-                // Can't move to a tile occupied by the moving player
                 return null;
             }
 
@@ -309,7 +338,6 @@ namespace ChessersEngine {
 
             List<MoveResult> result = new List<MoveResult>();
             string[] movesOfLastTurn = moves[moves.Count - 1].Split(',');
-            bool isMultipleMoves = (movesOfLastTurn.Length > 0);
 
             // Go in reverse order because the last move will have the piece on the tile
             for (int i = movesOfLastTurn.Length - 1; i >= 0; i--) {
@@ -676,6 +704,10 @@ namespace ChessersEngine {
         }
 
         #region Utils
+
+        public MatchConfig GetConfig () {
+            return config;
+        }
 
         public List<Tile> GetPotentialTilesForMovement (Chessman c) {
             return pendingBoard.GetPotentialTilesForMovement(c);

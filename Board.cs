@@ -9,8 +9,8 @@ namespace ChessersEngine {
         Dictionary<int, Tile> tilesById;
         Dictionary<int, Chessman> chessmenById;
 
-        readonly int numColumns = 8;
-        readonly int numRows = 8;
+        readonly int numRealColumns = 8;
+        readonly int numRealRows = 8;
         readonly int rightDiagonalDelta;
         readonly int leftDiagonalDelta;
 
@@ -21,10 +21,10 @@ namespace ChessersEngine {
             tilesById = new Dictionary<int, Tile>();
             chessmenById = new Dictionary<int, Chessman>();
 
-            rightDiagonalDelta = numColumns - 1;
-            leftDiagonalDelta = numColumns + 1;
+            rightDiagonalDelta = numRealColumns - 1;
+            leftDiagonalDelta = numRealColumns + 1;
 
-            for (int i = 0; i < 64; i++) {
+            for (int i = -36; i < 64; i++) {
                 tilesById[i] = new Tile {
                     id = i
                 };
@@ -290,7 +290,7 @@ namespace ChessersEngine {
         }
 
         public Tile GetTileIfExists (int row, int col) {
-            return GetTileIfExists(GetTileNumberFromRowColumn(row, col));
+            return GetTileIfExists(GetTileIdFromRowColumn(row, col));
         }
 
         /// <summary>
@@ -301,7 +301,7 @@ namespace ChessersEngine {
         /// <param name="row">Row.</param>
         /// <param name="col">Col.</param>
         public Tile GetTileByRowColumn (int row, int col) {
-            if (row < 0 || row >= GetNumberOfRows() || col < 0 || col >= GetNumberOfColumns()) {
+            if (row < 1 || row >= (GetNumberOfRows() + 1) || col < -1 || col >= (GetNumberOfColumns() + 1)) {
                 return null;
             }
 
@@ -324,7 +324,7 @@ namespace ChessersEngine {
         }
 
         public Tile GetTopTileOfColumn (int column) {
-            return GetTile(column + ((numColumns - 1) * numRows));
+            return GetTile(column + ((numRealColumns - 1) * numRealRows));
         }
 
         public Tile GetTopTileOfColumn (int row, int column) {
@@ -340,7 +340,7 @@ namespace ChessersEngine {
         }
 
         public Tile GetLeftmostTileOfRow (int row) {
-            return GetTile(row * numColumns);
+            return GetTile(row * numRealColumns);
         }
 
         public Tile GetLeftmostTileOfRow (int row, int col) {
@@ -348,7 +348,7 @@ namespace ChessersEngine {
         }
 
         public Tile GetRightmostTileOfRow (int row) {
-            return GetTile((row * numColumns) + (numColumns - 1));
+            return GetTile((row * numRealColumns) + (numRealColumns - 1));
         }
 
         public Tile GetRightmostTileOfRow (int row, int col) {
@@ -482,6 +482,23 @@ namespace ChessersEngine {
             return potentialTiles.Where((t) => t != null).ToList();
         }
 
+        /// <summary>
+        /// Given 2 tiles that are diagonally separated by 1 tile in between, get that in-between tile.
+        /// (Suitable for jump movements.) If the tiles are not actually separated correctly, return null.
+        /// </summary>
+        /// <returns>The in between tile.</returns>
+        public Tile GetInBetweenTile (Tile tile1, Tile tile2) {
+            (int rowDelta, int colDelta) = CalculateRowColumnDelta(tile1, tile2);
+            if (Math.Abs(rowDelta) != 2 || Math.Abs(colDelta) != 2) {
+                return null;
+            }
+
+            return GetTileByRowColumn(
+                GetRow(tile1) + (rowDelta / 2),
+                GetColumn(tile1) + (colDelta / 2)
+            );
+        }
+
         #endregion
 
         #region Tile location checkers
@@ -495,11 +512,11 @@ namespace ChessersEngine {
         }
 
         public bool IsTileInTopRow (Tile tile) {
-            return GetRow(tile) == (numRows - 1);
+            return GetRow(tile) == (numRealRows - 1);
         }
 
         public bool IsTileInRightmostColumn (Tile tile) {
-            return GetColumn(tile) == (numColumns - 1);
+            return GetColumn(tile) == (numRealColumns - 1);
         }
 
         public bool IsTileInEndColumn (Tile tile) {
@@ -516,16 +533,16 @@ namespace ChessersEngine {
 
         #endregion
 
-        public int GetTileNumberFromRowColumn (int row, int col) {
+        public int GetTileIdFromRowColumn (int row, int col) {
             return Helpers.GetTileIdFromRowColumn(row, col);
         }
 
         public int GetNumberOfColumns () {
-            return numColumns;
+            return numRealColumns;
         }
 
         public int GetNumberOfRows () {
-            return numRows;
+            return numRealRows;
         }
 
         /// <summary>
@@ -535,7 +552,7 @@ namespace ChessersEngine {
         /// </summary>
         /// <returns>The positive diagonal delta.</returns>
         public int GetPositiveDiagonalDelta () {
-            return (numColumns + 1);
+            return (numRealColumns + 1);
         }
 
         /// <summary>
@@ -545,7 +562,7 @@ namespace ChessersEngine {
         /// </summary>
         /// <returns>The positive diagonal delta.</returns>
         public int GetNegativeDiagonalDelta () {
-            return (numColumns - 1);
+            return (numRealColumns - 1);
         }
 
         public int CalculateRowDelta (Tile tile1, Tile tile2) {
@@ -579,7 +596,7 @@ namespace ChessersEngine {
         /// <returns>The chessman be captured from direction subset2.</returns>
         /// <param name="chessman">Chessman.</param>
         /// <param name="tilesInDirection">Tiles in direction.</param>
-        Tile CanChessmanBeCapturedFromDirectionSubset2 (
+        Tile CanChessmanBeCapturedFromDirectionSubset (
             Chessman chessman,
             List<Tile> tilesInDirection
         ) {
@@ -636,7 +653,7 @@ namespace ChessersEngine {
 
                     if (otherChessman.IsPawn()) {
                         return (
-                            (otherChessman.IsBlack() ? (rowDelta == -1) : (rowDelta == 1)) &&
+                            (otherChessman.IsBlack() ? (rowDelta == 1) : (rowDelta == -1)) &&
                             (Math.Abs(colDelta) == 1)
                         );
                     }
@@ -649,19 +666,22 @@ namespace ChessersEngine {
 
             foreach (Directionality partialDir in directionalities) {
                 tilesToCheck.Add(
-                    CanChessmanBeCapturedFromDirectionSubset2(
+                    CanChessmanBeCapturedFromDirectionSubset(
                         chessman,
                         GetTilesInDirection(baseTile, partialDir)
                     )
                 );
             }
 
-            return tilesToCheck.Where((Tile otherTile) => {
-                return (
+            return (
+                tilesToCheck
+                .Where((Tile otherTile) => (
                     otherTile != null &&
+                    !otherTile.IsDeathjumpTile() &&
                     additionalValidator(otherTile)
-                );
-            }).ToList();
+                ))
+                .ToList()
+            );
         }
 
         public List<Tile> CanChessmanBeCapturedVertically (Chessman chessman) {
@@ -810,8 +830,10 @@ namespace ChessersEngine {
         }
 
         public bool AreTilesDiagonallyAdjacent (Tile tile1, Tile tile2) {
-            return CalculateRowDelta(tile1, tile2) == 1 &&
-                CalculateColumnDelta(tile1, tile2) == 1;
+            return (
+                CalculateRowDelta(tile1, tile2) == 1 &&
+                CalculateColumnDelta(tile1, tile2) == 1
+            );
         }
 
         /// <summary>
@@ -1197,27 +1219,27 @@ namespace ChessersEngine {
         List<Tile> GetPotentialTilesForCheckerMovement (Chessman chessman, bool jumpsOnly = false) {
             List<Tile> potentialTiles = new List<Tile>();
             Tile tile = chessman.GetUnderlyingTile();
+            (int row, int col) = GetRowColumn(tile);
             int modifier = (chessman.IsBlack()) ? -1 : 1;
 
-            List<int> regularMovementDeltas = new List<int> {
-                modifier * rightDiagonalDelta,
-                modifier * leftDiagonalDelta,
-            };
-
-            List<int> jumpMovementDeltas = new List<int> {
-                2 * modifier * rightDiagonalDelta,
-                2 * modifier * leftDiagonalDelta,
+            List<(int, int)> movementsRegular = new List<(int, int)> {
+                (modifier, 1),
+                (modifier, -1),
             };
 
             if (chessman.isKinged) {
-                regularMovementDeltas.AddRange(regularMovementDeltas.Select((int d) => -1 * d).ToList());
-                jumpMovementDeltas.AddRange(jumpMovementDeltas.Select((int d) => -1 * d).ToList());
+                movementsRegular.AddRange(movementsRegular.Select((t) => (-1 * t.Item1, t.Item2)));
             }
 
-            foreach (int d in regularMovementDeltas) {
-                Tile potentialTile = GetTileIfExists(tile.id + d);
-                if (jumpsOnly || potentialTile == null) {
-                    //if (potentialTile == null) {
+            List<(int, int)> movementsJumps = movementsRegular.Select((t) => (2 * t.Item1, 2 * t.Item2)).ToList();
+
+            foreach (var t in movementsRegular) {
+                Tile potentialTile = GetTileIfExists(row + t.Item1, col + t.Item2);
+                if (
+                    jumpsOnly ||
+                    (potentialTile == null) ||
+                    potentialTile.IsDeathjumpTile()
+                ) {
                     continue;
                 }
 
@@ -1231,10 +1253,15 @@ namespace ChessersEngine {
                 }
             }
 
-            foreach (int d in jumpMovementDeltas) {
-                Tile potentialTile = GetTileIfExists(tile.id + d);
-                Tile jumpOverTile = GetTileIfExists(tile.id + (d / 2));
-                if (potentialTile == null || jumpOverTile == null) {
+            foreach (var t in movementsJumps) {
+                Tile potentialTile = GetTileIfExists(row + t.Item1, col + t.Item2);
+                Tile jumpOverTile = GetTileIfExists(row + (t.Item1 / 2), col + (t.Item2 / 2));
+
+                if (
+                    (potentialTile == null) ||
+                    (jumpOverTile == null) ||
+                    (potentialTile.IsDeathjumpTile() && chessman.IsKing())
+                ) {
                     continue;
                 }
 
@@ -1242,7 +1269,7 @@ namespace ChessersEngine {
                 (int shortRowDelta, int shortColDelta) = CalculateRowColumnDelta(tile, jumpOverTile);
 
                 if (
-                    potentialTile.IsOccupied() ||
+                    (!potentialTile.IsDeathjumpTile() && potentialTile.IsOccupied()) ||
                     !jumpOverTile.IsOccupied() ||
                     jumpOverTile.GetPiece().IsSameColor(chessman) ||
                     Math.Abs(farRowDelta) != 2 ||
@@ -1279,11 +1306,16 @@ namespace ChessersEngine {
                 potentialTilesGetter = GetPotentialTilesForKingMovement;
             }
 
-            if (potentialTilesGetter != null) {
-                return potentialTilesGetter(chessman);
+            if (potentialTilesGetter == null) {
+                return new List<Tile>();
             }
 
-            return new List<Tile>();
+            var result = potentialTilesGetter(chessman);
+            if (!chessman.IsChecker()) {
+                result = result.Where((Tile t) => !t.IsDeathjumpTile()).ToList();
+            }
+
+            return result;
         }
 
         public List<Tile> GetValidTilesForMovement (Chessman chessman, bool jumpsOnly = false) {
@@ -1311,8 +1343,8 @@ namespace ChessersEngine {
             (int row2, int col2) = GetRowColumn(tile2);
 
             return (
-                (row1 - row2),
-                (col1 - col2)
+                (row2 - row1),
+                (col2 - col1)
             );
         }
 
@@ -1342,6 +1374,7 @@ namespace ChessersEngine {
             Tile fromTile = GetTile(moveResult.fromTileId);
             Tile toTile = GetTile(moveResult.tileId);
 
+            movedChessman.SetActive(true);
             toTile.RemovePiece();
 
             fromTile.SetPiece(movedChessman);

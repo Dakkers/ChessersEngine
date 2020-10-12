@@ -196,14 +196,50 @@ namespace ChessersEngine {
         #region Tile helpers
 
         public static int GetColumn (int tileId) {
-            return tileId % 8;
+            if (tileId >= 0) {
+                return tileId % 8;
+            } else if (tileId >= -10) {
+                return Math.Abs(tileId) - 2;
+            } else if (tileId <= Constants.DEATHJUMP_TOP_ROW_START_ID) {
+                // + bcecause the ID is negative
+                return Math.Abs(tileId) + Constants.DEATHJUMP_TOP_ROW_START_ID - 1;
+            } else if (Helpers.Mod(tileId, 2) == 1) {
+                // Negative tileId that is odd is in the leftmost column
+                return -1;
+            } else {
+                return 8;
+            }
         }
 
         public static int GetRow (int tileId) {
-            return tileId / 8;
+            if (tileId >= 0) {
+                return tileId / 8;
+            } else if (tileId >= -10) {
+                return -1;
+            } else if (tileId <= Constants.DEATHJUMP_TOP_ROW_START_ID) {
+                return 8;
+            }
+
+
+            // Either the lefthand or righthand deathjump columns
+            int diff = tileId + (Constants.DEATHJUMP_NUM_ROW_TILES + 1);
+
+            // E.g. -11, -12 --> 0, 1 --> both are in row 0
+            // E.g. -15, -16 --> -4, -5 --> both are in row 2
+            return Math.Abs(diff / 2);
         }
 
         public static int GetTileIdFromRowColumn (int row, int col) {
+            if (row == -1) {
+                return (-1 * col) - 2;
+            } else if (row == 8) {
+                return Constants.DEATHJUMP_TOP_ROW_START_ID - (col + 1);
+            } else if (col == -1) {
+                return -1 * (Constants.DEATHJUMP_NUM_ROW_TILES + 1 + (2 * row));
+            } else if (col == 8) {
+                return -1 * (Constants.DEATHJUMP_NUM_ROW_TILES + 1 + (2 * row) + 1);
+            }
+
             return (8 * row) + col;
         }
 

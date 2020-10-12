@@ -30,5 +30,9 @@ namespace ChessersEngine {
         public bool IsOccupied () {
             return occupant != null;
         }
+
+        public bool IsDeathjumpTile () {
+            return this.id < 0;
+        }
     }
 }
