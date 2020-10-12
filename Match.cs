@@ -40,9 +40,8 @@ namespace ChessersEngine {
         public Dictionary<int, Tile> tilesById;
     }
 
-    public class MatchConfig {
+    public struct MatchConfig {
         public DeathjumpSetting deathjumpSetting;
-        public MovejumpSetting movejumpSetting;
     }
 
     public class Match {
@@ -88,19 +87,20 @@ namespace ChessersEngine {
         /// Initializes a new instance of the <see cref="T:ChessersEngine.Match"/> class.
         /// </summary>
         /// <param name="data">The data to initialize the match with. If null, a new match is created.</param>
-        public Match (MatchData data, MatchConfig _config = null) {
+        public Match (MatchData data, MatchConfig? _config = null) {
             List<ChessmanSchema> pieces = null;
-            config = _config;
 
             if (data == null) {
                 blackPlayerId = Constants.DEFAULT_BLACK_PLAYER_ID;
+                config = _config ?? new MatchConfig {
+                    deathjumpSetting = DeathjumpSetting.ALL,
+                };
                 turnColor = ColorEnum.WHITE;
                 whitePlayerId = Constants.DEFAULT_WHITE_PLAYER_ID;
             } else {
                 blackPlayerId = data.blackPlayerId;
-                config = new MatchConfig {
+                config = _config ?? new MatchConfig {
                     deathjumpSetting = (DeathjumpSetting) data.deathjumpSetting,
-                    movejumpSetting = (MovejumpSetting) data.movejumpSetting,
                 };
                 id = data.matchId;
                 isDraw = data.isDraw;
@@ -111,11 +111,10 @@ namespace ChessersEngine {
                 whitePlayerId = data.whitePlayerId;
             }
 
-            config = _config;
             committedTurnColor = turnColor;
 
-            pendingBoard = new Board(pieces);
-            committedBoard = new Board(pieces);
+            pendingBoard = new Board(pieces, config);
+            committedBoard = new Board(pieces, config);
         }
 
         void SetTurnColorFromPlayerId (int playerId) {
@@ -172,13 +171,6 @@ namespace ChessersEngine {
 
         public void ResetTurn () {
             ResetMatchState();
-        }
-
-        public Board CopyPendingBoard () {
-            Board pendingBoardCopy = new Board(pendingBoard.GetChessmanSchemas());
-            pendingBoardCopy.CopyState(pendingBoard);
-
-            return pendingBoardCopy;
         }
 
         #region Getters / Setters
@@ -389,7 +381,7 @@ namespace ChessersEngine {
         /// <param name="isMaximizingPlayer">TRUE = WHITE, FALSE = BLACK</param>
         (List<MoveAttempt>, int) MinimaxHelper (
             Board board,
-            MoveOptimizationConfig config,
+            MoveOptimizationConfig optimizationConfig,
             int currentDepth,
             int alpha,
             int beta,
@@ -398,7 +390,7 @@ namespace ChessersEngine {
         ) {
             bool isMultipleMoves = (movingChessman != null);
 
-            if (currentDepth == config.maxDepth || board.IsGameOver()) {
+            if (currentDepth == optimizationConfig.maxDepth || board.IsGameOver()) {
                 return (null, board.CalculateBoardValue(moves.Count + currentDepth));
             }
 
@@ -454,7 +446,7 @@ namespace ChessersEngine {
                     // made (either by choice or because there are no other options)
                     (List<MoveAttempt> _, int valueEndTurn) = MinimaxHelper(
                         board,
-                        config,
+                        optimizationConfig,
                         currentDepth + 1,
                         alpha,
                         beta,
@@ -466,13 +458,13 @@ namespace ChessersEngine {
 
                     if (
                         !moveResult.turnChanged &&
-                        (startedAsChecker ? config.allowMultijumps : config.allowCapturejumps)
+                        (startedAsChecker ? optimizationConfig.allowMultijumps : optimizationConfig.allowCapturejumps)
                     ) {
                         // Multijump/capturejump available - these strategies represent multiple moves
                         // in a single turn. As such, keep the `depth` the same.
                         (List<MoveAttempt> additionalMoves, int valueContinueTurn) = MinimaxHelper(
                             board,
-                            config,
+                            optimizationConfig,
                             currentDepth,
                             alpha,
                             beta,
@@ -531,10 +523,10 @@ namespace ChessersEngine {
         /// Calculates the best move for the current player.
         /// </summary>
         public List<MoveAttempt> CalculateBestMove (int level = 0) {
-            Board boardClone = new Board(committedBoard.GetChessmanSchemas());
+            Board boardClone = committedBoard.CreateCopy();
             boardClone.CopyState(committedBoard);
 
-            MoveOptimizationConfig config = new MoveOptimizationConfig {
+            MoveOptimizationConfig optimizationConfig = new MoveOptimizationConfig {
                 allowMultijumps = false,
                 allowCapturejumps = false,
                 maxDepth = 2,
@@ -542,18 +534,18 @@ namespace ChessersEngine {
 
             switch (level) {
                 case 1:
-                    config.allowMultijumps = true;
+                    optimizationConfig.allowMultijumps = true;
                     break;
                 case 2:
-                    config.allowMultijumps = true;
-                    config.allowCapturejumps = true;
-                    config.maxDepth = 4;
+                    optimizationConfig.allowMultijumps = true;
+                    optimizationConfig.allowCapturejumps = true;
+                    optimizationConfig.maxDepth = 4;
                     break;
             }
 
             (List<MoveAttempt> moves, int value) = MinimaxHelper(
                 boardClone,
-                config,
+                optimizationConfig,
                 0,
                 int.MinValue,
                 int.MaxValue,

@@ -8,14 +8,16 @@ namespace ChessersEngine {
         readonly List<ChessmanSchema> pieces;
         Dictionary<int, Tile> tilesById;
         Dictionary<int, Chessman> chessmenById;
+        MatchConfig matchConfig;
 
         readonly int numRealColumns = 8;
         readonly int numRealRows = 8;
         readonly int rightDiagonalDelta;
         readonly int leftDiagonalDelta;
 
-        public Board (List<ChessmanSchema> _pieces) {
+        public Board (List<ChessmanSchema> _pieces, MatchConfig _matchConfig) {
             pieces = _pieces ?? CreateDefaultChessmen();
+            matchConfig = _matchConfig;
 
             id = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             tilesById = new Dictionary<int, Tile>();
@@ -196,6 +198,8 @@ namespace ChessersEngine {
         }
 
         public void CopyState (Board otherBoard) {
+            this.matchConfig = otherBoard.matchConfig;
+
             // Update the states of the Chessmen
             foreach (KeyValuePair<int, Chessman> pair in chessmenById) {
                 int chessmanId = pair.Key;
@@ -239,8 +243,9 @@ namespace ChessersEngine {
             }
         }
 
-        public Board CreateCopy () {
-            Board otherBoard = new Board(this.GetChessmanSchemas());
+        public Board CreateCopy (List<ChessmanSchema> _pieces = null) {
+            Board otherBoard = new Board(_pieces ?? this.GetChessmanSchemas(), this.matchConfig);
+            otherBoard.CopyState(this);
             return otherBoard;
         }
 
@@ -1196,7 +1201,7 @@ namespace ChessersEngine {
                         int iterTileId = GetTileByRowColumn(row, colIter).id;
                         kingSchema.location = iterTileId;
 
-                        Board boardCopy = new Board(allSchemas);
+                        Board boardCopy = this.CreateCopy();
                         Chessman kingCopy = kingChessman.IsWhite() ? boardCopy.GetWhiteKing() : boardCopy.GetBlackKing();
 
                         if (boardCopy.CanChessmanBeCaptured(kingCopy).Count > 0) {
@@ -1353,8 +1358,7 @@ namespace ChessersEngine {
         #region Movements
 
         public MoveResult MoveChessman (MoveAttempt moveAttempt, bool jumpsOnly = false) {
-            Board boardCopy = new Board(this.GetChessmanSchemas());
-            boardCopy.CopyState(this);
+            Board boardCopy = CreateCopy();
 
             Move move = new Move(boardCopy, moveAttempt, jumpsOnly);
             MovementValidationEndResult result = move.ExecuteMove();
