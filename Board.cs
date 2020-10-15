@@ -306,7 +306,34 @@ namespace ChessersEngine {
         /// <param name="row">Row.</param>
         /// <param name="col">Col.</param>
         public Tile GetTileByRowColumn (int row, int col) {
-            if (row < 1 || row >= (GetNumberOfRows() + 1) || col < -1 || col >= (GetNumberOfColumns() + 1)) {
+            int
+                rowLimitLower = 0,
+                rowLimitUpper = GetNumberOfRows(),
+                colLimitLower = 0,
+                colLimitUpper = GetNumberOfColumns();
+
+            if (
+                matchConfig.deathjumpSetting == DeathjumpSetting.BACK ||
+                matchConfig.deathjumpSetting == DeathjumpSetting.ALL
+            ) {
+                rowLimitLower--;
+                rowLimitUpper++;
+            }
+
+            if (
+                matchConfig.deathjumpSetting == DeathjumpSetting.SIDES ||
+                matchConfig.deathjumpSetting == DeathjumpSetting.ALL
+            ) {
+                colLimitLower--;
+                colLimitUpper++;
+            }
+
+            if (
+                row < rowLimitLower ||
+                row >= rowLimitUpper ||
+                col < colLimitLower ||
+                col >= colLimitUpper
+            ) {
                 return null;
             }
 
@@ -1120,6 +1147,8 @@ namespace ChessersEngine {
             potentialTiles.AddRange(PotentialTilesForHorizontalMovement(kingChessman, limit: 1));
             potentialTiles.AddRange(PotentialTilesForDiagonalMovement(kingChessman, limit: 1));
 
+            potentialTiles = potentialTiles.Where((t) => !t.IsDeathjumpTile()).ToList();
+
             // Now see if castling is ok. Rules for castling are:
             //      - king hasn't moved
             //      - selected rook hasn't moved
@@ -1233,7 +1262,7 @@ namespace ChessersEngine {
             };
 
             if (chessman.isKinged) {
-                movementsRegular.AddRange(movementsRegular.Select((t) => (-1 * t.Item1, t.Item2)));
+                movementsRegular.AddRange(movementsRegular.ToList().Select((t) => (-1 * t.Item1, t.Item2)));
             }
 
             List<(int, int)> movementsJumps = movementsRegular.Select((t) => (2 * t.Item1, 2 * t.Item2)).ToList();

@@ -633,12 +633,12 @@ namespace ChessersEngine {
             // -- Actually move piece
             fromTile.RemovePiece();
             toTile.SetPiece(chessman);
+
             if (toTile.IsDeathjumpTile()) {
                 chessman.Deactivate();
             } else {
                 chessman.SetUnderlyingTile(toTile);
             }
-
 
             // -- Validate promotion
             if (
@@ -734,10 +734,8 @@ namespace ChessersEngine {
             if (
                 chessman.isActive &&
                 chessman.IsChecker() && (
-                    moveResult.WasPieceJumped() || (
-                        //moveResult.WasPieceCaptured() &&
-                        moveResult.polarityChanged
-                    )
+                    moveResult.WasPieceJumped() ||
+                    moveResult.polarityChanged
                 )
             ) {
                 // Determine if the piece that moved can now jump another piece (either through regular

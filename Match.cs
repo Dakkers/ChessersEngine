@@ -343,13 +343,6 @@ namespace ChessersEngine {
                 Tile fromTile = committedBoard.GetTileIfExists(partialResult.fromRow, partialResult.fromColumn);
                 Tile toTile = committedBoard.GetTileIfExists(partialResult.toRow, partialResult.toColumn);
 
-                if (i == (movesOfLastTurn.Length - 1)) {
-                    Chessman chessmanThatMoved = toTile.GetPiece();
-                    partialResult.pieceId = chessmanThatMoved.id;
-                } else {
-                    partialResult.pieceId = result[0].pieceId;
-                }
-
                 partialResult.tileId = toTile.id;
                 partialResult.fromTileId = fromTile.id;
                 result.Add(partialResult);
@@ -583,13 +576,6 @@ namespace ChessersEngine {
             }
 
             return moveResults;
-        }
-
-        public void UndoMoves () {
-            for (int i = pendingMoveResults.Count - 1; i >= 0; i--) {
-                pendingBoard.UndoMove(pendingMoveResults[i]);
-            }
-            pendingMoveResults.Clear();
         }
 
         #endregion

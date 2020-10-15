@@ -109,34 +109,38 @@ namespace ChessersEngine {
         #region Notation
 
         public string CreateNotation () {
+            string moveNotation = pieceId.ToString() + "_";
+
             int colDelta = (toColumn - fromColumn);
             if (isCastle) {
                 if (colDelta > 0) {
                     // Kingside/"short" castle
-                    return "O-O";
+                    moveNotation += "O-O";
                 } else {
-                    return "O-O-O";
+                    moveNotation += "O-O-O";
                 }
+
+                return moveNotation;
             }
 
-            // Start with e.g. "Qh4"
-            string moveNotation = (
+            // Start with e.g. "11_Qh4"
+            moveNotation += (
                 Helpers.ConvertChessmanKindToNotationSymbol(chessmanKind) +
                 Helpers.ConvertColumnToFile(fromColumn) +
                 Helpers.ConvertRowToRank(fromRow)
             );
 
             if (WasPieceCaptured()) {
-                // "Qh4" becomes "Qh4x"
+                // "11_Qh4" becomes "11_Qh4x"
                 moveNotation += "x";
             }
             if (WasPieceJumped()) {
-                // "Qh4" becomes "Qh4y"
+                // "11_Qh4" becomes "11_Qh4y"
                 moveNotation += "y";
             }
 
             if (tileId < 0) {
-                // Deathjump; "Qh4y" becomes "Qh4y11"
+                // Deathjump; "11_Qh4" becomes "11_Qh409"
                 moveNotation += System.Math.Abs(tileId).ToString().PadLeft(2, '0');
             } else {
                 // "Qh4" becomes "Qh4e7"
@@ -155,13 +159,18 @@ namespace ChessersEngine {
         }
 
         /// <summary>
-        /// Create a move result based off of <paramref name="notation"/>. It is NOT possible
+        /// Create a move result based off of <paramref name="_notation"/>. It is NOT possible
         /// to know which color this move was for from the notation alone; more context is required.
         /// </summary>
         /// <returns>The notation.</returns>
-        /// <param name="notation">Notation.</param>
-        public static MoveResult CreatePartialMoveResultFromNotation (string notation) {
+        /// <param name="_notation">Notation.</param>
+        public static MoveResult CreatePartialMoveResultFromNotation (string _notation) {
             MoveResult moveResult = new MoveResult();
+            string[] notationSplit = _notation.Split('_');
+
+            moveResult.pieceId = int.Parse(notationSplit[0]);
+            string notation = notationSplit[1];
+
             bool _isCastle = (notation == "O-O") || (notation == "O-O-O");
 
             if (_isCastle) {
