@@ -92,7 +92,7 @@ namespace ChessersEngine {
             if (data == null) {
                 blackPlayerId = Constants.DEFAULT_BLACK_PLAYER_ID;
                 config = _config ?? new MatchConfig {
-                    deathjumpSetting = DeathjumpSetting.ALL,
+                    deathjumpSetting = DeathjumpSetting.OFF,
                 };
                 turnColor = ColorEnum.WHITE;
                 whitePlayerId = Constants.DEFAULT_WHITE_PLAYER_ID;
