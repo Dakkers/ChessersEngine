@@ -87,8 +87,9 @@ namespace ChessersEngine {
                 $"pieceId = {pieceId}, " +
                 $"tileId = {tileId}, " +
                 $"capturedPieceId = {capturedPieceId}, " +
-                $"promotion = {promotionOccurred}, " +
+                //$"promotion = {promotionOccurred}, " +
                 $"turnChanged = {turnChanged}, " +
+                $"isInCheck = {isInCheck}, " +
                 $"isWinningMove = {isWinningMove}, " +
                 $"isCastle = {isCastle}, " +
             "}}";
