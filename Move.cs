@@ -701,11 +701,11 @@ namespace ChessersEngine {
 
             ExecuteBaseMove();
 
-            //if (IsMovingPlayerInCheck()) {
-            //    moveResult.isInCheck = true;
-            //    moveResult.valid = false;
-            //    return moveResult;
-            //}
+            if (IsMovingPlayerInCheck()) {
+                moveResult.isInCheck = true;
+                moveResult.valid = false;
+                return moveResult;
+            }
 
             PostValidationHandler();
             return moveResult;
