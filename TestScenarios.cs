@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 namespace ChessersEngine {
@@ -190,6 +189,40 @@ namespace ChessersEngine {
             };
         }
 
+        /// <summary>
+        /// Check via a capture-deathjump. Queen moves to 5 to put Black into check.
+        /// </summary>
+        /// <returns>The jump.</returns>
+        public static MatchData InCheckFromCaptureDeathjump1 () {
+            var md = CreateMatchData();
+            md.pieces = new List<ChessmanSchema> {
+                CreateWhiteKing(0),
+                CreateWhiteQueen(4),
+
+                CreatePawn(Constants.ID_BLACK_PAWN_1, 53),
+                CreateBlackKing(60),
+            };
+            return md;
+        }
+
+        /// <summary>
+        /// Check via a capturejump-deathjump. Queen moves to 5 to put Black into check.
+        /// </summary>
+        /// <returns>The jump.</returns>
+        public static MatchData InCheckFromCaptureDeathjump2 () {
+            var md = CreateMatchData();
+            md.pieces = new List<ChessmanSchema> {
+                CreateWhiteKing(0),
+                CreateWhiteQueen(4),
+
+                CreatePawn(Constants.ID_BLACK_PAWN_1, 46),
+                CreatePawn(Constants.ID_BLACK_PAWN_2, 39),
+                CreatePawn(Constants.ID_BLACK_PAWN_3, 56),
+                CreateBlackKing(60),
+            };
+            return md;
+        }
+
         #endregion
 
         #region Checkmate
@@ -217,22 +250,18 @@ namespace ChessersEngine {
         public static MatchData AlmostCheckmate1 () {
             // Black Rook @ 39 captures pawn @ 32.
             // White Rook @ 15 moves to 8 to block.
-            return new MatchData {
-                currentTurn = ColorEnum.WHITE,
-                matchId = 1,
-                whitePlayerId = 0,
-                blackPlayerId = 1,
-                pieces = new List<ChessmanSchema> {
-                    CreateWhiteKing(0),
-                    CreateRook(Constants.ID_WHITE_ROOK_1, 15),
-                    CreatePawn(Constants.ID_WHITE_PAWN_1, 32),
+            var md = CreateMatchData();
+            md.pieces = new List<ChessmanSchema> {
+                CreateWhiteKing(0),
+                CreateRook(Constants.ID_WHITE_ROOK_1, 15),
+                CreatePawn(Constants.ID_WHITE_PAWN_1, 32),
 
-                    CreateRook(Constants.ID_BLACK_ROOK_1, 23),
-                    CreateRook(Constants.ID_BLACK_ROOK_2, 56),
-                    CreateBlackQueen(57),
-                    CreateBlackKing(58),
-                }
+                CreateRook(Constants.ID_BLACK_ROOK_1, 23),
+                CreateRook(Constants.ID_BLACK_ROOK_2, 56),
+                CreateBlackQueen(57),
+                CreateBlackKing(58),
             };
+            return md;
         }
 
         public static MatchData AlmostCheckmate2 () {
@@ -416,7 +445,6 @@ namespace ChessersEngine {
             md.pieces = md.pieces.Where((p) => p.id != Constants.ID_BLACK_PAWN_1).ToList();
             return md;
         }
-
 
         /// <summary>
         /// A checker that can do a deathjump.

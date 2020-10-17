@@ -172,7 +172,7 @@ namespace ChessersEngine {
             HashSet<int> tilesToIgnore,
             int depth = 1
         ) {
-            //Match.Log($"Current: {tile.id}", depth);
+            //Match.Log($"Current: {tile.id} {tile.IsOccupied()}", depth);
             if (tile.IsOccupied()) {
                 // Regardless of which color piece is occupying the tile, this branch of the search
                 // tree ends as there is no way to jump onto an occupied tile.
@@ -205,37 +205,56 @@ namespace ChessersEngine {
             // Generate tiles that are 2 diagonal spaces away - tiles that the piece would land on
             (int row, int col) = board.GetRowColumn(tile);
 
-            List<Tile> tilesToLandOn = new List<Tile> {
-                board.GetTileByRowColumn(row + 2, col + 2),
-                board.GetTileByRowColumn(row + 2, col - 2),
-                board.GetTileByRowColumn(row - 2, col + 2),
-                board.GetTileByRowColumn(row - 2, col - 2),
+            List<(int, int)> tilesToLandOnDeltas = new List<(int, int)> {
+                (1, 1),
+                (1, -1),
+                (-1, 1),
+                (-1, -1),
             };
 
             // NOTE: >= 32 is black... 4 * row length
-            int halfwayPointThreshold = (board.GetNumberOfRows() / 2) * board.GetNumberOfColumns();
-            //Match.Log($"{row},{col} -- {string.Join(" | ", diagTiles.Select((t) => $"{board.GetRow(t)},{board.GetColumn(t)}"))}");
+            int halfwayRow = (board.GetNumberOfRows() / 2);
+            //Match.Log($"{row},{col} -- {string.Join(" | ", tilesToLandOn.Select((t) => $"{board.GetRow(t)},{board.GetColumn(t)}"))}");
 
-            foreach (Tile tileToLandOn in tilesToLandOn) {
-                if (tileToLandOn == null || tilesToIgnore.Contains(tileToLandOn.id)) {
-                    continue;
-                }
-
-                (int landingRow, int landingCol) = board.GetRowColumn(tileToLandOn);
+            foreach ((int xThing, int yThing) in tilesToLandOnDeltas) {
                 Tile tileToJumpOver = board.GetTileByRowColumn(
-                    row + (landingRow - row) / 2,
-                    col + (landingCol - col) / 2
+                    row + xThing,
+                    col + yThing
+                );
+                Tile tileToLandOn = board.GetTileByRowColumn(
+                    row + (2 * xThing),
+                    col + (2 * yThing)
                 );
 
-                if (tileToJumpOver == null || !tileToJumpOver.IsOccupied()) {
+                //Match.Log($"{tile.id} -> {tileToJumpOver?.id} -> {tileToLandOn?.id}", depth + 1);
+                if (
+                    (tileToLandOn == null) ||
+                    (tileToJumpOver == null)
+                ) {
+                    continue;
+                }
+                //Match.Log(
+                //    $"{tilesToIgnore.Contains(tileToLandOn.id)} " +
+                //    $"{!tileToJumpOver.IsOccupied()} " +
+                //    $"{tileToJumpOver.IsDeathjumpTile()}",
+                //    depth + 2
+                //);
+
+                if (
+                    tilesToIgnore.Contains(tileToLandOn.id) ||
+                    !tileToJumpOver.IsOccupied() ||
+                    tileToJumpOver.IsDeathjumpTile()
+                ) {
                     continue;
                 }
 
-                // The tile needs to be on the opposite side of the attacker in order for the
-                // attacker's pieces to actually jump
+                int landingRow = board.GetRow(tileToLandOn);
+
+                // The tile needs to be on the opposite side of the board (from the attacker's perspective)
+                // in order for the attacker's pieces to actually jump.
                 if (
-                    ((targetColor == ColorEnum.BLACK) && (tileToLandOn.id < halfwayPointThreshold)) ||
-                    ((targetColor == ColorEnum.WHITE) && (tileToLandOn.id >= halfwayPointThreshold))
+                    ((targetColor == ColorEnum.BLACK) && (landingRow < halfwayRow)) ||
+                    ((targetColor == ColorEnum.WHITE) && (landingRow >= halfwayRow))
                 ) {
                     continue;
                 }
@@ -317,15 +336,21 @@ namespace ChessersEngine {
             Tile kingTile = kingChessman.GetUnderlyingTile();
 
             List<Tile> diagTilesOfKing = board.GetDiagonallyAdjacentTiles(kingTile);
+            //Helpers.PrintTiles(diagTilesOfKing);
 
             foreach (var diagTile in diagTilesOfKing) {
                 // A tile diagonally adjacent from the king could represent one
                 // of two things:
                 //
-                //    1. the tile that a piece lands on BEFORE capturing the king
-                //    2. same, but AFTER capturing the king
+                //    1. the tile that a piece lands on BEFORE jumping the king
+                //    2. same, but AFTER jumping the king
                 //
                 // `diagTile` will be #1.
+
+                if (diagTile.IsDeathjumpTile()) {
+                    // Can't jump FROM a deathjump tile. (Only TO.)
+                    continue;
+                }
 
                 int diagRow = board.GetRow(diagTile);
                 int diagCol = board.GetColumn(diagTile);
@@ -336,6 +361,7 @@ namespace ChessersEngine {
                 int colDiff = board.GetColumn(kingTile) - diagCol;
 
                 Tile tileToLandOn = board.GetTileByRowColumn(diagRow + (2 * rowDiff), diagCol + (2 * colDiff));
+                //Match.Log($"diag={diagTile.id} --> {tileToLandOn?.id} {tileToLandOn?.IsOccupied()}");
 
                 if (tileToLandOn == null) {
                     // out of bounds
@@ -345,12 +371,16 @@ namespace ChessersEngine {
                     continue;
                 }
 
-                // Ignore the tile to land on because it was including it as part
-                // of a potential path, which is encapsulated by a different path
+                // Ignore the tile to land on because it was including it as part of a potential path,
+                // which is encapsulated by a different path
+                var tilesToIgnore = new HashSet<int> { };
+                if (!tileToLandOn.IsDeathjumpTile()) {
+                    tilesToIgnore.Add(tileToLandOn.id);
+                }
                 List<List<int>> paths = CalculateJumpPaths(
                     diagTile,
                     color,
-                    new HashSet<int> { tileToLandOn.id }
+                    tilesToIgnore
                 );
 
                 foreach (List<int> _path in paths) {
@@ -358,6 +388,7 @@ namespace ChessersEngine {
                     path.Reverse();
                     path.Add(diagTile.id);
                     path.Add(tileToLandOn.id);
+                    //Match.Log(string.Join(",", path));
 
                     // `path` represents a full set of moves that would win the game for the attacking
                     // player. We have to determine if executing these moves would put them in check.
@@ -395,12 +426,14 @@ namespace ChessersEngine {
                         var otherMoveResult = move.ExecuteMoveWithoutCheckValidations();
 
                         //MoveResult otherMoveResult = move.GetPseudoLegalMoveResult();
-                        if (otherMoveResult != null && otherMoveResult.valid) {
+                        if (otherMoveResult == null || !otherMoveResult.valid) {
+                            //Match.Log($"{startTile.id} -> {endTile.id} is BAD", 1);
                             isGood = false;
                             break;
                         }
                     }
 
+                    //Match.Log($"{diagTile.id} - {isGood}");
                     if (isGood) {
                         result.Add(diagTile);
                         if (exitEarly) {
@@ -709,6 +742,8 @@ namespace ChessersEngine {
                 List<Tile> tilesThatCheckOpposingPlayer = CalculateCheckTiles(Helpers.GetOppositeColor(chessman.color), exitEarly: false);
 
                 if (tilesThatCheckOpposingPlayer.Count > 0) {
+                    moveResult.isInCheck = true;
+
                     if (IsOpposingPlayerCheckmated(tilesThatCheckOpposingPlayer)) {
                         moveResult.isWinningMove = true;
                     }
@@ -717,6 +752,8 @@ namespace ChessersEngine {
                     // all of their moves will make them end up in check.
                     moveResult.isStalemate = IsOpposingPlayerStalemated();
                 }
+            } else {
+                moveResult.isInCheck = true;
             }
 
             return new MovementValidationEndResult(board, moveResult);
