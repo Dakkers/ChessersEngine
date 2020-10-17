@@ -5,7 +5,6 @@ using System.Linq;
 namespace ChessersEngine {
     public class Board {
         public readonly long id;
-        readonly List<ChessmanSchema> pieces;
         Dictionary<int, Tile> tilesById;
         Dictionary<int, Chessman> chessmenById;
         MatchConfig matchConfig;
@@ -16,7 +15,7 @@ namespace ChessersEngine {
         readonly int leftDiagonalDelta;
 
         public Board (List<ChessmanSchema> _pieces, MatchConfig _matchConfig) {
-            pieces = _pieces ?? CreateDefaultChessmen();
+            List<ChessmanSchema> pieces = _pieces ?? CreateDefaultChessmen();
             matchConfig = _matchConfig;
 
             id = DateTimeOffset.UtcNow.ToUnixTimeSeconds();

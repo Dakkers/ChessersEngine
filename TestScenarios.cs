@@ -94,76 +94,66 @@ namespace ChessersEngine {
 
         #region Check
 
-        public static MatchData InCheckFromJump () {
-            return new MatchData {
-                currentTurn = 0,
-                matchId = 1,
-                whitePlayerId = 0,
-                blackPlayerId = 1,
-                pieces = new List<ChessmanSchema> {
-                    CreateWhiteKing(3),
-                    CreateBlackChecker(Constants.ID_BLACK_PAWN_1, 18)
-                }
+        public static MatchData InCheck () {
+            var md = CreateMatchData();
+            md.pieces = new List<ChessmanSchema> {
+                CreateWhiteKing(0),
+                CreateWhiteQueen(),
+                CreateBlackKing(),
             };
+            return md;
+        }
+
+        public static MatchData InCheckFromJump () {
+            var md = CreateMatchData();
+            md.pieces = new List<ChessmanSchema> {
+                CreateWhiteKing(3),
+                CreateBlackChecker(Constants.ID_BLACK_PAWN_1, 18)
+            };
+            return md;
         }
 
         public static MatchData InCheckFromReverseJump () {
-            return new MatchData {
-                currentTurn = 0,
-                matchId = 1,
-                whitePlayerId = 0,
-                blackPlayerId = 1,
-                pieces = new List<ChessmanSchema> {
-                    CreateWhiteKing(3),
-                    CreateBlackChecker(Constants.ID_BLACK_PAWN_1, 4)
-                }
+            var md = CreateMatchData();
+            md.pieces = new List<ChessmanSchema> {
+                CreateWhiteKing(3),
+                CreateBlackChecker(Constants.ID_BLACK_PAWN_1, 4)
             };
+            return md;
         }
 
         public static MatchData InCheckFromCaptureJump () {
-            return new MatchData {
-                currentTurn = 0,
-                matchId = 1,
-                whitePlayerId = 0,
-                blackPlayerId = 1,
-                pieces = new List<ChessmanSchema> {
-                    CreateWhiteKing(3),
-                    CreatePawn(Constants.ID_WHITE_PAWN_1, 18),
-                    CreateBlackQueen(58),
-                    CreateBlackKing()
-                }
+            var md = CreateMatchData();
+            md.pieces = new List<ChessmanSchema> {
+                CreateWhiteKing(3),
+                CreatePawn(Constants.ID_WHITE_PAWN_1, 18),
+                CreateBlackQueen(58),
+                CreateBlackKing()
             };
+            return md;
         }
 
         public static MatchData InCheckFromCaptureReverseJump () {
-            return new MatchData {
-                currentTurn = 0,
-                matchId = 1,
-                whitePlayerId = 0,
-                blackPlayerId = 1,
-                pieces = new List<ChessmanSchema> {
-                    CreateWhiteKing(3),
-                    CreatePawn(Constants.ID_WHITE_PAWN_1, 4),
-                    CreateBlackQueen(60)
-                }
+            var md = CreateMatchData();
+            md.pieces = new List<ChessmanSchema> {
+                CreateWhiteKing(3),
+                CreatePawn(Constants.ID_WHITE_PAWN_1, 4),
+                CreateBlackQueen(60)
             };
+            return md;
         }
 
         public static MatchData InCheckFromMultiJump () {
-            return new MatchData {
-                currentTurn = 0,
-                matchId = 1,
-                whitePlayerId = 0,
-                blackPlayerId = 1,
-                pieces = new List<ChessmanSchema> {
-                    CreateWhiteKing(2),
-                    CreatePawn(Constants.ID_WHITE_PAWN_1, 12),
-                    CreatePawn(Constants.ID_WHITE_PAWN_2, 14),
+            var md = CreateMatchData();
+            md.pieces = new List<ChessmanSchema> {
+                CreateWhiteKing(2),
+                CreatePawn(Constants.ID_WHITE_PAWN_1, 12),
+                CreatePawn(Constants.ID_WHITE_PAWN_2, 14),
 
-                    CreateBlackChecker(Constants.ID_BLACK_PAWN_1, 23),
-                    CreateBlackKing()
-                }
+                CreateBlackChecker(Constants.ID_BLACK_PAWN_1, 23),
+                CreateBlackKing()
             };
+            return md;
         }
 
         /// <summary>
@@ -172,21 +162,17 @@ namespace ChessersEngine {
         /// </summary>
         /// <returns>The check from attempted capture jump.</returns>
         public static MatchData InCheckFromAttemptedCaptureJump () {
-            return new MatchData {
-                currentTurn = ColorEnum.WHITE,
-                matchId = 1,
-                whitePlayerId = 0,
-                blackPlayerId = 1,
-                pieces = new List<ChessmanSchema> {
-                    CreateWhiteQueen(3),
-                    CreateWhiteKing(15),
+            var md = CreateMatchData();
+            md.pieces = new List<ChessmanSchema> {
+                CreateWhiteQueen(3),
+                CreateWhiteKing(15),
 
-                    CreatePawn(Constants.ID_BLACK_PAWN_1, 50),
-                    CreateBishop(Constants.ID_BLACK_BISHOP_1, 57),
-                    CreateBlackQueen(59),
-                    CreateBlackKing(63),
-                }
+                CreatePawn(Constants.ID_BLACK_PAWN_1, 50),
+                CreateBishop(Constants.ID_BLACK_BISHOP_1, 57),
+                CreateBlackQueen(59),
+                CreateBlackKing(63),
             };
+            return md;
         }
 
         /// <summary>

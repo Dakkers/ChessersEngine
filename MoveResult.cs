@@ -120,40 +120,44 @@ namespace ChessersEngine {
                 } else {
                     moveNotation += "O-O-O";
                 }
-
-                return moveNotation;
-            }
-
-            // Start with e.g. "11_Qh4"
-            moveNotation += (
-                Helpers.ConvertChessmanKindToNotationSymbol(chessmanKind) +
-                Helpers.ConvertColumnToFile(fromColumn) +
-                Helpers.ConvertRowToRank(fromRow)
-            );
-
-            if (WasPieceCaptured()) {
-                // "11_Qh4" becomes "11_Qh4x"
-                moveNotation += "x";
-            }
-            if (WasPieceJumped()) {
-                // "11_Qh4" becomes "11_Qh4y"
-                moveNotation += "y";
-            }
-
-            if (tileId < 0) {
-                // Deathjump; "11_Qh4" becomes "11_Qh409"
-                moveNotation += System.Math.Abs(tileId).ToString().PadLeft(2, '0');
             } else {
-                // "Qh4" becomes "Qh4e7"
+                // Start with e.g. "11_Qh4"
                 moveNotation += (
-                    Helpers.ConvertColumnToFile(toColumn) +
-                    Helpers.ConvertRowToRank(toRow)
+                    Helpers.ConvertChessmanKindToNotationSymbol(chessmanKind) +
+                    Helpers.ConvertColumnToFile(fromColumn) +
+                    Helpers.ConvertRowToRank(fromRow)
                 );
+
+                if (WasPieceCaptured()) {
+                    // "11_Qh4" becomes "11_Qh4x"
+                    moveNotation += "x";
+                }
+                if (WasPieceJumped()) {
+                    // "11_Qh4" becomes "11_Qh4y"
+                    moveNotation += "y";
+                }
+
+                if (tileId < 0) {
+                    // Deathjump; "11_Qh4" becomes "11_Qh409"
+                    moveNotation += System.Math.Abs(tileId).ToString().PadLeft(2, '0');
+                } else {
+                    // "Qh4" becomes "Qh4e7"
+                    moveNotation += (
+                        Helpers.ConvertColumnToFile(toColumn) +
+                        Helpers.ConvertRowToRank(toRow)
+                    );
+                }
+
+                if (promotionOccurred) {
+                    // "h7h8" becomes "h7h8Q"
+                    moveNotation += Helpers.ConvertChessmanKindToNotationSymbol((ChessmanKindEnum) promotionRank);
+                }
             }
 
-            if (promotionOccurred) {
-                // "h7h8" becomes "h7h8Q"
-                moveNotation += Helpers.ConvertChessmanKindToNotationSymbol((ChessmanKindEnum) promotionRank);
+            if (isWinningMove) {
+                moveNotation += "#";
+            } else if (isInCheck) {
+                moveNotation += "+";
             }
 
             return moveNotation;
@@ -168,11 +172,13 @@ namespace ChessersEngine {
         public static MoveResult CreatePartialMoveResultFromNotation (string _notation) {
             MoveResult moveResult = new MoveResult();
             string[] notationSplit = _notation.Split('_');
-
-            moveResult.pieceId = int.Parse(notationSplit[0]);
             string notation = notationSplit[1];
 
-            bool _isCastle = (notation == "O-O") || (notation == "O-O-O");
+            moveResult.pieceId = int.Parse(notationSplit[0]);
+            moveResult.isInCheck = notation.Contains("+");
+            moveResult.isWinningMove = notation.Contains("#");
+
+            bool _isCastle = notation.Contains("O-O");
 
             if (_isCastle) {
                 moveResult.chessmanKind = ChessmanKindEnum.KING;
@@ -187,7 +193,7 @@ namespace ChessersEngine {
 
             // -- First letter = the chessman kind that moved
             char kindChar = chars.Dequeue();
-            moveResult.chessmanKind = Helpers.ConvertNotationSymbolToChessmanKind(kindChar);
+            moveResult.chessmanKind = (ChessmanKindEnum) Helpers.ConvertNotationSymbolToChessmanKind(kindChar);
 
             // -- Second/third letter = FROM tile (file/rank)
             char fromFile = chars.Dequeue();
@@ -226,10 +232,15 @@ namespace ChessersEngine {
                 }
             }
 
-            // -- Last letter could be promotion
-            if (chars.Count > 0) {
-                char promotionRank = chars.Dequeue();
-                moveResult.promotionRank = Helpers.ConvertNotationSymbolToChessmanKind(promotionRank);
+            // -- Next char could be promotion
+            {
+                if (chars.Count > 0) {
+                    char nextChar = chars.Dequeue();
+                    var promotionRank = Helpers.ConvertNotationSymbolToChessmanKind(nextChar);
+                    if (promotionRank != null) {
+                        moveResult.promotionRank = promotionRank;
+                    }
+                }
             }
 
             return moveResult;
