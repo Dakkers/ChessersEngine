@@ -324,11 +324,11 @@ namespace ChessersEngine {
                 case ChessmanKindEnum.BISHOP:
                     return "B";
                 default:
-                    throw new System.Exception($"Invalid chessman kind: {kind}");
+                    throw new Exception($"Invalid chessman kind: {kind}");
             }
         }
 
-        public static ChessmanKindEnum ConvertNotationSymbolToChessmanKind (char kindChar) {
+        public static ChessmanKindEnum? ConvertNotationSymbolToChessmanKind (char kindChar) {
             switch (kindChar) {
                 case 'P':
                     return ChessmanKindEnum.PAWN;
@@ -343,7 +343,7 @@ namespace ChessersEngine {
                 case 'B':
                     return ChessmanKindEnum.BISHOP;
                 default:
-                    throw new System.Exception($"Invalid chessman letter: {kindChar}");
+                    return null;
             }
         }
 
