@@ -235,7 +235,6 @@ namespace ChessersEngine {
                 }
                 //Match.Log(
                 //    $"{tilesToIgnore.Contains(tileToLandOn.id)} " +
-                //    $"{tileToLandOn.IsOccupied()} " +
                 //    $"{!tileToJumpOver.IsOccupied()} " +
                 //    $"{tileToJumpOver.IsDeathjumpTile()}",
                 //    depth + 2
@@ -243,7 +242,6 @@ namespace ChessersEngine {
 
                 if (
                     tilesToIgnore.Contains(tileToLandOn.id) ||
-                    tileToLandOn.IsOccupied() ||
                     !tileToJumpOver.IsOccupied() ||
                     tileToJumpOver.IsDeathjumpTile()
                 ) {
@@ -338,6 +336,7 @@ namespace ChessersEngine {
             Tile kingTile = kingChessman.GetUnderlyingTile();
 
             List<Tile> diagTilesOfKing = board.GetDiagonallyAdjacentTiles(kingTile);
+            //Helpers.PrintTiles(diagTilesOfKing);
 
             foreach (var diagTile in diagTilesOfKing) {
                 // A tile diagonally adjacent from the king could represent one
@@ -702,11 +701,11 @@ namespace ChessersEngine {
 
             ExecuteBaseMove();
 
-            if (IsMovingPlayerInCheck()) {
-                moveResult.isInCheck = true;
-                moveResult.valid = false;
-                return moveResult;
-            }
+            //if (IsMovingPlayerInCheck()) {
+            //    moveResult.isInCheck = true;
+            //    moveResult.valid = false;
+            //    return moveResult;
+            //}
 
             PostValidationHandler();
             return moveResult;
