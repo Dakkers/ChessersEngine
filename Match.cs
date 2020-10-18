@@ -252,7 +252,7 @@ namespace ChessersEngine {
             if (turnColor == ColorEnum.WHITE) {
                 if (moveAttempt.playerId == blackPlayerId) {
                     // White's turn, black is trying to move --> no!
-                    Match.Log("Invalid turn. (is WHITE)");
+                    //Match.Log("Invalid turn. (is WHITE)");
                     return null;
                 }
             }
@@ -260,7 +260,7 @@ namespace ChessersEngine {
             if (turnColor == ColorEnum.BLACK) {
                 if (moveAttempt.playerId == whitePlayerId) {
                     // Black's turn, white is trying to move --> no!
-                    Match.Log("Invalid turn. (is BLACK)");
+                    //Match.Log("Invalid turn. (is BLACK)");
                     return null;
                 }
             }
@@ -268,7 +268,7 @@ namespace ChessersEngine {
             Chessman chessman = GetPendingChessman(moveAttempt.pieceId);
             if (chessman.color != turnColor) {
                 // Make sure the moving piece belongs to the player.
-                Match.Log("Invalid permission.");
+                //Match.Log("Invalid permission.");
                 return null;
             }
 
@@ -284,7 +284,7 @@ namespace ChessersEngine {
                 // A piece cannot move to a tile that is occupied by the same color as itself, except
                 // for deathjump tiles because they're still occupied by the last piece that moved onto
                 // them.
-                Match.Log("Trying to move to an occupied tile (occupied by yourself)");
+                //Match.Log("Trying to move to an occupied tile (occupied by yourself)");
                 return null;
             }
 
