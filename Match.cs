@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 #if UNITY_EDITOR
 using UnityEngine;
 #endif
@@ -125,6 +126,15 @@ namespace ChessersEngine {
         }
 
         void CommitMatchState () {
+            foreach (var mr in pendingMoveResults) {
+                if (mr.isStalemate) {
+                    isDraw = true;
+                }
+                if (mr.isWinningMove) {
+                    winningPlayerId = GetCommittedTurnPlayerId();
+                }
+            }
+
             // It's possible that the final pending move was a checker jumping over
             // a piece, which does NOT automatically change the turn colour.
             if (committedTurnColor == turnColor) {
@@ -135,18 +145,7 @@ namespace ChessersEngine {
 
             committedBoard.CopyState(pendingBoard);
 
-            if (!committedBoard.GetBlackKing().isActive) {
-                winningPlayerId = whitePlayerId;
-            } else if (!committedBoard.GetWhiteKing().isActive) {
-                winningPlayerId = blackPlayerId;
-            }
-
-            List<string> movesForTurn = new List<string>();
-            foreach (MoveResult moveResult in pendingMoveResults) {
-                movesForTurn.Add(moveResult.CreateNotation());
-            }
-
-            moves.Add(string.Join(",", movesForTurn));
+            moves.Add(string.Join(",", pendingMoveResults.Select((mr) => mr.CreateNotation())));
 
             pendingMoveResults.Clear();
         }
@@ -158,6 +157,8 @@ namespace ChessersEngine {
         /// </summary>
         void ResetMatchState () {
             turnColor = committedTurnColor;
+            isDraw = false;
+            winningPlayerId = -1;
 
             pendingBoard.CopyState(committedBoard);
 
@@ -202,7 +203,7 @@ namespace ChessersEngine {
             return committedTurnColor;
         }
 
-        public ColorEnum GetTurn () {
+        public ColorEnum GetTurnColor () {
             return turnColor;
         }
 
@@ -250,24 +251,24 @@ namespace ChessersEngine {
             // -- Base validation
             if (turnColor == ColorEnum.WHITE) {
                 if (moveAttempt.playerId == blackPlayerId) {
-                    //Match.Log("Invalid turn. (is WHITE)");
                     // White's turn, black is trying to move --> no!
+                    //Match.Log("Invalid turn. (is WHITE)");
                     return null;
                 }
             }
 
             if (turnColor == ColorEnum.BLACK) {
                 if (moveAttempt.playerId == whitePlayerId) {
-                    //Match.Log("Invalid turn. (is BLACK)");
                     // Black's turn, white is trying to move --> no!
+                    //Match.Log("Invalid turn. (is BLACK)");
                     return null;
                 }
             }
 
             Chessman chessman = GetPendingChessman(moveAttempt.pieceId);
             if (chessman.color != turnColor) {
-                //Match.Log("Invalid permission.");
                 // Make sure the moving piece belongs to the player.
+                //Match.Log("Invalid permission.");
                 return null;
             }
 
@@ -283,7 +284,7 @@ namespace ChessersEngine {
                 // A piece cannot move to a tile that is occupied by the same color as itself, except
                 // for deathjump tiles because they're still occupied by the last piece that moved onto
                 // them.
-                //Match.Log("Trying to move to an occupied tile (by yourself)");
+                //Match.Log("Trying to move to an occupied tile (occupied by yourself)");
                 return null;
             }
 
@@ -297,12 +298,6 @@ namespace ChessersEngine {
                 moveResult.promotionOccurred = true;
                 moveResult.promotionRank = (ChessmanKindEnum) moveAttempt.promotionRank;
                 Promote(moveResult);
-            }
-
-            if (moveResult.isWinningMove) {
-                winningPlayerId = (turnColor == ColorEnum.WHITE) ? whitePlayerId : blackPlayerId;
-            } else if (moveResult.isStalemate) {
-                isDraw = true;
             }
 
             pendingMoveResults.Add(moveResult);

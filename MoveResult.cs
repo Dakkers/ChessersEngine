@@ -86,12 +86,14 @@ namespace ChessersEngine {
             return $"{{ " +
                 $"pieceId = {pieceId}, " +
                 $"tileId = {tileId}, " +
+                $"valid = {valid}, " +
                 $"capturedPieceId = {capturedPieceId}, " +
                 //$"promotion = {promotionOccurred}, " +
+                $"polarityChanged = {polarityChanged}, " +
                 $"turnChanged = {turnChanged}, " +
                 $"isInCheck = {isInCheck}, " +
                 $"isWinningMove = {isWinningMove}, " +
-                $"isCastle = {isCastle}, " +
+            //$"isCastle = {isCastle}, " +
             "}}";
         }
 

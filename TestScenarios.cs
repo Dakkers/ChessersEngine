@@ -209,6 +209,21 @@ namespace ChessersEngine {
             return md;
         }
 
+        /// <summary>
+        /// Check via a movejump-deathjump. Queen moves to 5 to put Black into check.
+        /// </summary>
+        /// <returns>The jump.</returns>
+        public static MatchData InCheckFromMoveDeathjump1 () {
+            var md = CreateMatchData();
+            md.pieces = new List<ChessmanSchema> {
+                CreateWhiteKing(0),
+                CreateWhiteQueen(4),
+
+                CreateBlackKing(60),
+            };
+            return md;
+        }
+
         #endregion
 
         #region Checkmate
@@ -433,15 +448,48 @@ namespace ChessersEngine {
         }
 
         /// <summary>
+        /// Queen moves to 6. It should NOT count as a move-jump if queen were to move to 30 after.
+        /// </summary>
+        /// <returns>The jump.</returns>
+        public static MatchData MoveJumpInvalid1 () {
+            var md = CreateMatchData();
+            md.pieces = new List<ChessmanSchema> {
+                CreateWhiteKing(),
+                CreateWhiteQueen(7),
+
+                CreateBlackKing(37),
+            };
+            return md;
+        }
+
+        /// <summary>
+        /// Checker at 37 should NOT be able to move to 44 and then jump over 53 to 62.
+        /// </summary>
+        /// <returns>The jump.</returns>
+        public static MatchData MoveJumpInvalid2 () {
+            var md = CreateMatchData();
+            var checkerCS = CreateWhiteQueen(37);
+            checkerCS.isChecker = true;
+
+            md.pieces = new List<ChessmanSchema> {
+                CreateWhiteKing(0) ,
+                checkerCS,
+
+                CreateBlackKing(56),
+                CreateBlackQueen(53)
+            };
+            return md;
+        }
+
+        /// <summary>
         /// A checker that can do a deathjump.
         /// </summary>
         public static MatchData DeathJump1 () {
-            var md = CreateMatchData();
-            md.deathjumpSetting = (int) DeathjumpSetting.ALL;
-
             var checkerCS = CreateWhiteQueen(52);
             checkerCS.isChecker = true;
 
+            var md = CreateMatchData();
+            md.deathjumpSetting = (int) DeathjumpSetting.ALL;
             md.pieces = new List<ChessmanSchema> {
                 CreateWhiteKing(0),
                 checkerCS,
@@ -775,6 +823,117 @@ namespace ChessersEngine {
                 CreateKnight(Constants.ID_BLACK_KNIGHT_1, 42),
                 CreateKnight(Constants.ID_BLACK_KNIGHT_2, 62),
                 CreateBlackKing(61),
+            };
+            return md;
+        }
+
+        /// <summary>
+        /// A bug where deathjumping the king and resetting the turn wouldn't work?
+        /// This particular situation shouldn't occur now because you shouldn't be able to actually
+        /// capture the king itself.
+        /// </summary>
+        public static MatchData Bug20201017_01 () {
+            var checkerCS = CreateWhiteQueen(50);
+            checkerCS.isChecker = true;
+
+            var md = CreateMatchData();
+            md.pieces = new List<ChessmanSchema> {
+                CreateWhiteKing(0),
+                checkerCS,
+                CreateBlackKing(57),
+                CreatePawn(Constants.ID_BLACK_PAWN_1, 55),
+            };
+            return md;
+        }
+
+        /// <summary>
+        /// A bug Pieter found, the Queen cannot move from D4 to A4, B4 or H4.
+        /// </summary>
+        public static MatchData Bug20201017_02 () {
+            var md = CreateMatchData();
+            md.deathjumpSetting = (int) DeathjumpSetting.ALL;
+            md.pieces = new List<ChessmanSchema> {
+                new ChessmanSchema { colorId = 0, id = 16, kind = 3, location = 0 },
+                new ChessmanSchema { colorId = 0, id = 20, kind = 1, location = 1 },
+                new ChessmanSchema { colorId = 0, id = 24, kind = 2, location = 2 },
+                new ChessmanSchema { colorId = 0, hasMoved = true, id = 28, kind = 4, location = 27 },
+                new ChessmanSchema { colorId = 0, id = 30, kind = 5, location = 4 },
+                new ChessmanSchema { colorId = 0, id = 26, kind = 2, location = 5 },
+                new ChessmanSchema { colorId = 0, hasMoved = true, id = 22, kind = 1, location = 21 },
+                new ChessmanSchema { colorId = 0, id = 18, kind = 3, location = 7 },
+                new ChessmanSchema { colorId = 0, id = 0, kind = 0, location = 8 },
+                new ChessmanSchema { colorId = 0, id = 2, kind = 0, location = 9 },
+                new ChessmanSchema { colorId = 0, id = 4, kind = 0, location = 10 },
+                new ChessmanSchema { colorId = 0, id = 6, kind = 0, location = 11 },
+                new ChessmanSchema { colorId = 0, hasMoved = true, id = 8, kind = 0, location = 20 },
+                new ChessmanSchema { colorId = 0, id = 10, kind = 0, location = 13 },
+                new ChessmanSchema { colorId = 0, id = 12, kind = 0, location = 14 },
+                new ChessmanSchema { colorId = 0, id = 14, kind = 0, location = 15 },
+                new ChessmanSchema { colorId = 1, id = 1, kind = 0, location = 48 },
+                new ChessmanSchema { colorId = 1, id = 3, kind = 0, location = 49 },
+                new ChessmanSchema { colorId = 1, hasMoved = true, id = 5, kind = 0, location = 34 },
+                new ChessmanSchema { colorId = 1, hasMoved = true, id = 7, kind = 0, location = 35 },
+                new ChessmanSchema { colorId = 1, id = 9, kind = 0, location = 52 },
+                new ChessmanSchema { colorId = 1, hasMoved = true, id = 11, kind = 0, location = 37 },
+                new ChessmanSchema { colorId = 1, id = 13, kind = 0, location = 54 },
+                new ChessmanSchema { colorId = 1, id = 15, kind = 0, location = 55 },
+                new ChessmanSchema { colorId = 1, id = 17, kind = 3, location = 56 },
+                new ChessmanSchema { colorId = 1, hasMoved = true, id = 21, kind = 1, location = 40 },
+                new ChessmanSchema { colorId = 1, id = 25, kind = 2, location = 58 },
+                new ChessmanSchema { colorId = 1, id = 29, kind = 4, location = 59 },
+                new ChessmanSchema { colorId = 1, id = 31, kind = 5, location = 60 },
+                new ChessmanSchema { colorId = 1, id = 27, kind = 2, location = 61 },
+                new ChessmanSchema { colorId = 1, id = 23, kind = 1, location = 62 },
+                new ChessmanSchema { colorId = 1, id = 19, kind = 3, location = 63 },
+            };
+            return md;
+        }
+
+
+        /// <summary>
+        /// A bug I found.
+        ///     - Can't move bishop c8 to e6
+        ///     - Can't move pawn from b7 to b5
+        ///     - CAN move pawn from b7 to b6, but it doesn't say I can
+        ///     - KING IS MARKED AS ABLE TO CASTLE
+        /// </summary>
+        public static MatchData Bug20201017_03 () {
+            var md = CreateMatchData();
+            md.deathjumpSetting = (int) DeathjumpSetting.ALL;
+            md.currentTurn = ColorEnum.BLACK;
+            md.pieces = new List<ChessmanSchema> {
+                new ChessmanSchema { colorId = 0, id = 16, kind = 3, location = 0 },
+                new ChessmanSchema { colorId = 0, id = 20, kind = 1, location = 1 },
+                new ChessmanSchema { colorId = 0, id = 24, kind = 2, location = 2 },
+                new ChessmanSchema { colorId = 0, hasMoved = true, id = 28, isActive = false, kind = 4, location = 19 },
+                new ChessmanSchema { colorId = 0, id = 30, kind = 5, location = 4 },
+                new ChessmanSchema { colorId = 0, hasMoved = true, id = 26, kind = 2, location = 12 },
+                new ChessmanSchema { colorId = 0, hasMoved = true, id = 22, kind = 1, location = 27 },
+                new ChessmanSchema { colorId = 0, id = 18, kind = 3, location = 7 },
+                new ChessmanSchema { colorId = 0, id = 0, kind = 0, location = 8 },
+                new ChessmanSchema { colorId = 0, id = 2, kind = 0, location = 9 },
+                new ChessmanSchema { colorId = 0, hasMoved = true, id = 4, kind = 0, location = 18 },
+                new ChessmanSchema { colorId = 0, id = 6, kind = 0, location = 11 },
+                new ChessmanSchema { colorId = 0, hasMoved = true, id = 8, isActive = false, kind = 0, location = 29 },
+                new ChessmanSchema { colorId = 0, hasMoved = true, id = 10, isActive = false, kind = 0, location = 29 },
+                new ChessmanSchema { colorId = 0, id = 12, kind = 0, location = 14 },
+                new ChessmanSchema { colorId = 0, id = 14, kind = 0, location = 15 },
+                new ChessmanSchema { colorId = 1, id = 1, kind = 0, location = 48 },
+                new ChessmanSchema { colorId = 1, id = 3, kind = 0, location = 49 },
+                new ChessmanSchema { colorId = 1, hasMoved = true, id = 5, isActive = false, isChecker = true, kind = 0, location = 12 },
+                new ChessmanSchema { colorId = 1, hasMoved = true, id = 7, kind = 0, location = 35 },
+                new ChessmanSchema { colorId = 1, hasMoved = true, id = 9, isChecker = true, kind = 0, location = 29 },
+                new ChessmanSchema { colorId = 1, hasMoved = true, id = 11, kind = 0, location = 37 },
+                new ChessmanSchema { colorId = 1, hasMoved = true, id = 13, isActive = false, isChecker = true, kind = 0, location = 29 },
+                new ChessmanSchema { colorId = 1, hasMoved = true, id = 15, kind = 0, location = 39 },
+                new ChessmanSchema { colorId = 1, id = 17, kind = 3, location = 56 },
+                new ChessmanSchema { colorId = 1, hasMoved = true, id = 21, kind = 1, location = 40 },
+                new ChessmanSchema { colorId = 1, id = 25, kind = 2, location = 58 },
+                new ChessmanSchema { colorId = 1, hasMoved = true, id = 29, kind = 4, location = 32 },
+                new ChessmanSchema { colorId = 1, id = 31, kind = 5, location = 60 },
+                new ChessmanSchema { colorId = 1, id = 27, kind = 2, location = 61 },
+                new ChessmanSchema { colorId = 1, id = 23, kind = 1, location = 62 },
+                new ChessmanSchema { colorId = 1, id = 19, kind = 3, location = 63 },
             };
             return md;
         }

@@ -15,7 +15,6 @@
 
     public class Chessman {
         public ColorEnum color;
-
         public int guid;
         public bool hasMoved = false;
         public int id;

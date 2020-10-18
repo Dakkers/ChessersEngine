@@ -164,7 +164,18 @@ namespace ChessersEngine {
             }
         }
 
-        void _CalculateJumpPaths (
+        /// <summary>
+        /// This function is a bit confusing... it does *some* validation checks, but not all. It will
+        /// check that we are trying to jump over occupied tiles, but it will not consider the kinged-ness
+        /// of the piece that would do the jump (so it may be an illegal move).
+        /// </summary>
+        /// <param name="result">Result.</param>
+        /// <param name="currentPath">Current path.</param>
+        /// <param name="targetColor">Target color.</param>
+        /// <param name="tile">Tile.</param>
+        /// <param name="tilesToIgnore">Tiles to ignore.</param>
+        /// <param name="depth">Depth.</param>
+        void _CalculatePotentialJumpPaths (
             List<List<int>> result,
             List<int> currentPath,
             ColorEnum targetColor,
@@ -172,39 +183,49 @@ namespace ChessersEngine {
             HashSet<int> tilesToIgnore,
             int depth = 1
         ) {
-            //Match.Log($"Current: {tile.id} {tile.IsOccupied()}", depth);
-            if (tile.IsOccupied()) {
-                // Regardless of which color piece is occupying the tile, this branch of the search
-                // tree ends as there is no way to jump onto an occupied tile.
+            (int row, int col) = board.GetRowColumn(tile);
+            //Match.Log($"Current: {tile.id} {tile.IsOccupied()} {board.IsTileOnOtherHalfOfBoard(tile, targetColor)}", depth);
 
-                if (!tile.GetPiece().IsSameColor(targetColor)) {
-                    //Match.Log("Found a potential multijump...", depth + 1);
-                    // This is the piece that could capture the king!
-                    result.Add(new List<int>(currentPath));
-                } else {
-                    //Match.Log("Found a potential capturejump...", depth + 1);
-                    // This piece could lead to a capture jump if it has the potential to be captured
+            if (!board.IsTileOnOtherHalfOfBoard(tile, targetColor)) {
+                if (tile.IsOccupied()) {
+                    // Regardless of which color piece is occupying the tile, this branch of the search
+                    // tree ends as there is no way to jump onto an occupied tile.
 
-                    List<Tile> capturableTiles = board.CanChessmanBeCaptured(tile.GetPiece());
-                    foreach (Tile capturableTile in capturableTiles) {
-                        // For each of the tiles this piece can be captured from, add a copy of the
-                        // current path with this capturable tile included - we care about all potential
-                        // paths instead of just 1 because we need to check later if these paths are
-                        // valid (i.e. won't put attacking player in check)
-                        result.Add(new List<int>(currentPath) { capturableTile.id });
-                    }
-
-                    if (board.CanChessmanBeCaptured(tile.GetPiece()).Count > 0) {
+                    if (!tile.GetPiece().IsSameColor(targetColor)) {
+                        //Match.Log("Found a potential multijump...", depth + 1);
+                        // This is the piece that could capture the king!
                         result.Add(new List<int>(currentPath));
+                        return;
                     }
                 }
+
+                //Match.Log($"Found a potential movejump/capturejump at {tile.id}...", depth + 1);
+                // This piece could lead to a movejump/capturejump if it has the potential to be moved
+                // onto (capture or regular move.)
+
+                List<Tile> capturableTiles = board.CanTileBeMovedOnToByChessman(tile);
+                foreach (Tile capturableTile in capturableTiles) {
+                    var occupant = capturableTile.GetPiece();
+
+                    if (occupant != null && occupant.IsSameColor(targetColor)) {
+                        continue;
+                    }
+
+                    // For each of the tiles this piece can be captured from, add a copy of the
+                    // current path with this capturable tile included - we care about all potential
+                    // paths instead of just 1 because we need to check later if these paths are
+                    // valid (i.e. won't put attacking player in check)
+                    result.Add(new List<int>(currentPath) { capturableTile.id });
+                }
+
+                //if (board.CanChessmanBeCaptured(tile.GetPiece()).Count > 0) {
+                //    result.Add(new List<int>(currentPath));
+                //}
 
                 return;
             }
 
             // Generate tiles that are 2 diagonal spaces away - tiles that the piece would land on
-            (int row, int col) = board.GetRowColumn(tile);
-
             List<(int, int)> tilesToLandOnDeltas = new List<(int, int)> {
                 (1, 1),
                 (1, -1),
@@ -212,18 +233,16 @@ namespace ChessersEngine {
                 (-1, -1),
             };
 
-            // NOTE: >= 32 is black... 4 * row length
-            int halfwayRow = (board.GetNumberOfRows() / 2);
             //Match.Log($"{row},{col} -- {string.Join(" | ", tilesToLandOn.Select((t) => $"{board.GetRow(t)},{board.GetColumn(t)}"))}");
 
-            foreach ((int xThing, int yThing) in tilesToLandOnDeltas) {
+            foreach ((int xInc, int yInc) in tilesToLandOnDeltas) {
                 Tile tileToJumpOver = board.GetTileByRowColumn(
-                    row + xThing,
-                    col + yThing
+                    row + xInc,
+                    col + yInc
                 );
                 Tile tileToLandOn = board.GetTileByRowColumn(
-                    row + (2 * xThing),
-                    col + (2 * yThing)
+                    row + (2 * xInc),
+                    col + (2 * yInc)
                 );
 
                 //Match.Log($"{tile.id} -> {tileToJumpOver?.id} -> {tileToLandOn?.id}", depth + 1);
@@ -251,17 +270,15 @@ namespace ChessersEngine {
                 int landingRow = board.GetRow(tileToLandOn);
 
                 // The tile needs to be on the opposite side of the board (from the attacker's perspective)
-                // in order for the attacker's pieces to actually jump.
-                if (
-                    ((targetColor == ColorEnum.BLACK) && (landingRow < halfwayRow)) ||
-                    ((targetColor == ColorEnum.WHITE) && (landingRow >= halfwayRow))
-                ) {
+                // in order for the attacker's pieces to actually jump. That is, if the tile is on the other
+                // half of the board from the defender's perspective, we skip the tile.
+                if (board.IsTileOnOtherHalfOfBoard(tileToLandOn, targetColor)) {
                     continue;
                 }
 
                 currentPath.Add(tileToLandOn.id);
 
-                _CalculateJumpPaths(
+                _CalculatePotentialJumpPaths(
                     result,
                     currentPath,
                     targetColor,
@@ -274,7 +291,7 @@ namespace ChessersEngine {
             }
         }
 
-        List<List<int>> CalculateJumpPaths (
+        List<List<int>> CalculatePotentialJumpPaths (
             Tile baseTile,
             ColorEnum targetColor,
             HashSet<int> tilesToIgnore
@@ -283,7 +300,7 @@ namespace ChessersEngine {
             // Each nested list is a path that the attacking player would take to (capture-)multijump
             List<List<int>> result = new List<List<int>>();
 
-            _CalculateJumpPaths(
+            _CalculatePotentialJumpPaths(
                 result,
                 currentPath: new List<int>(),
                 targetColor: targetColor,
@@ -377,11 +394,12 @@ namespace ChessersEngine {
                 if (!tileToLandOn.IsDeathjumpTile()) {
                     tilesToIgnore.Add(tileToLandOn.id);
                 }
-                List<List<int>> paths = CalculateJumpPaths(
+                List<List<int>> paths = CalculatePotentialJumpPaths(
                     diagTile,
                     color,
                     tilesToIgnore
                 );
+                //Match.Log($"Found {paths.Count} paths");
 
                 foreach (List<int> _path in paths) {
                     List<int> path = new List<int>(_path);
@@ -424,6 +442,7 @@ namespace ChessersEngine {
                         });
 
                         var otherMoveResult = move.ExecuteMoveWithoutCheckValidations();
+                        //Match.Log(otherMoveResult, 1);
 
                         //MoveResult otherMoveResult = move.GetPseudoLegalMoveResult();
                         if (otherMoveResult == null || !otherMoveResult.valid) {
@@ -452,6 +471,7 @@ namespace ChessersEngine {
         /// </summary>
         /// <returns><c>true</c>, if moving player in check was ised, <c>false</c> otherwise.</returns>
         bool IsMovingPlayerInCheck () {
+            //return false;
             List<Tile> result = (CalculateCheckTiles(chessman.color, exitEarly: true));
             return result.Count > 0;
         }
@@ -531,7 +551,7 @@ namespace ChessersEngine {
         ///     - validate for "check" or "checkmate"
         /// </summary>
         void ExecuteBaseMove () {
-            //Match.Log($"{chessman.kind} | {string.Join(",", potentialTilesForMovement.Select((t) => t.id))}");
+            //Match.Log($"{chessman.kind} @ {fromTile.id} | {string.Join(",", potentialTilesForMovement.Select((t) => t.id))}");
             if (!chessman.hasMoved) {
                 moveResult.wasFirstMoveForPiece = true;
                 chessman.SetHasMoved(true);
@@ -692,6 +712,7 @@ namespace ChessersEngine {
         /// Does `ExecuteBaseMove` but also validates for check (but NOT checkmate)
         /// </summary>
         MoveResult ExecuteBaseMoveWithCheckValidation () {
+            //Match.Log($"{chessman.IsChecker()} {Helpers.FormatTiles(potentialTilesForMovement)}");
             if (!(potentialTilesForMovement.Exists((t) => t.id == toTile.id))) {
                 // Not a legal move to the specified tile.
                 //Match.Log("Not a legal move.");
@@ -717,6 +738,13 @@ namespace ChessersEngine {
         /// </summary>
         /// <returns>The the crazy move.</returns>
         public MoveResult ExecuteMoveWithoutCheckValidations () {
+            if (!(potentialTilesForMovement.Exists((t) => t.id == toTile.id))) {
+                // Not a legal move to the specified tile.
+                //Match.Log("Not a legal move.");
+                moveResult.valid = false;
+                return moveResult;
+            }
+
             ExecuteBaseMove();
             PostValidationHandler();
             return moveResult;
@@ -740,6 +768,7 @@ namespace ChessersEngine {
                 // solution to the issue but whatever. We'll check here for checkmate and stalemate.
 
                 List<Tile> tilesThatCheckOpposingPlayer = CalculateCheckTiles(Helpers.GetOppositeColor(chessman.color), exitEarly: false);
+                //Match.Log($"tilesThatCheckOpposingPlayer = {Helpers.FormatTiles(tilesThatCheckOpposingPlayer)}");
 
                 if (tilesThatCheckOpposingPlayer.Count > 0) {
                     moveResult.isInCheck = true;

@@ -57,7 +57,7 @@ namespace ChessersEngine {
             return chessmenById[id];
         }
 
-        List<ChessmanSchema> CreateDefaultChessmen () {
+        public List<ChessmanSchema> CreateDefaultChessmen () {
             List<ChessmanSchema> chessmanSchemas = new List<ChessmanSchema> {
                 new ChessmanSchema  {
                     location = 0,
@@ -248,15 +248,51 @@ namespace ChessersEngine {
             return otherBoard;
         }
 
+        #region Board dimensions
+
+        public int CalculateRowDelta (Tile tile1, Tile tile2) {
+            return Math.Abs(GetRow(tile1) - GetRow(tile2));
+        }
+
+        public int CalculateColumnDelta (Tile tile1, Tile tile2) {
+            return Math.Abs(GetColumn(tile1) - GetColumn(tile2));
+        }
+
+        public int GetMaxTileNumber () {
+            return (GetNumberOfRows() * GetNumberOfColumns()) - 1;
+        }
+
+        public int GetNumberOfColumns () {
+            return numRealColumns;
+        }
+
+        public int GetNumberOfRows () {
+            return numRealRows;
+        }
+
+        /// <summary>
+        /// Get the delta value for a negative diagonal step. That is, the distance
+        /// between a tile and the tile that is adjacent to it in the upper-left
+        /// direction.
+        /// </summary>
+        /// <returns>The positive diagonal delta.</returns>
+        public int GetNegativeDiagonalDelta () {
+            return (numRealColumns - 1);
+        }
+
+        /// <summary>
+        /// Get the delta value for a positive diagonal step. That is, the distance
+        /// between a tile and the tile that is adjacent to it in the upper-right
+        /// direction.
+        /// </summary>
+        /// <returns>The positive diagonal delta.</returns>
+        public int GetPositiveDiagonalDelta () {
+            return (numRealColumns + 1);
+        }
+
+        #endregion
+
         #region Chessman getters
-
-        public Dictionary<int, Chessman> GetAllChessmen () {
-            return chessmenById;
-        }
-
-        Chessman GetKingOfColor (ColorEnum color) {
-            return color == ColorEnum.BLACK ? GetChessman(Constants.ID_BLACK_KING) : GetChessman(Constants.ID_WHITE_KING);
-        }
 
         public List<Chessman> GetActiveChessmen () {
             return chessmenById.Values.Where((c) => c.isActive).ToList();
@@ -266,12 +302,20 @@ namespace ChessersEngine {
             return GetActiveChessmen().Where((c) => c.color == color).ToList();
         }
 
-        public Chessman GetWhiteKing () {
-            return GetKingOfColor(ColorEnum.WHITE);
+        public Dictionary<int, Chessman> GetAllChessmen () {
+            return chessmenById;
         }
 
         public Chessman GetBlackKing () {
             return GetKingOfColor(ColorEnum.BLACK);
+        }
+
+        Chessman GetKingOfColor (ColorEnum color) {
+            return color == ColorEnum.BLACK ? GetChessman(Constants.ID_BLACK_KING) : GetChessman(Constants.ID_WHITE_KING);
+        }
+
+        public Chessman GetWhiteKing () {
+            return GetKingOfColor(ColorEnum.WHITE);
         }
 
         public bool IsGameOver () {
@@ -530,6 +574,10 @@ namespace ChessersEngine {
             );
         }
 
+        public int GetTileIdFromRowColumn (int row, int col) {
+            return Helpers.GetTileIdFromRowColumn(row, col);
+        }
+
         #endregion
 
         #region Tile location checkers
@@ -562,53 +610,101 @@ namespace ChessersEngine {
             return IsTileInEndColumn(tile) && IsTileInEndRow(tile);
         }
 
+        /// <summary>
+        /// Given color `color`, determine if `tile` is on the opposite half of the board from the
+        /// color's perspective.
+        /// </summary>
+        /// <param name="tile">Tile.</param>
+        /// <param name="color">Color.</param>
+        public bool IsTileOnOtherHalfOfBoard (Tile tile, ColorEnum color) {
+            int halfwayRow = GetNumberOfRows() / 2;
+            int row = GetRow(tile);
+            return (
+                ((color == ColorEnum.BLACK) && (row < halfwayRow)) ||
+                ((color == ColorEnum.WHITE) && (row >= halfwayRow))
+            );
+        }
+
         #endregion
 
-        public int GetTileIdFromRowColumn (int row, int col) {
-            return Helpers.GetTileIdFromRowColumn(row, col);
-        }
-
-        public int GetNumberOfColumns () {
-            return numRealColumns;
-        }
-
-        public int GetNumberOfRows () {
-            return numRealRows;
-        }
-
-        /// <summary>
-        /// Get the delta value for a positive diagonal step. That is, the distance
-        /// between a tile and the tile that is adjacent to it in the upper-right
-        /// direction.
-        /// </summary>
-        /// <returns>The positive diagonal delta.</returns>
-        public int GetPositiveDiagonalDelta () {
-            return (numRealColumns + 1);
-        }
-
-        /// <summary>
-        /// Get the delta value for a negative diagonal step. That is, the distance
-        /// between a tile and the tile that is adjacent to it in the upper-left
-        /// direction.
-        /// </summary>
-        /// <returns>The positive diagonal delta.</returns>
-        public int GetNegativeDiagonalDelta () {
-            return (numRealColumns - 1);
-        }
-
-        public int CalculateRowDelta (Tile tile1, Tile tile2) {
-            return Math.Abs(GetRow(tile1) - GetRow(tile2));
-        }
-
-        public int CalculateColumnDelta (Tile tile1, Tile tile2) {
-            return Math.Abs(GetColumn(tile1) - GetColumn(tile2));
-        }
-
-        public int GetMaxTileNumber () {
-            return (GetNumberOfRows() * GetNumberOfColumns()) - 1;
-        }
-
         #region Can capture?
+
+        Tile CanTileBeMovedOnToFromDirectionSubset (
+            List<Tile> tilesInDirection
+        ) {
+            for (int i = 0; i < tilesInDirection.Count; i++) {
+                Tile t = tilesInDirection[i];
+                if (t.IsOccupied()) {
+                    return t;
+                }
+            }
+
+            return null;
+        }
+
+        List<Tile> CanTileBeMovedOnToByChessmanFromDirection (
+            Tile baseTile,
+            Directionality directionality
+        ) {
+            List<Tile> tilesToCheck = new List<Tile> { };
+
+            List<Directionality> directionalities = new List<Directionality>();
+            Func<Tile, bool> additionalValidator;
+
+            if (directionality == Directionality.HORIZONTAL) {
+                directionalities.Add(Directionality.HORIZONTAL_LEFT);
+                directionalities.Add(Directionality.HORIZONTAL_RIGHT);
+            } else if (directionality == Directionality.VERTICAL) {
+                directionalities.Add(Directionality.VERTICAL_ABOVE);
+                directionalities.Add(Directionality.VERTICAL_BELOW);
+            } else if (directionality == Directionality.POSITIVE_DIAGONAL) {
+                directionalities.Add(Directionality.POSITIVE_DIAGONAL_ABOVE);
+                directionalities.Add(Directionality.POSITIVE_DIAGONAL_BELOW);
+            } else if (directionality == Directionality.NEGATIVE_DIAGONAL) {
+                directionalities.Add(Directionality.NEGATIVE_DIAGONAL_ABOVE);
+                directionalities.Add(Directionality.NEGATIVE_DIAGONAL_BELOW);
+            }
+
+            if (
+                directionality == Directionality.POSITIVE_DIAGONAL ||
+                directionality == Directionality.NEGATIVE_DIAGONAL
+            ) {
+                additionalValidator = (t) => {
+                    (int rowDelta, int colDelta) = CalculateRowColumnDelta(baseTile, t);
+                    Chessman otherChessman = t.GetPiece();
+
+                    if (otherChessman.IsPawn()) {
+                        return (
+                            (otherChessman.IsBlack() ? (rowDelta == 1) : (rowDelta == -1)) &&
+                            (Math.Abs(colDelta) == 1)
+                        );
+                    }
+
+                    return otherChessman.IsBishop() || otherChessman.IsQueen();
+                };
+            } else {
+                additionalValidator = (t) => t.GetPiece().IsQueen() || t.GetPiece().IsRook();
+            }
+
+            foreach (Directionality partialDir in directionalities) {
+                tilesToCheck.Add(
+                    CanTileBeMovedOnToFromDirectionSubset(
+                        GetTilesInDirection(baseTile, partialDir)
+                    )
+                );
+            }
+
+            return (
+                tilesToCheck
+                .Where((Tile otherTile) => (
+                    otherTile != null &&
+                    !otherTile.IsDeathjumpTile() &&
+                    !otherTile.GetPiece().IsChecker() &&
+                    additionalValidator(otherTile)
+                ))
+                .ToList()
+            );
+        }
 
         /// <summary>
         /// Determine which tile a given chessman can be captured from if it were
@@ -751,6 +847,24 @@ namespace ChessersEngine {
                         t.GetPiece().IsKnight() &&
                         !t.GetPiece().IsChecker() &&
                         !t.GetPiece().IsSameColor(chessman)
+                    ))
+                )
+                .ToList()
+            );
+        }
+
+        public List<Tile> CanTileBeMovedOnToByChessman (Tile tile) {
+            return (
+                CanTileBeMovedOnToByChessmanFromDirection(tile, Directionality.VERTICAL)
+                .Concat(CanTileBeMovedOnToByChessmanFromDirection(tile, Directionality.HORIZONTAL))
+                .Concat(CanTileBeMovedOnToByChessmanFromDirection(tile, Directionality.POSITIVE_DIAGONAL))
+                .Concat(CanTileBeMovedOnToByChessmanFromDirection(tile, Directionality.NEGATIVE_DIAGONAL))
+                .Concat(
+                    GetTilesForKnightMovement(tile)
+                    .Where((t) => (
+                        t.IsOccupied() &&
+                        t.GetPiece().IsKnight() &&
+                        !t.GetPiece().IsChecker()
                     ))
                 )
                 .ToList()
@@ -1178,6 +1292,10 @@ namespace ChessersEngine {
                 }
 
                 foreach (Tile castlingTile in castlingTiles) {
+                    if (castlingTile.IsOccupied()) {
+                        continue;
+                    }
+
                     int castlingTileColumn = GetColumn(castlingTile);
                     int colDelta = castlingTileColumn - kingTileColumn;
 
