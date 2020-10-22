@@ -1411,7 +1411,8 @@ namespace ChessersEngine {
                 if (
                     (potentialTile == null) ||
                     (jumpOverTile == null) ||
-                    (potentialTile.IsDeathjumpTile() && chessman.IsKing())
+                    (potentialTile.IsDeathjumpTile() && chessman.IsKing()) ||
+                    (potentialTile.IsDeathjumpTile() && matchConfig.deathjumpSetting == DeathjumpSetting.OFF)
                 ) {
                     continue;
                 }

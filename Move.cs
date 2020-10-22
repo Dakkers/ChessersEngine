@@ -218,10 +218,6 @@ namespace ChessersEngine {
                     result.Add(new List<int>(currentPath) { capturableTile.id });
                 }
 
-                //if (board.CanChessmanBeCaptured(tile.GetPiece()).Count > 0) {
-                //    result.Add(new List<int>(currentPath));
-                //}
-
                 return;
             }
 
@@ -471,7 +467,6 @@ namespace ChessersEngine {
         /// </summary>
         /// <returns><c>true</c>, if moving player in check was ised, <c>false</c> otherwise.</returns>
         bool IsMovingPlayerInCheck () {
-            //return false;
             List<Tile> result = (CalculateCheckTiles(chessman.color, exitEarly: true));
             return result.Count > 0;
         }
