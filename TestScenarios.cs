@@ -581,6 +581,15 @@ namespace ChessersEngine {
             };
         }
 
+        public static MatchData Castling_Invalid () {
+            var md = CreateMatchData();
+            md.pieces = ChessmanSchema
+                .CreateDefaults()
+                .Where((cs) => cs.kind != (int) ChessmanKindEnum.PAWN)
+                .ToList();
+            return md;
+        }
+
         #endregion
 
         #region Bugs
