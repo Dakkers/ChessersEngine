@@ -145,12 +145,13 @@ namespace ChessersEngine {
 
         public static MatchData InCheckFromMultiJump () {
             var md = CreateMatchData();
+            md.currentTurn = ColorEnum.BLACK;
             md.pieces = new List<ChessmanSchema> {
-                CreateWhiteKing(2),
+                CreateWhiteKing(10),
                 CreatePawn(Constants.ID_WHITE_PAWN_1, 12),
                 CreatePawn(Constants.ID_WHITE_PAWN_2, 14),
 
-                CreateBlackChecker(Constants.ID_BLACK_PAWN_1, 23),
+                CreateBlackChecker(Constants.ID_BLACK_PAWN_1, 30),
                 CreateBlackKing()
             };
             return md;
@@ -581,7 +582,7 @@ namespace ChessersEngine {
             };
         }
 
-        public static MatchData Castling_Invalid () {
+        public static MatchData CastlingNoPawns () {
             var md = CreateMatchData();
             md.pieces = ChessmanSchema
                 .CreateDefaults()
@@ -898,7 +899,6 @@ namespace ChessersEngine {
             return md;
         }
 
-
         /// <summary>
         /// A bug I found.
         ///     - Can't move bishop c8 to e6
@@ -939,6 +939,52 @@ namespace ChessersEngine {
                 new ChessmanSchema { colorId = 1, hasMoved = true, id = 21, kind = 1, location = 40 },
                 new ChessmanSchema { colorId = 1, id = 25, kind = 2, location = 58 },
                 new ChessmanSchema { colorId = 1, hasMoved = true, id = 29, kind = 4, location = 32 },
+                new ChessmanSchema { colorId = 1, id = 31, kind = 5, location = 60 },
+                new ChessmanSchema { colorId = 1, id = 27, kind = 2, location = 61 },
+                new ChessmanSchema { colorId = 1, id = 23, kind = 1, location = 62 },
+                new ChessmanSchema { colorId = 1, id = 19, kind = 3, location = 63 },
+            };
+            return md;
+        }
+
+        /// <summary>
+        /// A bug Pieter and I found. Move knight from 57 (b8) to 42 (c6) - this should be a CHECK
+        /// move via 42 -> 25 jump 11 jump 4 (c6 -> b4 jump d2 jump e1).
+        /// </summary>
+        /// <returns>The 01.</returns>
+        public static MatchData Bug20201024_01 () {
+            var md = CreateMatchData();
+            md.currentTurn = ColorEnum.BLACK;
+            md.deathjumpSetting = (int) DeathjumpSetting.ALL;
+            md.pieces = new List<ChessmanSchema> {
+                new ChessmanSchema { colorId = 0, id = 16, kind = 3, location = 0 },
+                new ChessmanSchema { colorId = 0, id = 20, kind = 1, location = 1 },
+                new ChessmanSchema { colorId = 0, id = 24, kind = 2, location = 2 },
+                new ChessmanSchema { colorId = 0, id = 28, kind = 4, location = 3 },
+                new ChessmanSchema { colorId = 0, id = 30, kind = 5, location = 4 },
+                new ChessmanSchema { colorId = 0, id = 26, kind = 2, location = 5 },
+                new ChessmanSchema { colorId = 0, id = 22, kind = 1, location = 6 },
+                new ChessmanSchema { colorId = 0, id = 18, kind = 3, location = 7 },
+                new ChessmanSchema { colorId = 0, id = 0, kind = 0, location = 8 },
+                new ChessmanSchema { colorId = 0, id = 2, kind = 0, location = 9 },
+                new ChessmanSchema { colorId = 0, hasMoved = true, id = 4, kind = 0, location = 18 },
+                new ChessmanSchema { colorId = 0, hasMoved = true, id = 6, kind = 0, location = 27 },
+                new ChessmanSchema { colorId = 0, hasMoved = true, id = 8, kind = 0, location = 28 },
+                new ChessmanSchema { colorId = 0, id = 10, kind = 0, location = 13 },
+                new ChessmanSchema { colorId = 0, id = 12, kind = 0, location = 14 },
+                new ChessmanSchema { colorId = 0, id = 14, kind = 0, location = 15 },
+                new ChessmanSchema { colorId = 1, id = 1, kind = 0, location = 48 },
+                new ChessmanSchema { colorId = 1, hasMoved = true, id = 3, kind = 0, location = 33 },
+                new ChessmanSchema { colorId = 1, id = 5, kind = 0, location = 50 },
+                new ChessmanSchema { colorId = 1, id = 7, kind = 0, location = 51 },
+                new ChessmanSchema { colorId = 1, id = 9, kind = 0, location = 52 },
+                new ChessmanSchema { colorId = 1, id = 11, kind = 0, location = 53 },
+                new ChessmanSchema { colorId = 1, id = 13, kind = 0, location = 54 },
+                new ChessmanSchema { colorId = 1, id = 15, kind = 0, location = 55 },
+                new ChessmanSchema { colorId = 1, id = 17, kind = 3, location = 56 },
+                new ChessmanSchema { colorId = 1, hasMoved = true, id = 21, kind = 1, location = 57 },
+                new ChessmanSchema { colorId = 1, id = 25, kind = 2, location = 58 },
+                new ChessmanSchema { colorId = 1, id = 29, kind = 4, location = 59 },
                 new ChessmanSchema { colorId = 1, id = 31, kind = 5, location = 60 },
                 new ChessmanSchema { colorId = 1, id = 27, kind = 2, location = 61 },
                 new ChessmanSchema { colorId = 1, id = 23, kind = 1, location = 62 },
