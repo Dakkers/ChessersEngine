@@ -108,6 +108,7 @@ namespace ChessersEngine {
                 moves = data.moves ?? new List<string>();
                 pieces = data.pieces;
                 turnColor = data.currentTurn;
+                winningPlayerId = data.winningPlayerId;
                 whitePlayerId = data.whitePlayerId;
             }
 
@@ -651,14 +652,15 @@ namespace ChessersEngine {
                 }
             }
 
+            ResetMatchState();
+
             turnColor = newMatchData.currentTurn;
             committedTurnColor = turnColor;
 
             isDraw = newMatchData.isDraw;
+            isResignation = newMatchData.isResignation;
             moves = newMatchData.moves;
             winningPlayerId = newMatchData.winningPlayerId;
-
-            ResetMatchState();
         }
 
         public MatchData CreateMatchData () {
