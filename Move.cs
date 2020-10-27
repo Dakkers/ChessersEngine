@@ -216,15 +216,17 @@ namespace ChessersEngine {
             }
 
             // The tile is not occupied. Can a chess piece move here and perform a move-jump?
-            List<Tile> moveableOntoTiles = board.CanTileBeMovedOnToByChessman(tile);
-            foreach (Tile otherTile in moveableOntoTiles) {
-                Chessman occupant = otherTile.GetPiece();
+            if (!tile.IsDeathjumpTile()) {
+                List<Tile> moveableOntoTiles = board.CanTileBeMovedOnToByChessman(tile);
+                foreach (Tile otherTile in moveableOntoTiles) {
+                    Chessman occupant = otherTile.GetPiece();
 
-                if (occupant != null && occupant.IsSameColor(targetColor)) {
-                    continue;
+                    if (occupant != null && occupant.IsSameColor(targetColor)) {
+                        continue;
+                    }
+
+                    result.Add(new List<int>(currentPath) { otherTile.id });
                 }
-
-                result.Add(new List<int>(currentPath) { otherTile.id });
             }
 
             // Generate tiles that are 2 diagonal spaces away - tiles that the piece would land on

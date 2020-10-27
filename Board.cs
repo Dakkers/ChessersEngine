@@ -329,8 +329,8 @@ namespace ChessersEngine {
             Tile baseTile,
             Directionality dir
         ) {
-            List<Tile> result = new List<Tile>();
             //Match.Log($"GetTiles() {baseTile?.id.ToString() ?? "x"}");
+            List<Tile> result = new List<Tile>();
             (int row, int col) = GetRowColumn(baseTile);
             int rowStart = row, colStart = col;
 
