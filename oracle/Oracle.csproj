@@ -4,9 +4,7 @@
     ChessersEngine golden-master ORACLE (Phase 0 of the Rust port).
     Drives every TestScenarios fixture through the engine and emits canonical,
     id-sorted JSON that the Rust rewrite must reproduce byte-for-byte.
-
-    Run:   dotnet run --project oracle -- ./oracle/golden
-    (first run restores NUnit transitively via the engine project reference)
+    See oracle/README.md for how to run it and what it emits.
   -->
   <PropertyGroup>
     <OutputType>Exe</OutputType>
