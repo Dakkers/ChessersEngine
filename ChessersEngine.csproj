@@ -3,8 +3,8 @@
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <!-- The engine sources live at the repo root, so default globbing would
-         otherwise pull the sibling test project's sources into this project. -->
-    <DefaultItemExcludes>$(DefaultItemExcludes);ChessersEngine.Tests/**</DefaultItemExcludes>
+         otherwise pull the sibling test / oracle project sources into this project. -->
+    <DefaultItemExcludes>$(DefaultItemExcludes);ChessersEngine.Tests/**;oracle/**</DefaultItemExcludes>
   </PropertyGroup>
 
   <ItemGroup>
