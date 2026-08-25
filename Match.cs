@@ -424,8 +424,13 @@ namespace ChessersEngine {
 
                     MoveResult moveResult = board.MoveChessman(moveAttempt);
                     if (!moveResult.valid) {
+                        // Invalid moves are not applied to the board, so there is nothing to undo.
                         continue;
                     } else if (moveResult.isStalemate) {
+                        // A stalemate move IS valid and WAS applied to the shared search board, so it
+                        // must be undone before skipping it - otherwise the board stays mutated for
+                        // every later candidate in this node (and for the parent).
+                        board.UndoMove(moveResult);
                         continue;
                     }
 

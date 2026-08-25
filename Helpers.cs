@@ -360,6 +360,9 @@ namespace ChessersEngine {
         }
 
         public static bool CanBePromoted (Chessman chessman, Tile tile) {
+            // A checker (a pawn that crossed the midline) reaching the back rank may ALSO be promoted
+            // in Chessers - the promotion takes effect once it crosses back to its home half - so
+            // checkers are intentionally NOT excluded here.
             return (
                 chessman.IsPawn() &&
                 !chessman.isPromoted && (
