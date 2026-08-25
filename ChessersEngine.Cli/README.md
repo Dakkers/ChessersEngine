@@ -74,16 +74,17 @@ Piece symbols: `UPPER`=white, `lower`=black; `" X "`=chess piece,
 | `--quiet`           |          | don't render boards (bulk corpus runs)              |
 | `--no-color`        |          | disable ANSI color (auto-off when piped)            |
 
-## Oracle JSON schema (`schemaVersion: 1`)
+## Oracle JSON schema
 
-Each file opens with a `$schema` reference to
-[`oracle.schema.json`](oracle.schema.json) (JSON Schema, draft 2020-12), so
-editors and validators can check it automatically.
+Each file opens with a `$schema` reference to a versioned JSON Schema (draft
+2020-12) under [`schemas/`](schemas/) — the **format version lives in that URI**
+(currently `oracle.v1.schema.json`), so editors and validators can check it and
+old files always resolve the schema they were written for. See
+[`schemas/README.md`](schemas/README.md) for the versioning policy.
 
 ```jsonc
 {
-  "$schema": "https://raw.githubusercontent.com/Dakkers/ChessersEngine/master/ChessersEngine.Cli/oracle.schema.json",
-  "schemaVersion": 1,
+  "$schema": "https://raw.githubusercontent.com/Dakkers/ChessersEngine/master/ChessersEngine.Cli/schemas/oracle.v1.schema.json",
   "engine": "ChessersEngine (C#)",
   "config": {
     "white": "human", "black": "ai", "aiLevel": 2, "randomSeed": 42,

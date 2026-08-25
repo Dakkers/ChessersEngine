@@ -14,13 +14,13 @@ namespace ChessersEngine.Cli {
     // ---------------------------------------------------------------------------
 
     class OracleGame {
-        // A `$schema` reference (JSON Schema, draft 2020-12) so editors and validators can
-        // check these files against the format defined in ChessersEngine.Cli/oracle.schema.json.
+        // The format version lives in this `$schema` URI (JSON Schema, draft 2020-12): it pins to
+        // one immutable, versioned schema file under ChessersEngine.Cli/schemas/. Bump the path
+        // (oracle.v2.schema.json, ...) for a breaking change and keep the old file in place.
         [JsonPropertyName("$schema")]
         public string Schema { get; set; } =
-            "https://raw.githubusercontent.com/Dakkers/ChessersEngine/master/ChessersEngine.Cli/oracle.schema.json";
+            "https://raw.githubusercontent.com/Dakkers/ChessersEngine/master/ChessersEngine.Cli/schemas/oracle.v1.schema.json";
 
-        public int schemaVersion { get; set; } = 1;
         public string engine { get; set; } = "ChessersEngine (C#)";
         public GameConfigDto config { get; set; }
         public List<ChessmanSchema> initialPieces { get; set; }
