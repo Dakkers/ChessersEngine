@@ -3,11 +3,13 @@ using NUnit.Framework;
 
 namespace ChessersEngine.Tests {
     /// <summary>
-    /// A pawn that crosses the midline becomes a checker but keeps kind == PAWN.
-    /// When such a checker reaches the far back rank it must be KINGED (like any
-    /// checker), NOT promoted like a pawn. The old code flagged promotionOccurred
-    /// for it, which (a) crashed CreateNotation() at commit (null promotionRank) and
-    /// (b) let the AI promote a checker into a chess queen.
+    /// A pawn that crosses the midline becomes a checker (kind stays PAWN). Reaching the far back
+    /// rank KINGS it like any checker, and - by design in Chessers - it can ALSO be promoted. The
+    /// promotion only takes real effect once the (kinged) checker makes it back to its home half and
+    /// flips back to a chess piece, at which point it is the promoted kind (e.g. a queen).
+    ///
+    /// The only genuine defect here was that a kinging move with no promotion rank produced a
+    /// MoveResult that crashed CreateNotation; that is fixed separately (see NotationTests).
     /// </summary>
     [TestFixture]
     public class CheckerKingingTests {
@@ -37,7 +39,7 @@ namespace ChessersEngine.Tests {
         }
 
         [Test]
-        public void CheckerPawnReachingBackRank_IsKingedNotPromoted () {
+        public void CheckerPawnReachingBackRank_IsKinged () {
             Match match = MakeMatch(ScenarioWithCheckerPawnOnB7());
 
             // b7 (49) -> c8 (58): forward-diagonal checker move onto the back rank.
@@ -48,9 +50,12 @@ namespace ChessersEngine.Tests {
             });
 
             Assert.That(result, Is.Not.Null);
-            Assert.That(result.valid, Is.True, "reaching the back rank as a checker is a legal move");
-            Assert.That(result.kinged, Is.True, "a checker reaching the back rank should be kinged");
-            Assert.That(result.promotionOccurred, Is.False, "a checker is kinged, not promoted");
+            Assert.That(result.valid, Is.True);
+            Assert.That(result.kinged, Is.True, "a checker reaching the back rank is kinged");
+
+            Chessman piece = match.GetPendingChessman(Constants.ID_WHITE_PAWN_1);
+            Assert.That(piece.isKinged, Is.True);
+            Assert.That(piece.isChecker, Is.True, "it is still a checker until it crosses back");
         }
 
         [Test]
@@ -63,27 +68,67 @@ namespace ChessersEngine.Tests {
                 tileId = 58,
             });
 
-            // CommitTurn -> CreateNotation, which threw InvalidOperationException on the
-            // null promotionRank when promotionOccurred was wrongly set.
+            // No promotion rank was supplied, so notation must not crash on commit.
             Assert.DoesNotThrow(() => match.CommitTurn());
-
-            Chessman piece = match.GetCommittedChessman(Constants.ID_WHITE_PAWN_1);
-            Assert.That(piece.isKinged, Is.True);
-            Assert.That(piece.isChecker, Is.True);
-            Assert.That(piece.kind, Is.EqualTo(ChessmanKindEnum.PAWN), "a kinged checker stays a checker, not a promoted piece");
-            Assert.That(piece.isPromoted, Is.False);
         }
 
         [Test]
-        public void CanBePromoted_IsFalseForChecker () {
+        public void CheckerPawnOnBackRank_CanBePromoted () {
             Match match = MakeMatch(ScenarioWithCheckerPawnOnB7());
 
             Board board = match._GetPendingBoard();
             Chessman piece = board.GetChessman(Constants.ID_WHITE_PAWN_1);
             Tile backRankTile = board.GetTile(58);
 
-            Assert.That(Helpers.CanBePromoted(piece, backRankTile), Is.False,
-                "a checker should never be treated as a promotable pawn");
+            Assert.That(Helpers.CanBePromoted(piece, backRankTile), Is.True,
+                "a checker reaching the back rank may (by design) also be promoted");
+        }
+
+        [Test]
+        public void CheckerPawnPromotedToQueen_IsQueenKindButStaysAChecker () {
+            Match match = MakeMatch(ScenarioWithCheckerPawnOnB7());
+
+            match.MoveChessman(new MoveAttempt {
+                playerId = Constants.DEFAULT_WHITE_PLAYER_ID,
+                pieceId = Constants.ID_WHITE_PAWN_1,
+                tileId = 58,
+                promotionRank = (int) ChessmanKindEnum.QUEEN,
+            });
+            match.CommitTurn();
+
+            Chessman piece = match.GetCommittedChessman(Constants.ID_WHITE_PAWN_1);
+            Assert.That(piece.kind, Is.EqualTo(ChessmanKindEnum.QUEEN), "the promotion is recorded on the piece");
+            Assert.That(piece.isPromoted, Is.True);
+            Assert.That(piece.isKinged, Is.True, "it was also kinged");
+            Assert.That(piece.isChecker, Is.True, "but it is still a checker until it crosses back");
+        }
+
+        [Test]
+        public void PromotedCheckerBecomesChessQueen_WhenCrossingBackToHomeHalf () {
+            // A kinged, promoted white checker-queen on b5 (33, row 4 = top half). As a checker it
+            // moves diagonally; kinged, so it can move back toward row 0. Moving to a3 (24, row 3 =
+            // home half) flips its polarity back to a chess piece - now a real queen.
+            ChessmanSchema checkerQueen = new ChessmanSchema {
+                id = Constants.ID_WHITE_PAWN_1, colorId = 0, location = 33,
+                kind = (int) ChessmanKindEnum.QUEEN, isChecker = true, isKinged = true, isPromoted = true, hasMoved = true,
+            };
+            Match match = MakeMatch(new List<ChessmanSchema> {
+                TestScenarios.CreateWhiteKing(4),
+                checkerQueen,
+                TestScenarios.CreateBlackKing(60),
+            });
+
+            MoveResult result = match.MoveChessman(new MoveAttempt {
+                playerId = Constants.DEFAULT_WHITE_PLAYER_ID,
+                pieceId = Constants.ID_WHITE_PAWN_1,
+                tileId = 24, // a3
+            });
+            Assert.That(result.valid, Is.True);
+            Assert.That(result.polarityChanged, Is.True, "crossing back to the home half flips the checker to a chess piece");
+
+            Chessman piece = match.GetPendingChessman(Constants.ID_WHITE_PAWN_1);
+            Assert.That(piece.isChecker, Is.False, "back in its home half it is a chess piece again");
+            Assert.That(piece.kind, Is.EqualTo(ChessmanKindEnum.QUEEN), "and it is the promoted kind: a queen");
         }
     }
 }

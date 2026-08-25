@@ -676,9 +676,11 @@ namespace ChessersEngine {
                 chessman.TogglePolarity();
             }
 
-            // -- Handle promotion for pawn if not already promoted. A checker (a pawn that
-            // crossed the midline) reaching the back rank is KINGED, not promoted, so exclude it.
-            if (!chessman.isPromoted && chessman.IsPawn() && !chessman.IsChecker()) {
+            // -- Handle promotion for pawn if not already promoted. In Chessers a checker (a pawn
+            // that crossed the midline) reaching the back rank is kinged AND may also be promoted;
+            // the promotion takes real effect once it crosses back to its home half. So checkers are
+            // intentionally included here.
+            if (!chessman.isPromoted && chessman.IsPawn()) {
                 if (chessman.IsWhite()) {
                     moveResult.promotionOccurred = (toRow == Constants.RANK_8);
                 } else {
