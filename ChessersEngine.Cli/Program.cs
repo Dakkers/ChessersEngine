@@ -342,10 +342,12 @@ namespace ChessersEngine.Cli {
                 MoveResult result = match.MoveChessman(attempt);
                 if (result == null) {
                     Console.WriteLine("  Rejected (not your turn / target occupied by your own piece).");
+                    RecordRejected(recorder, moverColor, moverPlayerId, attempt, null, board);
                     continue;
                 }
                 if (!result.valid) {
                     Console.WriteLine($"  Illegal move for that piece. Try 'moves {fromSquare}' to list legal targets.");
+                    RecordRejected(recorder, moverColor, moverPlayerId, attempt, result, board);
                     continue;
                 }
 
@@ -377,6 +379,29 @@ namespace ChessersEngine.Cli {
                 attempt = attempt,
                 notation = notation,
                 result = result,
+            });
+        }
+
+        /// <summary>
+        /// Record a move the engine rejected, against the (unchanged) board it was tried on, so a
+        /// port can assert it rejects the same attempt the same way. `result` is null when the
+        /// engine returned null; otherwise it is the invalid MoveResult. No notation is generated
+        /// for a rejected attempt (an invalid result may not hold well-formed coordinates).
+        /// </summary>
+        static void RecordRejected (
+            OracleRecorder recorder,
+            ColorEnum moverColor,
+            int moverPlayerId,
+            MoveAttempt attempt,
+            MoveResult result,
+            Board board
+        ) {
+            recorder.AddRejected(new RejectedAttemptDto {
+                turnColor = moverColor.ToString(),
+                playerId = moverPlayerId,
+                attempt = attempt,
+                result = result,
+                board = board.GetChessmanSchemas(),
             });
         }
 
