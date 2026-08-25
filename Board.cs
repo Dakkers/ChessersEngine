@@ -1083,16 +1083,20 @@ namespace ChessersEngine {
 
             int modifier = (chessman.IsBlack()) ? -1 : 1;
 
-            Tile tileForRegularMovement = GetTile(tile.id + modifier * GetNumberOfColumns());
-            if (!tileForRegularMovement.IsOccupied()) {
+            // Use the bounds-safe accessor (GetTile throws for off-board ids). A pawn that has
+            // reached a row with no square ahead simply has no forward move.
+            Tile tileForRegularMovement = GetTileByRowColumn(row + modifier, col);
+            if (tileForRegularMovement != null && !tileForRegularMovement.IsOccupied()) {
                 potentialTiles.Add(tileForRegularMovement);
             }
 
-            Tile tileForLongMovement = GetTile(tile.id + 2 * modifier * GetNumberOfColumns());
+            Tile tileForLongMovement = GetTileByRowColumn(row + (2 * modifier), col);
             if (
                 !chessman.hasMoved &&
-                !tileForLongMovement.IsOccupied() &&
-                !tileForRegularMovement.IsOccupied()
+                tileForRegularMovement != null &&
+                !tileForRegularMovement.IsOccupied() &&
+                tileForLongMovement != null &&
+                !tileForLongMovement.IsOccupied()
             ) {
                 potentialTiles.Add(tileForLongMovement);
             }
