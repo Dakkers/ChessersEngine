@@ -1319,14 +1319,17 @@ namespace ChessersEngine {
             }
 
             foreach (var t in movementsJumps) {
-                Tile potentialTile = GetTileIfExists(row + t.Item1, col + t.Item2);
+                // GetTileByRowColumn enforces the deathjumpSetting bounds: it only returns a
+                // back-edge death tile when the setting is BACK/ALL and a side-edge death tile
+                // when it is SIDES/ALL (and never off-board under OFF). GetTileIfExists would
+                // ignore the setting, which let SIDES games do back deathjumps and vice versa.
+                Tile potentialTile = GetTileByRowColumn(row + t.Item1, col + t.Item2);
                 Tile jumpOverTile = GetTileIfExists(row + (t.Item1 / 2), col + (t.Item2 / 2));
 
                 if (
                     (potentialTile == null) ||
                     (jumpOverTile == null) ||
-                    (potentialTile.IsDeathjumpTile() && chessman.IsKing()) ||
-                    (potentialTile.IsDeathjumpTile() && matchConfig.deathjumpSetting == DeathjumpSetting.OFF)
+                    (potentialTile.IsDeathjumpTile() && chessman.IsKing())
                 ) {
                     continue;
                 }
