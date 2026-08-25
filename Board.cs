@@ -1238,21 +1238,30 @@ namespace ChessersEngine {
                         continue;
                     }
 
-                    // Now check that all in-between tiles would not lead to a capture of the king.
-                    List<ChessmanSchema> allSchemas = GetChessmanSchemas();
-                    ChessmanSchema kingSchema = allSchemas.Find((otherCs) => otherCs.id == kingChessman.id);
-                    //Match.Log(kingSchema.location);
+                    // Now check that none of the squares the king TRAVERSES are attacked. The king
+                    // steps from its column to the castling tile's column, so only those squares
+                    // matter (the b-file square on a queenside castle is not one of them - it only
+                    // needs to be empty, which was checked above).
+                    int destColumn = GetColumn(castlingTile);
+                    int safetyStep = Math.Sign(destColumn - kingTileColumn);
 
-                    for (int colIter = lower + 1; colIter < upper; colIter++) {
-                        // Forcefully place the king...
-                        int iterTileId = GetTileByRowColumn(row, colIter).id;
-                        kingSchema.location = iterTileId;
-
+                    for (int colIter = kingTileColumn + safetyStep; ; colIter += safetyStep) {
+                        // Actually place the king on the in-between tile (which is guaranteed empty
+                        // by the occupancy check above) before testing whether it can be captured.
                         Board boardCopy = this.CreateCopy();
                         Chessman kingCopy = kingChessman.IsWhite() ? boardCopy.GetWhiteKing() : boardCopy.GetBlackKing();
 
+                        Tile iterTile = boardCopy.GetTileByRowColumn(row, colIter);
+                        kingCopy.GetUnderlyingTile().RemovePiece();
+                        iterTile.SetPiece(kingCopy);
+                        kingCopy.SetUnderlyingTile(iterTile);
+
                         if (boardCopy.CanChessmanBeCaptured(kingCopy).Count > 0) {
                             isValid = false;
+                            break;
+                        }
+
+                        if (colIter == destColumn) {
                             break;
                         }
                     }
