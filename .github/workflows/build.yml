@@ -16,6 +16,11 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
       - name: Restore
         run: dotnet restore ChessersEngine.sln
 
@@ -24,3 +29,11 @@ jobs:
 
       - name: Test
         run: dotnet test ChessersEngine.sln --configuration Release --no-build --verbosity normal
+
+      - name: Oracle schema version check
+        run: |
+          python3 -m pip install --quiet jsonschema
+          out="$(mktemp -d)"
+          dotnet run --project ChessersEngine.Cli --configuration Release --no-restore --no-build -- \
+            --ai-vs-ai --games 1 --seed 1 --quiet --max-plies 6 --out "$out"
+          python3 ChessersEngine.Cli/schemas/check_oracle.py ChessersEngine.Cli/schemas "$out"/*.json

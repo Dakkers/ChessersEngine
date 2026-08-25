@@ -95,10 +95,20 @@ terminal sets it, else the OS appearance (on macOS, `AppleInterfaceStyle`), else
 assumes dark. Force it with `--theme light`/`--theme dark`; the banner prints
 which palette was chosen and why (e.g. `Theme: light (os)`).
 
-## Oracle JSON schema (`schemaVersion: 1`)
+## Oracle JSON schema
+
+Each file opens with a `$schema` reference to a versioned JSON Schema (draft
+2020-12) under [`schemas/`](schemas/) — the **format version lives in that URI**
+(currently `oracle.v1.schema.json`), so editors and validators can check it and
+old files always resolve the schema they were written for. See
+[`schemas/README.md`](schemas/README.md) for the versioning policy. A
+machine-readable `schemaVersion` field mirrors that version; a CI check
+([`schemas/check_oracle.py`](schemas/check_oracle.py)) enforces that the two stay
+in sync (and that generated files validate).
 
 ```jsonc
 {
+  "$schema": "https://raw.githubusercontent.com/Dakkers/ChessersEngine/master/ChessersEngine.Cli/schemas/oracle.v1.schema.json",
   "schemaVersion": 1,
   "engine": "ChessersEngine (C#)",
   "config": {
@@ -135,6 +145,13 @@ Enums (`ColorEnum`, `ChessmanKindEnum`) serialize by name; other ints match the
 engine's `Constants` (e.g. `result.type` is `MOVE_TYPE_*`, `kind` is
 `CHESSMAN_KIND_*`). `outcome.reason` is one of `checkmate`, `stalemate`,
 `resignation`, `move-limit`, `no-legal-moves`, or `quit`.
+
+`plies` holds only moves that were *accepted*. A top-level `rejectedAttempts`
+array records illegal moves the engine turned down (empty for AI-only games):
+each entry has the `board` it was tried against, the `attempt`, and the engine's
+`result` — `null` when `MoveChessman` returned null (e.g. a target holds your own
+piece), otherwise a `MoveResult` with `valid: false`. A port can replay each to
+assert it rejects the same attempt the same way.
 
 ## Determinism
 
