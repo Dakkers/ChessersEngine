@@ -1,0 +1,143 @@
+# chessers — terminal game + oracle recorder
+
+A small console front-end that drives `ChessersEngine` so you can **play games
+in the terminal** (human vs AI, AI vs AI, or hotseat) and **record every game as
+a golden-corpus JSON file** for differential testing of the Rust port.
+
+Each turn's move attempt (the input), the engine's full `MoveResult` (every
+flag), and a board snapshot after the turn are captured. A port can rebuild the
+initial board, replay each recorded attempt, and assert the results and board
+states match — no engine determinism required to *consume* the corpus.
+
+## Running
+
+This repo has no system-wide dotnet; the SDK lives in `~/.dotnet`:
+
+```bash
+export PATH="$HOME/.dotnet:$PATH"
+```
+
+Play White against the AI (reproducible via a seed):
+
+```bash
+dotnet run --project ChessersEngine.Cli -- --white human --black ai --seed 42
+```
+
+Generate a 50-game AI-vs-AI corpus with no board rendering:
+
+```bash
+dotnet run --project ChessersEngine.Cli -- --ai-vs-ai --games 50 --seed 1 --quiet
+```
+
+Games are written to `./oracle/` by default (one JSON file per game).
+
+## Move input (at the `move>` prompt)
+
+| Input          | Meaning                                                        |
+| -------------- | -------------------------------------------------------------- |
+| `e2e4`         | move from e2 to e4 (also `e2 e4` or `e2-e4`)                   |
+| `e7e8q`        | promote to queen (`q`/`r`/`b`/`n`; auto-queens if omitted)     |
+| `#-14`         | raw tile id — the only way to target off-board *deathjump* tiles |
+
+Deathjump tiles have negative ids and are shown as `#<id>` by `moves <sq>`, so
+whatever `moves` prints can be typed straight back. (A bare token like `d7` is
+always the square d7, never a deathjump.)
+
+Board coordinates: tile id = `row*8 + col`, with row 0 = rank 1 (White's back
+rank) and col 0 = file a. Checker multi-jumps are handled automatically — after
+a jump that leaves a legal continuation, you're prompted to jump again with the
+same piece until the turn ends.
+
+### Commands
+
+`moves <sq>` list legal targets · `hint` suggest a move · `board` redraw ·
+`legend` symbol key · `save` write the game so far · `resign` · `quit`.
+
+Piece symbols: `UPPER`=white, `lower`=black; `" X "`=chess piece,
+`"(X)"`=checker, `"[X]"`=kinged checker.
+
+## Options
+
+| Option              | Default  | Meaning                                             |
+| ------------------- | -------- | --------------------------------------------------- |
+| `--white h/ai`      | `human`  | who controls White                                  |
+| `--black h/ai`      | `ai`     | who controls Black                                  |
+| `--ai-vs-ai`        |          | shorthand for `--white ai --black ai`               |
+| `--hotseat`         |          | two humans on one keyboard                           |
+| `--level 0..2`      | `2`      | AI search strength (0 fastest/weakest, 2 strongest) |
+| `--seed <int>`      | random   | RNG seed; game N of a batch uses `seed + N`         |
+| `--deathjump MODE`  | `off`    | `off` \| `sides` \| `back` \| `all`                 |
+| `--games <n>`       | `1`      | play n games back-to-back                           |
+| `--max-plies <n>`   | `400`    | adjudicate a draw (`reason: move-limit`) after n plies |
+| `--delay <ms>`      | `0`      | pause after each AI turn (for watching)             |
+| `--out <dir>`       | `oracle` | output directory for the JSON corpus                |
+| `--quiet`           |          | don't render boards (bulk corpus runs)              |
+| `--theme MODE`      | `auto`   | `auto` \| `dark` \| `light` color palette           |
+| `--no-color`        |          | disable ANSI color (auto-off when piped)            |
+
+## Colors & accessibility
+
+The palette adapts to a light or dark terminal:
+
+|            | Dark terminal   | Light terminal          |
+| ---------- | --------------- | ----------------------- |
+| White pieces | bright white  | **black** (bright white would vanish on light) |
+| Black pieces | bright yellow | blue                    |
+| Board frame  | tan/wood brown | dark brown             |
+
+The two sides are separated by hue rather than brightness, and the letters keep
+their `UPPER`(white)/`lower`(black) case — so the position stays readable under
+color-vision deficiencies and with `--no-color`.
+
+`--theme auto` (the default) picks the palette without ever reading stdin (an
+in-band OSC query would race with your typing): it uses `COLORFGBG` if the
+terminal sets it, else the OS appearance (on macOS, `AppleInterfaceStyle`), else
+assumes dark. Force it with `--theme light`/`--theme dark`; the banner prints
+which palette was chosen and why (e.g. `Theme: light (os)`).
+
+## Oracle JSON schema (`schemaVersion: 1`)
+
+```jsonc
+{
+  "schemaVersion": 1,
+  "engine": "ChessersEngine (C#)",
+  "config": {
+    "white": "human", "black": "ai", "aiLevel": 2, "randomSeed": 42,
+    "deathjumpSetting": "OFF", "whitePlayerId": 0, "blackPlayerId": 1
+  },
+  "initialPieces": [ /* ChessmanSchema[] — the starting board */ ],
+  "plies": [
+    {
+      "index": 1,
+      "turnColor": "WHITE",          // color to move at the start of this turn
+      "playerId": 0,
+      "actor": "human",              // "human" | "ai"
+      "moves": [                     // >1 entry only for multi-jump turns
+        {
+          "attempt":  { "pieceId": 0, "tileId": 24, "promotionRank": -1, ... },
+          "notation": "0_Pa2a4",
+          "result":   { /* full MoveResult: turnChanged, wasPieceJumped,
+                           polarityChanged, kinged, isWinningMove, ... */ }
+        }
+      ],
+      "committedNotation": "0_Pa2a4",
+      "boardAfter": [ /* ChessmanSchema[] — full board snapshot after commit */ ]
+    }
+  ],
+  "outcome": {
+    "gameOver": true, "winningPlayerId": 0, "winningColor": "WHITE",
+    "isDraw": false, "isResignation": false, "reason": "checkmate"
+  }
+}
+```
+
+Enums (`ColorEnum`, `ChessmanKindEnum`) serialize by name; other ints match the
+engine's `Constants` (e.g. `result.type` is `MOVE_TYPE_*`, `kind` is
+`CHESSMAN_KIND_*`). `outcome.reason` is one of `checkmate`, `stalemate`,
+`resignation`, `move-limit`, `no-legal-moves`, or `quit`.
+
+## Determinism
+
+With `--seed`, a full game is reproducible across runs and machines (verified by
+diffing two same-seed games). This makes the corpus regenerable and suitable as
+the frozen reference the Rust rewrite is tested against.
