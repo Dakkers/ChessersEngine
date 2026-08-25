@@ -72,7 +72,28 @@ Piece symbols: `UPPER`=white, `lower`=black; `" X "`=chess piece,
 | `--delay <ms>`      | `0`      | pause after each AI turn (for watching)             |
 | `--out <dir>`       | `oracle` | output directory for the JSON corpus                |
 | `--quiet`           |          | don't render boards (bulk corpus runs)              |
+| `--theme MODE`      | `auto`   | `auto` \| `dark` \| `light` color palette           |
 | `--no-color`        |          | disable ANSI color (auto-off when piped)            |
+
+## Colors & accessibility
+
+The palette adapts to a light or dark terminal:
+
+|            | Dark terminal   | Light terminal          |
+| ---------- | --------------- | ----------------------- |
+| White pieces | bright white  | **black** (bright white would vanish on light) |
+| Black pieces | bright yellow | blue                    |
+| Board frame  | tan/wood brown | dark brown             |
+
+The two sides are separated by hue rather than brightness, and the letters keep
+their `UPPER`(white)/`lower`(black) case — so the position stays readable under
+color-vision deficiencies and with `--no-color`.
+
+`--theme auto` (the default) picks the palette without ever reading stdin (an
+in-band OSC query would race with your typing): it uses `COLORFGBG` if the
+terminal sets it, else the OS appearance (on macOS, `AppleInterfaceStyle`), else
+assumes dark. Force it with `--theme light`/`--theme dark`; the banner prints
+which palette was chosen and why (e.g. `Theme: light (os)`).
 
 ## Oracle JSON schema
 

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -10,6 +11,8 @@ namespace ChessersEngine.Cli {
     enum PlayerKind { Human, Ai }
 
     enum TurnOutcome { Moved, NoLegalMoves, Resigned, Quit }
+
+    enum ThemeChoice { Auto, Dark, Light }
 
     /// <summary>Parsed command-line options for a run.</summary>
     class Options {
@@ -24,9 +27,12 @@ namespace ChessersEngine.Cli {
         public string OutDir = "oracle";
         public bool NoColor = false;
         public bool Quiet = false; // suppress board rendering (for bulk AI-vs-AI corpus runs)
+        public ThemeChoice Theme = ThemeChoice.Auto;
     }
 
     static class Program {
+        static string s_themeLabel = "off";
+
         static int Main (string[] args) {
             Options opts;
             try {
@@ -45,6 +51,13 @@ namespace ChessersEngine.Cli {
             }
 
             BoardRenderer.UseColor = !opts.NoColor && !Console.IsOutputRedirected;
+
+            if (BoardRenderer.UseColor && !opts.Quiet) {
+                BoardRenderer.Theme = ResolveTheme(opts.Theme, out string themeSource);
+                s_themeLabel = $"{BoardRenderer.Theme.ToString().ToLowerInvariant()} ({themeSource})";
+            } else {
+                s_themeLabel = BoardRenderer.UseColor ? "auto" : "off";
+            }
 
             string stamp = DateTime.Now.ToString("yyyyMMdd-HHmmss", CultureInfo.InvariantCulture);
             int completed = 0;
@@ -520,7 +533,7 @@ namespace ChessersEngine.Cli {
                 "\n================ CHESSERS (terminal) ================\n" +
                 $"  White: {opts.White}  (player {whiteId})\n" +
                 $"  Black: {opts.Black}  (player {blackId})\n" +
-                $"  AI level: {opts.Level}   Deathjump: {opts.Deathjump}   Seed: {FormatSeed(seed)}\n" +
+                $"  AI level: {opts.Level}   Deathjump: {opts.Deathjump}   Seed: {FormatSeed(seed)}   Theme: {s_themeLabel}\n" +
                 "  Type 'help' at the prompt for commands.\n" +
                 "====================================================";
         }
@@ -542,6 +555,74 @@ namespace ChessersEngine.Cli {
                 "    save        write the game so far to the oracle file\n" +
                 "    resign      resign the game\n" +
                 "    quit        stop without resigning\n");
+        }
+
+        #endregion
+
+        #region Theme detection
+
+        static BoardRenderer.UiTheme ResolveTheme (ThemeChoice choice, out string source) {
+            if (choice == ThemeChoice.Dark) { source = "flag"; return BoardRenderer.UiTheme.Dark; }
+            if (choice == ThemeChoice.Light) { source = "flag"; return BoardRenderer.UiTheme.Light; }
+
+            // Auto-detect WITHOUT touching stdin -- an in-band terminal query (OSC 11) races with
+            // the player's typing and can eat their input, so we use only side-channel signals:
+            // the terminal's COLORFGBG hint first, then the OS appearance, then assume dark.
+            if (TryColorFgBg(out BoardRenderer.UiTheme cfb)) { source = "COLORFGBG"; return cfb; }
+            if (TryOsAppearance(out BoardRenderer.UiTheme os)) { source = "os"; return os; }
+            source = "default";
+            return BoardRenderer.UiTheme.Dark;
+        }
+
+        /// <summary>
+        /// Classify the terminal from the COLORFGBG env var (set by iTerm2, rxvt, konsole, ...).
+        /// Its last field is the background palette index: 0-6/8 are dark, 7/9-15 are light.
+        /// </summary>
+        static bool TryColorFgBg (out BoardRenderer.UiTheme theme) {
+            theme = BoardRenderer.UiTheme.Dark;
+            string v = Environment.GetEnvironmentVariable("COLORFGBG");
+            if (string.IsNullOrWhiteSpace(v)) {
+                return false;
+            }
+            string[] toks = v.Split(';');
+            if (!int.TryParse(toks[toks.Length - 1], out int bg)) {
+                return false;
+            }
+            bool light = (bg == 7) || (bg >= 9 && bg <= 15);
+            theme = light ? BoardRenderer.UiTheme.Light : BoardRenderer.UiTheme.Dark;
+            return true;
+        }
+
+        /// <summary>
+        /// Ask the OS for its light/dark appearance. macOS: `defaults read -g AppleInterfaceStyle`
+        /// prints "Dark" in dark mode and the key is absent in light mode. Returns false on other
+        /// platforms or if the query can't be run, so the caller falls back to the default.
+        /// </summary>
+        static bool TryOsAppearance (out BoardRenderer.UiTheme theme) {
+            theme = BoardRenderer.UiTheme.Dark;
+            try {
+                if (!OperatingSystem.IsMacOS()) {
+                    return false;
+                }
+                var psi = new ProcessStartInfo("defaults", "read -g AppleInterfaceStyle") {
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                };
+                using Process p = Process.Start(psi);
+                if (p == null) {
+                    return false;
+                }
+                string outp = p.StandardOutput.ReadToEnd();
+                p.WaitForExit(1000);
+                // "Dark" => dark mode; anything else on macOS (key absent) => light mode.
+                theme = outp.Trim().Equals("Dark", StringComparison.OrdinalIgnoreCase)
+                    ? BoardRenderer.UiTheme.Dark
+                    : BoardRenderer.UiTheme.Light;
+                return true;
+            } catch {
+                return false; // never let detection break the game
+            }
         }
 
         #endregion
@@ -576,6 +657,7 @@ namespace ChessersEngine.Cli {
                     case "--out": o.OutDir = Next(a); break;
                     case "--no-color": o.NoColor = true; break;
                     case "--quiet": o.Quiet = true; break;
+                    case "--theme": o.Theme = ParseTheme(Next(a)); break;
                     // Convenience presets
                     case "--ai-vs-ai": o.White = PlayerKind.Ai; o.Black = PlayerKind.Ai; break;
                     case "--hotseat": o.White = PlayerKind.Human; o.Black = PlayerKind.Human; break;
@@ -593,6 +675,15 @@ namespace ChessersEngine.Cli {
                 case "ai":
                 case "cpu": return PlayerKind.Ai;
                 default: throw new ArgException($"player must be 'human' or 'ai', got '{s}'");
+            }
+        }
+
+        static ThemeChoice ParseTheme (string s) {
+            switch (s.ToLowerInvariant()) {
+                case "auto": return ThemeChoice.Auto;
+                case "dark": return ThemeChoice.Dark;
+                case "light": return ThemeChoice.Light;
+                default: throw new ArgException($"theme must be auto|dark|light, got '{s}'");
             }
         }
 
@@ -639,6 +730,7 @@ namespace ChessersEngine.Cli {
                 "  --delay <ms>         pause after each AI turn, for watching (default: 0)\n" +
                 "  --out <dir>          oracle output directory (default: ./oracle)\n" +
                 "  --quiet              don't render boards (bulk AI-vs-AI corpus runs)\n" +
+                "  --theme MODE         auto|dark|light color palette (default: auto-detect)\n" +
                 "  --no-color           disable ANSI colors\n" +
                 "  -h, --help           show this help\n\n" +
                 "Each game is written as a self-contained golden-corpus JSON file: the initial\n" +

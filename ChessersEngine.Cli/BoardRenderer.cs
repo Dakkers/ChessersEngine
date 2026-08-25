@@ -12,12 +12,35 @@ namespace ChessersEngine.Cli {
     static class BoardRenderer {
         public static bool UseColor = true;
 
+        public enum UiTheme { Dark, Light }
+
+        /// <summary>Which palette to render with; set from terminal detection at startup.</summary>
+        public static UiTheme Theme = UiTheme.Dark;
+
         const string Reset = "\u001b[0m";
-        const string WhitePiece = "\u001b[1;97m"; // bold bright white
-        const string BlackPiece = "\u001b[1;33m"; // bold yellow (renders as a clear "other" side)
-        const string Dim = "\u001b[2;37m";
+
+        // Piece colours. The two sides are separated by HUE, not just brightness, so they stay
+        // distinguishable under colour-vision deficiencies -- and the UPPER/lower case of the
+        // letters carries the very same information with no colour at all.
+        //   Light theme: white pieces render BLACK (bright white would vanish on a light bg);
+        //                black pieces render blue, clearly distinct from the black white-pieces.
+        //   Dark theme:  white pieces bright white; black pieces bright yellow.
+        static string WhitePieceColor => Theme == UiTheme.Light ? "\u001b[1;30m" : "\u001b[1;97m";
+        static string BlackPieceColor => Theme == UiTheme.Light ? "\u001b[1;34m" : "\u001b[1;93m";
+
+        // The board frame (grid lines + coordinate labels): a wooden brown, shaded per theme so it
+        // keeps contrast against either background.
+        static string LineColor => Theme == UiTheme.Light
+            ? "\u001b[38;5;94m"    // dark brown on a light background
+            : "\u001b[38;5;137m";  // tan/wood brown on a dark background
+
+        // Faint centre dot on empty dark squares (shows the checkerboard pattern).
+        static string DotColor => Theme == UiTheme.Light
+            ? "\u001b[38;5;245m"   // medium grey, visible on white
+            : "\u001b[38;5;240m";  // dim grey, subtle on black
 
         static string Color (string body, string code) => UseColor ? (code + body + Reset) : body;
+        static string Line (string body) => Color(body, LineColor);
 
         /// <summary>Single letter for a chessman kind (P N B R Q K).</summary>
         static char KindLetter (ChessmanKindEnum kind) {
@@ -54,14 +77,14 @@ namespace ChessersEngine.Cli {
                 body = " " + letter + " ";
             }
 
-            return Color(body, c.color == ColorEnum.WHITE ? WhitePiece : BlackPiece);
+            return Color(body, c.color == ColorEnum.WHITE ? WhitePieceColor : BlackPieceColor);
         }
 
         static string EmptyCell (int row, int col) {
             // Dark squares (a1 is dark: row+col even) get a faint centre dot so the
             // checkerboard pattern -- which matters for checker movement -- stays visible.
             bool dark = ((row + col) % 2) == 0;
-            return dark ? Color(" . ", Dim) : "   ";
+            return dark ? Color(" . ", DotColor) : "   ";
         }
 
         /// <summary>
@@ -70,22 +93,23 @@ namespace ChessersEngine.Cli {
         /// </summary>
         public static string Render (Board board) {
             var sb = new StringBuilder();
-            const string filesHeader = "      a   b   c   d   e   f   g   h";
-            const string sep = "    +---+---+---+---+---+---+---+---+";
+            string filesHeader = Line("      a   b   c   d   e   f   g   h");
+            string sep = Line("    +---+---+---+---+---+---+---+---+");
+            string bar = Line("|");
 
             sb.Append('\n').Append(filesHeader).Append('\n');
             sb.Append(sep).Append('\n');
 
             for (int row = 7; row >= 0; row--) {
                 int rank = row + 1;
-                sb.Append(' ').Append(rank).Append("  |");
+                sb.Append(Line($" {rank}  ")).Append(bar);
                 for (int col = 0; col < 8; col++) {
                     Tile tile = board.GetTile((row * 8) + col);
                     Chessman piece = tile?.GetPiece();
                     sb.Append(piece != null ? PieceCell(piece) : EmptyCell(row, col));
-                    sb.Append('|');
+                    sb.Append(bar);
                 }
-                sb.Append("  ").Append(rank).Append('\n');
+                sb.Append(Line($"  {rank}")).Append('\n');
                 sb.Append(sep).Append('\n');
             }
 
