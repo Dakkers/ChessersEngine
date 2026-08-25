@@ -21,6 +21,7 @@ namespace ChessersEngine.Cli {
         public int Games = 1;
         public int MaxPlies = 400;
         public int DelayMs = 0;
+        public string OutDir = "oracle";
         public bool NoColor = false;
         public bool Quiet = false; // suppress board rendering (for bulk AI-vs-AI corpus runs)
     }
@@ -45,15 +46,21 @@ namespace ChessersEngine.Cli {
 
             BoardRenderer.UseColor = !opts.NoColor && !Console.IsOutputRedirected;
 
+            string stamp = DateTime.Now.ToString("yyyyMMdd-HHmmss", CultureInfo.InvariantCulture);
+            int completed = 0;
+
             for (int g = 0; g < opts.Games; g++) {
                 int? seed = opts.Seed.HasValue ? opts.Seed.Value + g : (int?) null;
+                string suffix = opts.Games > 1 ? $"-{g + 1:D3}" : "";
+                string outPath = System.IO.Path.Combine(opts.OutDir, $"chessers-{stamp}{suffix}.json");
 
                 bool interactive = opts.White == PlayerKind.Human || opts.Black == PlayerKind.Human;
                 if (opts.Games > 1) {
                     Console.WriteLine($"\n=== Game {g + 1} of {opts.Games} (seed={FormatSeed(seed)}) ===");
                 }
 
-                bool keepPlaying = PlayGame(opts, seed);
+                bool keepPlaying = PlayGame(opts, seed, outPath);
+                completed++;
 
                 if (!keepPlaying && interactive) {
                     // Human asked to quit the whole run.
@@ -61,16 +68,32 @@ namespace ChessersEngine.Cli {
                 }
             }
 
+            if (opts.Games > 1) {
+                Console.WriteLine($"\nRecorded {completed} game(s) to ./{opts.OutDir}/");
+            }
             return 0;
         }
 
         /// <summary>Plays a single game to completion. Returns false if the human chose to quit the run.</summary>
-        static bool PlayGame (Options opts, int? seed) {
+        static bool PlayGame (Options opts, int? seed, string outPath) {
             var config = new MatchConfig { deathjumpSetting = opts.Deathjump };
             var match = new Match(null, config, seed);
 
             int whiteId = match.whitePlayerId;
             int blackId = match.blackPlayerId;
+
+            var recorder = new OracleRecorder(
+                new GameConfigDto {
+                    white = opts.White.ToString().ToLowerInvariant(),
+                    black = opts.Black.ToString().ToLowerInvariant(),
+                    aiLevel = opts.Level,
+                    randomSeed = seed,
+                    deathjumpSetting = opts.Deathjump.ToString(),
+                    whitePlayerId = whiteId,
+                    blackPlayerId = blackId,
+                },
+                match._GetCommittedBoard().GetChessmanSchemas()
+            );
 
             bool showBoards = !opts.Quiet;
             if (showBoards) {
@@ -92,9 +115,10 @@ namespace ChessersEngine.Cli {
                     Console.WriteLine($"\nTurn {plyIndex + 1}: {moverColor} to move ({actor}).");
                 }
 
+                var turnMoves = new List<OracleMoveDto>();
                 TurnOutcome outcome = actor == PlayerKind.Human
-                    ? PlayHumanTurn(match, moverColor, moverPlayerId, opts.Level, showBoards)
-                    : PlayAiTurn(match, moverColor, moverPlayerId, opts.Level, opts.DelayMs, showBoards);
+                    ? PlayHumanTurn(match, moverColor, moverPlayerId, opts.Level, turnMoves, recorder, outPath, showBoards)
+                    : PlayAiTurn(match, moverColor, moverPlayerId, opts.Level, opts.DelayMs, turnMoves, showBoards);
 
                 if (outcome == TurnOutcome.Quit) {
                     match.ResetTurn();
@@ -112,17 +136,29 @@ namespace ChessersEngine.Cli {
 
                 if (outcome == TurnOutcome.NoLegalMoves) {
                     // The engine flags mate/stalemate as part of the *opponent's* move, so reaching
-                    // here means an unflagged dead position; stop and adjudicate.
+                    // here means an unflagged dead position. Adjudicate as a draw and record it.
                     endReason = "no-legal-moves";
                     break;
                 }
 
                 match.CommitTurn();
+
+                recorder.AddPly(new OraclePlyDto {
+                    index = plyIndex + 1,
+                    turnColor = moverColor.ToString(),
+                    playerId = moverPlayerId,
+                    actor = actor.ToString().ToLowerInvariant(),
+                    moves = turnMoves,
+                    committedNotation = match.GetLastMove(),
+                    boardAfter = match._GetCommittedBoard().GetChessmanSchemas(),
+                });
+
                 plyIndex++;
 
-                if (showBoards) {
-                    if (match.HasWinner()) Console.WriteLine("\n** Checkmate! **");
-                    else if (match.IsDraw()) Console.WriteLine("\n** Stalemate. **");
+                if (showBoards && turnMoves.Count > 0) {
+                    var last = turnMoves[turnMoves.Count - 1].result;
+                    if (last.isWinningMove) Console.WriteLine("\n** Checkmate! **");
+                    else if (last.isStalemate) Console.WriteLine("\n** Stalemate. **");
                 }
             }
 
@@ -132,11 +168,16 @@ namespace ChessersEngine.Cli {
                 else if (plyIndex >= opts.MaxPlies) endReason = "move-limit";
             }
 
+            recorder.SetOutcome(BuildOutcome(match, endReason));
+
             // Final board + result summary.
             if (showBoards) {
                 Console.WriteLine(BoardRenderer.Render(match._GetCommittedBoard()));
             }
             Console.WriteLine(ResultLine(match, endReason, whiteId));
+
+            recorder.Write(outPath);
+            Console.WriteLine($"Oracle written: {outPath}  ({recorder.Game.plies.Count} plies)");
 
             return !humanQuit;
         }
@@ -149,6 +190,7 @@ namespace ChessersEngine.Cli {
             int moverPlayerId,
             int level,
             int delayMs,
+            List<OracleMoveDto> turnMoves,
             bool showBoards
         ) {
             if (showBoards) {
@@ -160,15 +202,15 @@ namespace ChessersEngine.Cli {
                 return TurnOutcome.NoLegalMoves;
             }
 
-            bool moved = false;
             foreach (MoveAttempt attempt in attempts) {
                 attempt.playerId = moverPlayerId;
                 MoveResult result = match.MoveChessman(attempt);
                 if (result == null || !result.valid) {
-                    // Should not happen -- the search only returns legal moves.
+                    // Should not happen -- the search only returns legal moves -- but never record a
+                    // bogus sub-move if it does.
                     break;
                 }
-                moved = true;
+                RecordMove(turnMoves, attempt, result);
                 if (showBoards) {
                     Console.WriteLine("  " + moverColor + ": " + BoardRenderer.DescribeMove(result));
                 }
@@ -177,7 +219,7 @@ namespace ChessersEngine.Cli {
             if (delayMs > 0) {
                 Thread.Sleep(delayMs);
             }
-            return moved ? TurnOutcome.Moved : TurnOutcome.NoLegalMoves;
+            return turnMoves.Count > 0 ? TurnOutcome.Moved : TurnOutcome.NoLegalMoves;
         }
 
         static TurnOutcome PlayHumanTurn (
@@ -185,6 +227,9 @@ namespace ChessersEngine.Cli {
             ColorEnum moverColor,
             int moverPlayerId,
             int aiLevel,
+            List<OracleMoveDto> turnMoves,
+            OracleRecorder recorder,
+            string outPath,
             bool showBoards
         ) {
             // The id of the piece that must continue a multi-jump (once one is in progress), else -1.
@@ -223,7 +268,15 @@ namespace ChessersEngine.Cli {
                 if (cmd == "legend") { Console.WriteLine(BoardRenderer.Legend()); continue; }
                 if (cmd == "quit" || cmd == "exit") { return TurnOutcome.Quit; }
                 if (cmd == "resign") {
+                    turnMoves.Clear();
                     return TurnOutcome.Resigned;
+                }
+                if (cmd == "save") {
+                    // Persist a partial record so an in-progress game is never lost.
+                    recorder.SetOutcome(BuildOutcome(match, "in-progress"));
+                    recorder.Write(outPath);
+                    Console.WriteLine($"  saved partial oracle to {outPath}");
+                    continue;
                 }
                 if (cmd == "moves") {
                     ShowMovesFor(match, moverColor, parts.Length > 1 ? parts[1] : null, continuationPieceId);
@@ -264,13 +317,16 @@ namespace ChessersEngine.Cli {
                 MoveResult result = match.MoveChessman(attempt);
                 if (result == null) {
                     Console.WriteLine("  Rejected (not your turn / target occupied by your own piece).");
+                    RecordRejected(recorder, moverColor, moverPlayerId, attempt, null, board);
                     continue;
                 }
                 if (!result.valid) {
                     Console.WriteLine($"  Illegal move for that piece. Try 'moves {BoardRenderer.TileToSquare(fromTile)}' to list legal targets.");
+                    RecordRejected(recorder, moverColor, moverPlayerId, attempt, result, board);
                     continue;
                 }
 
+                RecordMove(turnMoves, attempt, result);
                 if (showBoards) {
                     Console.WriteLine("  " + moverColor + ": " + BoardRenderer.DescribeMove(result));
                 }
@@ -290,6 +346,39 @@ namespace ChessersEngine.Cli {
         #endregion
 
         #region Move helpers
+
+        static void RecordMove (List<OracleMoveDto> turnMoves, MoveAttempt attempt, MoveResult result) {
+            string notation = result.CreateNotation();
+            result.notation = notation;
+            turnMoves.Add(new OracleMoveDto {
+                attempt = attempt,
+                notation = notation,
+                result = result,
+            });
+        }
+
+        /// <summary>
+        /// Record a move the engine rejected, against the (unchanged) board it was tried on, so a
+        /// port can assert it rejects the same attempt the same way. `result` is null when the
+        /// engine returned null; otherwise it is the invalid MoveResult. No notation is generated
+        /// for a rejected attempt (an invalid result may not hold well-formed coordinates).
+        /// </summary>
+        static void RecordRejected (
+            OracleRecorder recorder,
+            ColorEnum moverColor,
+            int moverPlayerId,
+            MoveAttempt attempt,
+            MoveResult result,
+            Board board
+        ) {
+            recorder.AddRejected(new RejectedAttemptDto {
+                turnColor = moverColor.ToString(),
+                playerId = moverPlayerId,
+                attempt = attempt,
+                result = result,
+                board = board.GetChessmanSchemas(),
+            });
+        }
 
         /// <summary>
         /// Decide the promotion rank to attach to a move attempt. Mirrors the engine's own
@@ -403,6 +492,18 @@ namespace ChessersEngine.Cli {
 
         #region Outcome / banners
 
+        static GameOutcomeDto BuildOutcome (Match match, string reason) {
+            bool hasWinner = match.HasWinner();
+            return new GameOutcomeDto {
+                gameOver = match.IsGameOver(),
+                winningPlayerId = hasWinner ? match.GetWinner() : -1,
+                winningColor = hasWinner ? match.GetWinnerColor().ToString() : null,
+                isDraw = match.IsDraw(),
+                isResignation = reason == "resignation",
+                reason = reason,
+            };
+        }
+
         static string ResultLine (Match match, string reason, int whiteId) {
             if (match.HasWinner()) {
                 ColorEnum wc = match.GetWinnerColor();
@@ -438,6 +539,7 @@ namespace ChessersEngine.Cli {
                 "    hint        suggest a move (runs the AI for your side)\n" +
                 "    board       redraw the board\n" +
                 "    legend      explain the piece symbols\n" +
+                "    save        write the game so far to the oracle file\n" +
                 "    resign      resign the game\n" +
                 "    quit        stop without resigning\n");
         }
@@ -471,6 +573,7 @@ namespace ChessersEngine.Cli {
                     case "--games": o.Games = ParseIntRange(Next(a), 1, 100000, a); break;
                     case "--max-plies": o.MaxPlies = ParseIntRange(Next(a), 1, 100000, a); break;
                     case "--delay": o.DelayMs = ParseIntRange(Next(a), 0, 60000, a); break;
+                    case "--out": o.OutDir = Next(a); break;
                     case "--no-color": o.NoColor = true; break;
                     case "--quiet": o.Quiet = true; break;
                     // Convenience presets
@@ -520,7 +623,7 @@ namespace ChessersEngine.Cli {
 
         static void PrintUsage (System.IO.TextWriter w) {
             w.WriteLine(
-                "chessers - terminal Chessers game\n\n" +
+                "chessers - terminal Chessers game + oracle recorder\n\n" +
                 "USAGE:\n" +
                 "  dotnet run --project ChessersEngine.Cli -- [options]\n\n" +
                 "OPTIONS:\n" +
@@ -534,14 +637,18 @@ namespace ChessersEngine.Cli {
                 "  --games <n>          play n games in a row (default: 1)\n" +
                 "  --max-plies <n>      adjudicate a draw after n plies (default: 400)\n" +
                 "  --delay <ms>         pause after each AI turn, for watching (default: 0)\n" +
-                "  --quiet              don't render boards (bulk AI-vs-AI runs)\n" +
+                "  --out <dir>          oracle output directory (default: ./oracle)\n" +
+                "  --quiet              don't render boards (bulk AI-vs-AI corpus runs)\n" +
                 "  --no-color           disable ANSI colors\n" +
                 "  -h, --help           show this help\n\n" +
+                "Each game is written as a self-contained golden-corpus JSON file: the initial\n" +
+                "board, every move attempt with its full MoveResult, and a board snapshot after\n" +
+                "each turn -- replayable by the Rust port for differential testing.\n\n" +
                 "EXAMPLES:\n" +
                 "  # Play white against the AI, reproducible via a seed:\n" +
                 "  dotnet run --project ChessersEngine.Cli -- --white human --black ai --seed 42\n\n" +
-                "  # Watch 5 AI-vs-AI games:\n" +
-                "  dotnet run --project ChessersEngine.Cli -- --ai-vs-ai --games 5 --seed 1 --delay 300\n");
+                "  # Generate a 50-game AI-vs-AI corpus quietly:\n" +
+                "  dotnet run --project ChessersEngine.Cli -- --ai-vs-ai --games 50 --seed 1 --quiet\n");
         }
 
         #endregion
