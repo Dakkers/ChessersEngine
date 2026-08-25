@@ -120,6 +120,13 @@ engine's `Constants` (e.g. `result.type` is `MOVE_TYPE_*`, `kind` is
 `CHESSMAN_KIND_*`). `outcome.reason` is one of `checkmate`, `stalemate`,
 `resignation`, `move-limit`, `no-legal-moves`, or `quit`.
 
+`plies` holds only moves that were *accepted*. A top-level `rejectedAttempts`
+array records illegal moves the engine turned down (empty for AI-only games):
+each entry has the `board` it was tried against, the `attempt`, and the engine's
+`result` — `null` when `MoveChessman` returned null (e.g. a target holds your own
+piece), otherwise a `MoveResult` with `valid: false`. A port can replay each to
+assert it rejects the same attempt the same way.
+
 ## Determinism
 
 With `--seed`, a full game is reproducible across runs and machines (verified by

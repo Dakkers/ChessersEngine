@@ -26,6 +26,10 @@ namespace ChessersEngine.Cli {
         public List<ChessmanSchema> initialPieces { get; set; }
         public List<OraclePlyDto> plies { get; set; } = new List<OraclePlyDto>();
         public GameOutcomeDto outcome { get; set; }
+        // Moves the engine rejected during play (illegal moves). Empty for AI-only games,
+        // since the search only ever produces legal moves. Each entry is self-contained: the
+        // board it was tried against, the attempt, and the engine's response.
+        public List<RejectedAttemptDto> rejectedAttempts { get; set; } = new List<RejectedAttemptDto>();
     }
 
     class GameConfigDto {
@@ -52,6 +56,17 @@ namespace ChessersEngine.Cli {
         public MoveAttempt attempt { get; set; } // the input handed to Match.MoveChessman
         public string notation { get; set; }     // MoveResult.CreateNotation()
         public MoveResult result { get; set; }   // the full engine output (every flag)
+    }
+
+    class RejectedAttemptDto {
+        public string turnColor { get; set; }    // whose turn it was
+        public int playerId { get; set; }
+        public MoveAttempt attempt { get; set; } // the rejected input
+        // The engine's response: null when Match.MoveChessman returned null (e.g. target is the
+        // player's own piece / wrong turn); otherwise a MoveResult with valid == false. Only the
+        // rejection itself is a contract -- the other fields of an invalid result are incidental.
+        public MoveResult result { get; set; }
+        public List<ChessmanSchema> board { get; set; } // the position the move was attempted against
     }
 
     class GameOutcomeDto {
@@ -83,6 +98,8 @@ namespace ChessersEngine.Cli {
         }
 
         public void AddPly (OraclePlyDto ply) => Game.plies.Add(ply);
+
+        public void AddRejected (RejectedAttemptDto rejected) => Game.rejectedAttempts.Add(rejected);
 
         public void SetOutcome (GameOutcomeDto outcome) => Game.outcome = outcome;
 

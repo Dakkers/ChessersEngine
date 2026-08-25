@@ -21,7 +21,12 @@
       "description": "One entry per turn, in order.",
       "items": { "$ref": "#/$defs/ply" }
     },
-    "outcome": { "$ref": "#/$defs/outcome" }
+    "outcome": { "$ref": "#/$defs/outcome" },
+    "rejectedAttempts": {
+      "type": "array",
+      "description": "Moves the engine rejected during play (illegal moves). Empty for AI-only games, whose search only ever produces legal moves.",
+      "items": { "$ref": "#/$defs/rejectedAttempt" }
+    }
   },
   "$defs": {
     "color": {
@@ -185,6 +190,25 @@
         "reason": {
           "type": "string",
           "enum": ["checkmate", "stalemate", "resignation", "move-limit", "no-legal-moves", "quit", "in-progress"]
+        }
+      }
+    },
+    "rejectedAttempt": {
+      "type": "object",
+      "description": "An attempt the engine rejected. Replay: load `board`, call MoveChessman(attempt), and assert the same rejection -- a null `result` means the engine returned null (e.g. the target holds the player's own piece); otherwise `result.valid` is false. The other fields of an invalid result are incidental.",
+      "additionalProperties": false,
+      "required": ["turnColor", "playerId", "attempt", "result", "board"],
+      "properties": {
+        "turnColor": { "$ref": "#/$defs/color" },
+        "playerId": { "type": "integer" },
+        "attempt": { "$ref": "#/$defs/moveAttempt" },
+        "result": {
+          "oneOf": [{ "$ref": "#/$defs/moveResult" }, { "type": "null" }]
+        },
+        "board": {
+          "type": "array",
+          "description": "The position the move was attempted against (unchanged by the rejected attempt).",
+          "items": { "$ref": "#/$defs/chessmanSchema" }
         }
       }
     }
