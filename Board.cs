@@ -697,7 +697,7 @@ namespace ChessersEngine {
         }
 
         public List<Tile> CanChessmanBeCaptured (Chessman chessman) {
-            return (
+            List<Tile> result = (
                 CanChessmanBeCapturedVertically(chessman)
                 .Concat(CanChessmanBeCapturedHorizontally(chessman))
                 .Concat(CanChessmanBeCapturedDiagonally(chessman))
@@ -712,6 +712,26 @@ namespace ChessersEngine {
                 )
                 .ToList()
             );
+
+            // A (non-checker) king attacks all 8 adjacent squares. This only matters when the
+            // piece being examined is itself a king: two kings may never be adjacent, and a
+            // checkmate "escape" onto a square defended by the enemy king is not actually safe.
+            // (Scoped to kings so the capture-jump path search, which queries non-king pieces,
+            // is unaffected.)
+            if (chessman.IsKing()) {
+                result = result.Concat(
+                    GetAdjacentTiles(chessman.GetUnderlyingTile())
+                    .Where((t) => (
+                        !t.IsDeathjumpTile() &&
+                        t.IsOccupied() &&
+                        t.GetPiece().IsKing() &&
+                        !t.GetPiece().IsChecker() &&
+                        !t.GetPiece().IsSameColor(chessman)
+                    ))
+                ).ToList();
+            }
+
+            return result;
         }
 
         public List<Tile> CanTileBeMovedOnToByChessman (Tile tile) {
@@ -828,6 +848,25 @@ namespace ChessersEngine {
             (int row, int col) = GetRowColumn(tile);
 
             return new List<Tile> {
+                GetTileByRowColumn(row + 1, col + 1),
+                GetTileByRowColumn(row + 1, col - 1),
+                GetTileByRowColumn(row - 1, col + 1),
+                GetTileByRowColumn(row - 1, col - 1),
+            }.Where((t) => t != null).ToList();
+        }
+
+        /// <summary>
+        /// Given a tile, gets all of the orthogonally and diagonally adjacent tiles
+        /// (the up-to-8 tiles a king could reach in one step).
+        /// </summary>
+        public List<Tile> GetAdjacentTiles (Tile tile) {
+            (int row, int col) = GetRowColumn(tile);
+
+            return new List<Tile> {
+                GetTileByRowColumn(row + 1, col),
+                GetTileByRowColumn(row - 1, col),
+                GetTileByRowColumn(row, col + 1),
+                GetTileByRowColumn(row, col - 1),
                 GetTileByRowColumn(row + 1, col + 1),
                 GetTileByRowColumn(row + 1, col - 1),
                 GetTileByRowColumn(row - 1, col + 1),
