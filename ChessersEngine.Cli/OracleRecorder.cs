@@ -14,6 +14,12 @@ namespace ChessersEngine.Cli {
     // ---------------------------------------------------------------------------
 
     class OracleGame {
+        // A `$schema` reference (JSON Schema, draft 2020-12) so editors and validators can
+        // check these files against the format defined in ChessersEngine.Cli/oracle.schema.json.
+        [JsonPropertyName("$schema")]
+        public string Schema { get; set; } =
+            "https://raw.githubusercontent.com/Dakkers/ChessersEngine/master/ChessersEngine.Cli/oracle.schema.json";
+
         public int schemaVersion { get; set; } = 1;
         public string engine { get; set; } = "ChessersEngine (C#)";
         public GameConfigDto config { get; set; }

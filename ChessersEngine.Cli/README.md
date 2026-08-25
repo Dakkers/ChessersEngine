@@ -76,8 +76,13 @@ Piece symbols: `UPPER`=white, `lower`=black; `" X "`=chess piece,
 
 ## Oracle JSON schema (`schemaVersion: 1`)
 
+Each file opens with a `$schema` reference to
+[`oracle.schema.json`](oracle.schema.json) (JSON Schema, draft 2020-12), so
+editors and validators can check it automatically.
+
 ```jsonc
 {
+  "$schema": "https://raw.githubusercontent.com/Dakkers/ChessersEngine/master/ChessersEngine.Cli/oracle.schema.json",
   "schemaVersion": 1,
   "engine": "ChessersEngine (C#)",
   "config": {
