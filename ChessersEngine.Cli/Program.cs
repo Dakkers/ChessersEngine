@@ -298,25 +298,37 @@ namespace ChessersEngine.Cli {
                 if (cmd == "hint") { ShowHint(match, moverColor, aiLevel); continue; }
 
                 // -- Otherwise, parse as a move
-                if (!TryParseMove(parts, out int fromTile, out int toTile, out int explicitPromo, out string parseErr)) {
+                if (!TryParseMove(parts, out bool hasFrom, out int fromTile, out int toTile, out int explicitPromo, out string parseErr)) {
                     Console.WriteLine("  " + parseErr + "  (type 'help' for input formats)");
                     continue;
                 }
 
-                Chessman piece = board.GetTileIfExists(fromTile)?.GetPiece();
-                if (piece == null) {
-                    Console.WriteLine($"  No piece on {BoardRenderer.TileToSquare(fromTile)}.");
-                    continue;
+                Chessman piece;
+                if (hasFrom) {
+                    piece = board.GetTileIfExists(fromTile)?.GetPiece();
+                    if (piece == null) {
+                        Console.WriteLine($"  No piece on {BoardRenderer.TileToSquare(fromTile)}.");
+                        continue;
+                    }
+                    if (piece.color != moverColor) {
+                        Console.WriteLine($"  {BoardRenderer.TileToSquare(fromTile)} holds a {piece.color} piece; it's {moverColor}'s turn.");
+                        continue;
+                    }
+                } else {
+                    // Destination-only ("a4"): infer the unique legal mover.
+                    piece = InferMover(match, board, moverColor, toTile, continuationPieceId, out string inferMsg);
+                    if (piece == null) {
+                        Console.WriteLine("  " + inferMsg);
+                        continue;
+                    }
                 }
-                if (piece.color != moverColor) {
-                    Console.WriteLine($"  {BoardRenderer.TileToSquare(fromTile)} holds a {piece.color} piece; it's {moverColor}'s turn.");
-                    continue;
-                }
+
                 if (continuationPieceId >= 0 && piece.id != continuationPieceId) {
                     Console.WriteLine("  You must continue the multi-jump with the same piece.");
                     continue;
                 }
 
+                string fromSquare = BoardRenderer.TileToSquare(piece.GetUnderlyingTile().id);
                 int promo = ResolvePromotion(piece, moverColor, toTile, explicitPromo);
 
                 var attempt = new MoveAttempt {
@@ -333,7 +345,7 @@ namespace ChessersEngine.Cli {
                     continue;
                 }
                 if (!result.valid) {
-                    Console.WriteLine($"  Illegal move for that piece. Try 'moves {BoardRenderer.TileToSquare(fromTile)}' to list legal targets.");
+                    Console.WriteLine($"  Illegal move for that piece. Try 'moves {fromSquare}' to list legal targets.");
                     continue;
                 }
 
@@ -385,40 +397,95 @@ namespace ChessersEngine.Cli {
             return explicitPromo >= 0 ? explicitPromo : (int) ChessmanKindEnum.QUEEN;
         }
 
-        static bool TryParseMove (string[] parts, out int fromTile, out int toTile, out int promo, out string error) {
+        /// <summary>
+        /// Parse a typed move. Supports explicit from+to ("a2a4", "a2 a4", "b3-a4") and
+        /// destination-only ("a4"), each with an optional promotion suffix ("a8q", "a7 a8 q").
+        /// When only a destination is given, <paramref name="hasFrom"/> is false and the caller
+        /// infers the mover from the legal moves.
+        /// </summary>
+        static bool TryParseMove (string[] parts, out bool hasFrom, out int fromTile, out int toTile, out int promo, out string error) {
+            hasFrom = false;
             fromTile = toTile = int.MinValue;
             promo = -1;
             error = null;
 
-            string fromTok, toTok, promoTok = null;
-
-            // Compact "e2e4" / "e7e8q" form (pure algebraic, no #/d tokens).
+            // Compact "e2e4" / "e7e8q" form (explicit from+to, pure algebraic).
             if (parts.Length == 1 && Regex.IsMatch(parts[0], "^[a-h][1-8][a-h][1-8][qrbn]?$")) {
-                fromTok = parts[0].Substring(0, 2);
-                toTok = parts[0].Substring(2, 2);
-                if (parts[0].Length == 5) promoTok = parts[0].Substring(4, 1);
-            } else if (parts.Length >= 2) {
-                fromTok = parts[0];
-                toTok = parts[1];
-                if (parts.Length >= 3) promoTok = parts[2];
-            } else {
-                error = "Could not read a move.";
-                return false;
+                BoardRenderer.TryParseTile(parts[0].Substring(0, 2), out fromTile);
+                BoardRenderer.TryParseTile(parts[0].Substring(2, 2), out toTile);
+                if (parts[0].Length == 5) TryParsePromo(parts[0].Substring(4, 1), out promo);
+                hasFrom = true;
+                return true;
             }
 
-            if (!BoardRenderer.TryParseTile(fromTok, out fromTile)) {
-                error = $"'{fromTok}' is not a valid square.";
-                return false;
+            var toks = new List<string>(parts);
+
+            // Peel off a trailing promotion letter, but only when a square precedes it.
+            if (toks.Count >= 2 && TryParsePromo(toks[toks.Count - 1], out int p)) {
+                promo = p;
+                toks.RemoveAt(toks.Count - 1);
             }
-            if (!BoardRenderer.TryParseTile(toTok, out toTile)) {
-                error = $"'{toTok}' is not a valid square.";
-                return false;
+
+            if (toks.Count == 1) {
+                // Destination only ("a4", "#-14"); the mover is inferred from the legal moves.
+                if (!BoardRenderer.TryParseTile(toks[0], out toTile)) {
+                    error = $"'{toks[0]}' is not a valid square.";
+                    return false;
+                }
+                hasFrom = false;
+                return true;
             }
-            if (promoTok != null && !TryParsePromo(promoTok, out promo)) {
-                error = $"'{promoTok}' is not a promotion piece (use q, r, b, or n).";
-                return false;
+
+            if (toks.Count == 2) {
+                // Explicit from + to ("a2 a4", "b3 a4").
+                if (!BoardRenderer.TryParseTile(toks[0], out fromTile)) {
+                    error = $"'{toks[0]}' is not a valid square.";
+                    return false;
+                }
+                if (!BoardRenderer.TryParseTile(toks[1], out toTile)) {
+                    error = $"'{toks[1]}' is not a valid square.";
+                    return false;
+                }
+                hasFrom = true;
+                return true;
             }
-            return true;
+
+            error = "Could not read a move.";
+            return false;
+        }
+
+        /// <summary>
+        /// Resolve a destination-only move ("a4") to the one legal piece that can reach the tile.
+        /// Returns null with an explanatory message when there is no such move, or when more than
+        /// one piece could make it (the caller then asks for an explicit from-square).
+        /// </summary>
+        static Chessman InferMover (Match match, Board board, ColorEnum moverColor, int toTile, int continuationPieceId, out string message) {
+            message = null;
+
+            if (continuationPieceId >= 0) {
+                // Mid multi-jump: only the jumping piece may move, so the mover is unambiguous.
+                return match.GetPendingChessman(continuationPieceId);
+            }
+
+            var candidates = new List<Chessman>();
+            foreach (Chessman c in board.GetActiveChessmenOfColor(moverColor)) {
+                if (board.GetValidTilesForMovement(c, jumpsOnly: false).Any(t => t.id == toTile)) {
+                    candidates.Add(c);
+                }
+            }
+
+            string dest = BoardRenderer.TileToSquare(toTile);
+            if (candidates.Count == 0) {
+                message = $"No legal move to {dest}. (Type 'moves <sq>' to see a piece's options.)";
+                return null;
+            }
+            if (candidates.Count > 1) {
+                var froms = candidates.Select(c => BoardRenderer.TileToSquare(c.GetUnderlyingTile().id)).ToList();
+                message = $"Ambiguous: {string.Join(", ", froms)} can all reach {dest}. " +
+                          $"Name the piece, e.g. {froms[0]}{dest}.";
+                return null;
+            }
+            return candidates[0];
         }
 
         static bool TryParsePromo (string tok, out int rank) {
@@ -519,6 +586,7 @@ namespace ChessersEngine.Cli {
             Console.WriteLine(
                 "\n  Move input:\n" +
                 "    e2e4        move from e2 to e4 (also 'e2 e4' or 'e2-e4')\n" +
+                "    e4          destination only -- infers the mover (asks if ambiguous)\n" +
                 "    e7e8q       promote to queen (q/r/b/n; auto-queens if omitted)\n" +
                 "    a3 #-14     '#-14' targets deathjump tile -14 (raw tile id)\n" +
                 "                (deathjump targets are shown as #<id> by 'moves')\n" +

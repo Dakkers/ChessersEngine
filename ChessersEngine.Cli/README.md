@@ -36,6 +36,7 @@ Games are written to `./oracle/` by default (one JSON file per game).
 | Input          | Meaning                                                        |
 | -------------- | -------------------------------------------------------------- |
 | `e2e4`         | move from e2 to e4 (also `e2 e4` or `e2-e4`)                   |
+| `e4`           | destination only — infers the mover; if two pieces can reach it, it lists them and asks for the from-square |
 | `e7e8q`        | promote to queen (`q`/`r`/`b`/`n`; auto-queens if omitted)     |
 | `#-14`         | raw tile id — the only way to target off-board *deathjump* tiles |
 
