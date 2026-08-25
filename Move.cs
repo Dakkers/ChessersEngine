@@ -834,6 +834,10 @@ namespace ChessersEngine {
             bool shouldChangeTurns = true;
 
             if (
+                // A move that captured a king wins the game outright, so the turn ends here - there
+                // is no multi-jump continuation to keep it open for (and the board no longer has that
+                // king, which would crash the continuation's check detection).
+                !moveResult.isWinningMove &&
                 chessman.isActive &&
                 chessman.IsChecker() && (
                     moveResult.WasPieceJumped() ||
