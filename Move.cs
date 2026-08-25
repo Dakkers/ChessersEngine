@@ -193,6 +193,13 @@ namespace ChessersEngine {
             HashSet<int> tilesToIgnore,
             int depth = 1
         ) {
+            if (tile.IsDeathjumpTile()) {
+                // A jump path never continues FROM a death tile: a piece that lands there is off the
+                // board. (Such a tile may also still "hold" the deactivated piece that died on it,
+                // which has a null underlying tile and would crash the capture checks below.)
+                return;
+            }
+
             (int row, int col) = board.GetRowColumn(tile);
             //Match.Log($"Current: {tile.id} {tile.IsOccupied()} {board.IsTileOnOtherHalfOfBoard(tile, targetColor)} {targetColor}", depth);
 
@@ -437,6 +444,15 @@ namespace ChessersEngine {
                         Tile startTile = boardCopy.GetTile(path[i]);
                         Tile endTile = boardCopy.GetTile(path[i + 1]);
                         Chessman movingChessman = startTile.GetPiece();
+
+                        if (movingChessman == null || !movingChessman.isActive) {
+                            // No active piece to make this step. This happens when the path would
+                            // originate a move from a death tile, whose occupant is an already
+                            // deactivated piece (with a null underlying tile). Such a path is not a
+                            // real threat, so bail out instead of dereferencing the dead piece.
+                            isGood = false;
+                            break;
+                        }
 
                         // Ok so this took me a while to figure out but here's the gist:
                         //      - if it's player A's turn, then player B is not in check
