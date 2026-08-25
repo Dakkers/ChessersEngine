@@ -1492,6 +1492,10 @@ namespace ChessersEngine {
                 Tile rookFromTile = colDelta > 0 ? GetRightmostTileOfRow(row) : GetLeftmostTileOfRow(row);
                 rookFromTile.SetPiece(rookChessman);
                 rookChessman.SetUnderlyingTile(rookFromTile);
+                // Castling is only legal when the rook has not moved, so undoing it always
+                // restores the rook to its unmoved state. (The king's hasMoved is restored
+                // above via moveResult.wasFirstMoveForPiece; the rook has no such flag.)
+                rookChessman.SetHasMoved(false);
             }
         }
 
