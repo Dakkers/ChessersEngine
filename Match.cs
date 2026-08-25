@@ -81,13 +81,17 @@ namespace ChessersEngine {
         int winningPlayerId = -1;
         bool isDraw = false;
         bool isResignation = false;
-        readonly System.Random rng = new System.Random();
+        readonly System.Random rng;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="T:ChessersEngine.Match"/> class.
         /// </summary>
         /// <param name="data">The data to initialize the match with. If null, a new match is created.</param>
-        public Match (MatchData data, MatchConfig? _config = null) {
+        /// <param name="_config">Optional match configuration.</param>
+        /// <param name="randomSeed">Optional seed for the move-search RNG, for reproducible AI (e.g. in tests).</param>
+        public Match (MatchData data, MatchConfig? _config = null, int? randomSeed = null) {
+            rng = randomSeed.HasValue ? new System.Random(randomSeed.Value) : new System.Random();
+
             List<ChessmanSchema> pieces = null;
 
             if (data == null) {
