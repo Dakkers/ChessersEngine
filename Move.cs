@@ -45,8 +45,17 @@ namespace ChessersEngine {
 
         readonly MoveResult moveResult;
 
-        public Move (Board _board, MoveAttempt moveAttempt, bool jumpsOnly = false) {
+        /// <summary>
+        /// When true, PostValidationHandler decides whether to keep the turn open (for a
+        /// multi-jump continuation) using check-VALIDATED jumps instead of merely potential
+        /// ones. Only the "real" move being executed needs this; the nested moves it spawns to
+        /// test legality set it to false so the validation does not recurse.
+        /// </summary>
+        readonly bool validateContinuationLegality;
+
+        public Move (Board _board, MoveAttempt moveAttempt, bool jumpsOnly = false, bool validateContinuationLegality = false) {
             board = _board;
+            this.validateContinuationLegality = validateContinuationLegality;
 
             chessman = board.GetChessman(moveAttempt.pieceId);
             toTile = board.GetTile(moveAttempt.tileId);
@@ -79,13 +88,14 @@ namespace ChessersEngine {
             potentialTilesForMovement = board.GetPotentialTilesForMovement(chessman, jumpsOnly: jumpsOnly);
         }
 
-        public Move (Board _board, int pieceId, int tileId, bool jumpsOnly = false) : this(
+        public Move (Board _board, int pieceId, int tileId, bool jumpsOnly = false, bool validateContinuationLegality = false) : this(
             _board,
             new MoveAttempt {
                 pieceId = pieceId,
                 tileId = tileId
             },
-            jumpsOnly
+            jumpsOnly,
+            validateContinuationLegality
         ) { }
 
         #region Move types
@@ -820,7 +830,16 @@ namespace ChessersEngine {
                 //
                 // It can't just be any potential move after the previous move, it needs to be a jump!
                 List<Tile> nextMovePotentialTiles = board.GetPotentialTilesForMovement(chessman, jumpsOnly: true);
-                shouldChangeTurns = (nextMovePotentialTiles.Count == 0);
+
+                if (validateContinuationLegality) {
+                    // The turn only stays open if a LEGAL continuation jump exists. Using potential
+                    // (un-validated) jumps here caused a deadlock: if the sole continuation was an
+                    // illegal jump (e.g. the piece is pinned), the turn never changed and the player
+                    // was left with no legal move while the game was not flagged as over.
+                    shouldChangeTurns = !HasLegalJumpContinuation(nextMovePotentialTiles);
+                } else {
+                    shouldChangeTurns = (nextMovePotentialTiles.Count == 0);
+                }
             }
 
             if (shouldChangeTurns) {
@@ -828,6 +847,24 @@ namespace ChessersEngine {
             }
 
             moveResult.valid = true;
+        }
+
+        /// <summary>
+        /// Determines whether the moved chessman has at least one LEGAL (check-validated) jump
+        /// continuation among the supplied potential jump tiles. Each candidate is simulated on a
+        /// board copy; the nested Move is created with validateContinuationLegality = false so this
+        /// check does not recurse.
+        /// </summary>
+        bool HasLegalJumpContinuation (List<Tile> potentialJumpTiles) {
+            foreach (Tile jumpTile in potentialJumpTiles) {
+                Board boardCopy = board.CreateCopy();
+                Move continuation = new Move(boardCopy, chessman.id, jumpTile.id, jumpsOnly: true);
+                if (continuation.GetPseudoLegalMoveResult().valid) {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }

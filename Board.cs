@@ -1424,7 +1424,9 @@ namespace ChessersEngine {
         public MoveResult MoveChessman (MoveAttempt moveAttempt, bool jumpsOnly = false) {
             Board boardCopy = CreateCopy();
 
-            Move move = new Move(boardCopy, moveAttempt, jumpsOnly);
+            // This is a "real" move being committed, so its turn-change decision must consider
+            // only legal jump continuations (validateContinuationLegality).
+            Move move = new Move(boardCopy, moveAttempt, jumpsOnly, validateContinuationLegality: true);
             MovementValidationEndResult result = move.ExecuteMove();
 
             if (!result.moveResult.valid) {
