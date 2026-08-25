@@ -2,11 +2,20 @@
 
 JSON Schemas (draft 2020-12) for the golden-corpus files that `chessers` writes.
 
-The format version lives in the **`$schema` URI**, not in a separate field — each
-oracle file references the exact schema it was written for, e.g.:
+The format version lives in the **`$schema` URI** — each oracle file references
+the exact schema it was written for, e.g.:
 
 ```json
 "$schema": ".../ChessersEngine.Cli/schemas/oracle.v1.schema.json"
+```
+
+A machine-readable `schemaVersion` field mirrors that version for consumers that
+don't parse the URI. [`check_oracle.py`](check_oracle.py) enforces that the two
+markers agree and that files validate; it runs in CI (`.github/workflows/build.yml`)
+and can be run locally:
+
+```bash
+python3 ChessersEngine.Cli/schemas/check_oracle.py ChessersEngine.Cli/schemas path/to/*.json
 ```
 
 ## Versioning policy

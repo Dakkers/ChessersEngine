@@ -80,11 +80,15 @@ Each file opens with a `$schema` reference to a versioned JSON Schema (draft
 2020-12) under [`schemas/`](schemas/) — the **format version lives in that URI**
 (currently `oracle.v1.schema.json`), so editors and validators can check it and
 old files always resolve the schema they were written for. See
-[`schemas/README.md`](schemas/README.md) for the versioning policy.
+[`schemas/README.md`](schemas/README.md) for the versioning policy. A
+machine-readable `schemaVersion` field mirrors that version; a CI check
+([`schemas/check_oracle.py`](schemas/check_oracle.py)) enforces that the two stay
+in sync (and that generated files validate).
 
 ```jsonc
 {
   "$schema": "https://raw.githubusercontent.com/Dakkers/ChessersEngine/master/ChessersEngine.Cli/schemas/oracle.v1.schema.json",
+  "schemaVersion": 1,
   "engine": "ChessersEngine (C#)",
   "config": {
     "white": "human", "black": "ai", "aiLevel": 2, "randomSeed": 42,

@@ -4,12 +4,16 @@
   "title": "Chessers oracle game (v1)",
   "description": "A single recorded Chessers game emitted by ChessersEngine.Cli: the initial board, every move attempt with its full engine MoveResult, and a board snapshot after each turn. Replayable for differential testing of a port. The format version lives in the `$schema` URI (this is v1); released versions are kept immutably under ChessersEngine.Cli/schemas/.",
   "type": "object",
-  "required": ["$schema", "engine", "config", "initialPieces", "plies", "outcome"],
+  "required": ["$schema", "schemaVersion", "engine", "config", "initialPieces", "plies", "outcome"],
   "additionalProperties": false,
   "properties": {
     "$schema": {
       "const": "https://raw.githubusercontent.com/Dakkers/ChessersEngine/master/ChessersEngine.Cli/schemas/oracle.v1.schema.json",
       "description": "Identifies the format version; v1 pins to this exact schema file."
+    },
+    "schemaVersion": {
+      "const": 1,
+      "description": "Machine-readable format version; must equal the vN in $schema (a CI check enforces this)."
     },
     "engine": { "type": "string", "description": "Identifier of the engine that produced this file." },
     "config": { "$ref": "#/$defs/config" },

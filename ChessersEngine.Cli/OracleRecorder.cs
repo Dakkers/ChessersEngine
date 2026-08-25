@@ -21,6 +21,11 @@ namespace ChessersEngine.Cli {
         public string Schema { get; set; } =
             "https://raw.githubusercontent.com/Dakkers/ChessersEngine/master/ChessersEngine.Cli/schemas/oracle.v1.schema.json";
 
+        // Machine-readable format version, for consumers that don't parse the `$schema` URI. A CI
+        // check (ChessersEngine.Cli/schemas/check_oracle.py) enforces that this stays in sync with
+        // the "vN" in `$schema` above.
+        public int schemaVersion { get; set; } = 1;
+
         public string engine { get; set; } = "ChessersEngine (C#)";
         public GameConfigDto config { get; set; }
         public List<ChessmanSchema> initialPieces { get; set; }
