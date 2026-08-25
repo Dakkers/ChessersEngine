@@ -362,6 +362,7 @@ namespace ChessersEngine {
         public static bool CanBePromoted (Chessman chessman, Tile tile) {
             return (
                 chessman.IsPawn() &&
+                !chessman.isChecker &&
                 !chessman.isPromoted && (
                     ((chessman.color == ColorEnum.BLACK) && (GetRow(tile.id) == 0)) ||
                     ((chessman.color == ColorEnum.WHITE) && (GetRow(tile.id) == 7))

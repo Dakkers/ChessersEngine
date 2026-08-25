@@ -650,8 +650,9 @@ namespace ChessersEngine {
                 chessman.TogglePolarity();
             }
 
-            // -- Handle promotion for pawn if not already promoted
-            if (!chessman.isPromoted && chessman.IsPawn()) {
+            // -- Handle promotion for pawn if not already promoted. A checker (a pawn that
+            // crossed the midline) reaching the back rank is KINGED, not promoted, so exclude it.
+            if (!chessman.isPromoted && chessman.IsPawn() && !chessman.IsChecker()) {
                 if (chessman.IsWhite()) {
                     moveResult.promotionOccurred = (toRow == Constants.RANK_8);
                 } else {
