@@ -150,8 +150,9 @@ namespace ChessersEngine {
                     );
                 }
 
-                if (promotionOccurred) {
-                    // "h7h8" becomes "h7h8Q"
+                if (promotionOccurred && promotionRank != null) {
+                    // "h7h8" becomes "h7h8Q". Guard against a null rank: a MoveResult should not
+                    // carry promotionOccurred without a rank, but never crash notation if it does.
                     moveNotation += Helpers.ConvertChessmanKindToNotationSymbol((ChessmanKindEnum) promotionRank);
                 }
             }

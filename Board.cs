@@ -697,7 +697,7 @@ namespace ChessersEngine {
         }
 
         public List<Tile> CanChessmanBeCaptured (Chessman chessman) {
-            return (
+            List<Tile> result = (
                 CanChessmanBeCapturedVertically(chessman)
                 .Concat(CanChessmanBeCapturedHorizontally(chessman))
                 .Concat(CanChessmanBeCapturedDiagonally(chessman))
@@ -712,6 +712,26 @@ namespace ChessersEngine {
                 )
                 .ToList()
             );
+
+            // A (non-checker) king attacks all 8 adjacent squares. This only matters when the
+            // piece being examined is itself a king: two kings may never be adjacent, and a
+            // checkmate "escape" onto a square defended by the enemy king is not actually safe.
+            // (Scoped to kings so the capture-jump path search, which queries non-king pieces,
+            // is unaffected.)
+            if (chessman.IsKing()) {
+                result = result.Concat(
+                    GetAdjacentTiles(chessman.GetUnderlyingTile())
+                    .Where((t) => (
+                        !t.IsDeathjumpTile() &&
+                        t.IsOccupied() &&
+                        t.GetPiece().IsKing() &&
+                        !t.GetPiece().IsChecker() &&
+                        !t.GetPiece().IsSameColor(chessman)
+                    ))
+                ).ToList();
+            }
+
+            return result;
         }
 
         public List<Tile> CanTileBeMovedOnToByChessman (Tile tile) {
@@ -828,6 +848,25 @@ namespace ChessersEngine {
             (int row, int col) = GetRowColumn(tile);
 
             return new List<Tile> {
+                GetTileByRowColumn(row + 1, col + 1),
+                GetTileByRowColumn(row + 1, col - 1),
+                GetTileByRowColumn(row - 1, col + 1),
+                GetTileByRowColumn(row - 1, col - 1),
+            }.Where((t) => t != null).ToList();
+        }
+
+        /// <summary>
+        /// Given a tile, gets all of the orthogonally and diagonally adjacent tiles
+        /// (the up-to-8 tiles a king could reach in one step).
+        /// </summary>
+        public List<Tile> GetAdjacentTiles (Tile tile) {
+            (int row, int col) = GetRowColumn(tile);
+
+            return new List<Tile> {
+                GetTileByRowColumn(row + 1, col),
+                GetTileByRowColumn(row - 1, col),
+                GetTileByRowColumn(row, col + 1),
+                GetTileByRowColumn(row, col - 1),
                 GetTileByRowColumn(row + 1, col + 1),
                 GetTileByRowColumn(row + 1, col - 1),
                 GetTileByRowColumn(row - 1, col + 1),
@@ -1044,16 +1083,20 @@ namespace ChessersEngine {
 
             int modifier = (chessman.IsBlack()) ? -1 : 1;
 
-            Tile tileForRegularMovement = GetTile(tile.id + modifier * GetNumberOfColumns());
-            if (!tileForRegularMovement.IsOccupied()) {
+            // Use the bounds-safe accessor (GetTile throws for off-board ids). A pawn that has
+            // reached a row with no square ahead simply has no forward move.
+            Tile tileForRegularMovement = GetTileByRowColumn(row + modifier, col);
+            if (tileForRegularMovement != null && !tileForRegularMovement.IsOccupied()) {
                 potentialTiles.Add(tileForRegularMovement);
             }
 
-            Tile tileForLongMovement = GetTile(tile.id + 2 * modifier * GetNumberOfColumns());
+            Tile tileForLongMovement = GetTileByRowColumn(row + (2 * modifier), col);
             if (
                 !chessman.hasMoved &&
-                !tileForLongMovement.IsOccupied() &&
-                !tileForRegularMovement.IsOccupied()
+                tileForRegularMovement != null &&
+                !tileForRegularMovement.IsOccupied() &&
+                tileForLongMovement != null &&
+                !tileForLongMovement.IsOccupied()
             ) {
                 potentialTiles.Add(tileForLongMovement);
             }
@@ -1199,21 +1242,30 @@ namespace ChessersEngine {
                         continue;
                     }
 
-                    // Now check that all in-between tiles would not lead to a capture of the king.
-                    List<ChessmanSchema> allSchemas = GetChessmanSchemas();
-                    ChessmanSchema kingSchema = allSchemas.Find((otherCs) => otherCs.id == kingChessman.id);
-                    //Match.Log(kingSchema.location);
+                    // Now check that none of the squares the king TRAVERSES are attacked. The king
+                    // steps from its column to the castling tile's column, so only those squares
+                    // matter (the b-file square on a queenside castle is not one of them - it only
+                    // needs to be empty, which was checked above).
+                    int destColumn = GetColumn(castlingTile);
+                    int safetyStep = Math.Sign(destColumn - kingTileColumn);
 
-                    for (int colIter = lower + 1; colIter < upper; colIter++) {
-                        // Forcefully place the king...
-                        int iterTileId = GetTileByRowColumn(row, colIter).id;
-                        kingSchema.location = iterTileId;
-
+                    for (int colIter = kingTileColumn + safetyStep; ; colIter += safetyStep) {
+                        // Actually place the king on the in-between tile (which is guaranteed empty
+                        // by the occupancy check above) before testing whether it can be captured.
                         Board boardCopy = this.CreateCopy();
                         Chessman kingCopy = kingChessman.IsWhite() ? boardCopy.GetWhiteKing() : boardCopy.GetBlackKing();
 
+                        Tile iterTile = boardCopy.GetTileByRowColumn(row, colIter);
+                        kingCopy.GetUnderlyingTile().RemovePiece();
+                        iterTile.SetPiece(kingCopy);
+                        kingCopy.SetUnderlyingTile(iterTile);
+
                         if (boardCopy.CanChessmanBeCaptured(kingCopy).Count > 0) {
                             isValid = false;
+                            break;
+                        }
+
+                        if (colIter == destColumn) {
                             break;
                         }
                     }
@@ -1267,14 +1319,17 @@ namespace ChessersEngine {
             }
 
             foreach (var t in movementsJumps) {
-                Tile potentialTile = GetTileIfExists(row + t.Item1, col + t.Item2);
+                // GetTileByRowColumn enforces the deathjumpSetting bounds: it only returns a
+                // back-edge death tile when the setting is BACK/ALL and a side-edge death tile
+                // when it is SIDES/ALL (and never off-board under OFF). GetTileIfExists would
+                // ignore the setting, which let SIDES games do back deathjumps and vice versa.
+                Tile potentialTile = GetTileByRowColumn(row + t.Item1, col + t.Item2);
                 Tile jumpOverTile = GetTileIfExists(row + (t.Item1 / 2), col + (t.Item2 / 2));
 
                 if (
                     (potentialTile == null) ||
                     (jumpOverTile == null) ||
-                    (potentialTile.IsDeathjumpTile() && chessman.IsKing()) ||
-                    (potentialTile.IsDeathjumpTile() && matchConfig.deathjumpSetting == DeathjumpSetting.OFF)
+                    (potentialTile.IsDeathjumpTile() && chessman.IsKing())
                 ) {
                     continue;
                 }
@@ -1369,7 +1424,9 @@ namespace ChessersEngine {
         public MoveResult MoveChessman (MoveAttempt moveAttempt, bool jumpsOnly = false) {
             Board boardCopy = CreateCopy();
 
-            Move move = new Move(boardCopy, moveAttempt, jumpsOnly);
+            // This is a "real" move being committed, so its turn-change decision must consider
+            // only legal jump continuations (validateContinuationLegality).
+            Move move = new Move(boardCopy, moveAttempt, jumpsOnly, validateContinuationLegality: true);
             MovementValidationEndResult result = move.ExecuteMove();
 
             if (!result.moveResult.valid) {
@@ -1440,6 +1497,10 @@ namespace ChessersEngine {
                 Tile rookFromTile = colDelta > 0 ? GetRightmostTileOfRow(row) : GetLeftmostTileOfRow(row);
                 rookFromTile.SetPiece(rookChessman);
                 rookChessman.SetUnderlyingTile(rookFromTile);
+                // Castling is only legal when the rook has not moved, so undoing it always
+                // restores the rook to its unmoved state. (The king's hasMoved is restored
+                // above via moveResult.wasFirstMoveForPiece; the rook has no such flag.)
+                rookChessman.SetHasMoved(false);
             }
         }
 

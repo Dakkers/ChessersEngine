@@ -1,0 +1,816 @@
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
+using System.Linq;
+using System.Text.RegularExpressions;
+using System.Threading;
+using ChessersEngine;
+
+namespace ChessersEngine.Cli {
+    enum PlayerKind { Human, Ai }
+
+    enum TurnOutcome { Moved, NoLegalMoves, Resigned, Quit }
+
+    enum ThemeChoice { Auto, Dark, Light }
+
+    /// <summary>Parsed command-line options for a run.</summary>
+    class Options {
+        public PlayerKind White = PlayerKind.Human;
+        public PlayerKind Black = PlayerKind.Ai;
+        public int Level = 2;
+        public int? Seed = null;
+        public DeathjumpSetting Deathjump = DeathjumpSetting.OFF;
+        public int Games = 1;
+        public int MaxPlies = 400;
+        public int DelayMs = 0;
+        public string OutDir = "oracle";
+        public bool NoColor = false;
+        public bool Quiet = false; // suppress board rendering (for bulk AI-vs-AI corpus runs)
+        public ThemeChoice Theme = ThemeChoice.Auto;
+    }
+
+    static class Program {
+        static string s_themeLabel = "off";
+
+        static int Main (string[] args) {
+            Options opts;
+            try {
+                opts = ParseArgs(args);
+            } catch (ArgException ex) {
+                Console.Error.WriteLine("error: " + ex.Message);
+                Console.Error.WriteLine();
+                PrintUsage(Console.Error);
+                return 2;
+            }
+
+            if (opts == null) {
+                // --help
+                PrintUsage(Console.Out);
+                return 0;
+            }
+
+            BoardRenderer.UseColor = !opts.NoColor && !Console.IsOutputRedirected;
+
+            if (BoardRenderer.UseColor && !opts.Quiet) {
+                BoardRenderer.Theme = ResolveTheme(opts.Theme, out string themeSource);
+                s_themeLabel = $"{BoardRenderer.Theme.ToString().ToLowerInvariant()} ({themeSource})";
+            } else {
+                s_themeLabel = BoardRenderer.UseColor ? "auto" : "off";
+            }
+
+            string stamp = DateTime.Now.ToString("yyyyMMdd-HHmmss", CultureInfo.InvariantCulture);
+            int completed = 0;
+
+            for (int g = 0; g < opts.Games; g++) {
+                int? seed = opts.Seed.HasValue ? opts.Seed.Value + g : (int?) null;
+                string suffix = opts.Games > 1 ? $"-{g + 1:D3}" : "";
+                string outPath = System.IO.Path.Combine(opts.OutDir, $"chessers-{stamp}{suffix}.json");
+
+                bool interactive = opts.White == PlayerKind.Human || opts.Black == PlayerKind.Human;
+                if (opts.Games > 1) {
+                    Console.WriteLine($"\n=== Game {g + 1} of {opts.Games} (seed={FormatSeed(seed)}) ===");
+                }
+
+                bool keepPlaying = PlayGame(opts, seed, outPath);
+                completed++;
+
+                if (!keepPlaying && interactive) {
+                    // Human asked to quit the whole run.
+                    break;
+                }
+            }
+
+            if (opts.Games > 1) {
+                Console.WriteLine($"\nRecorded {completed} game(s) to ./{opts.OutDir}/");
+            }
+            return 0;
+        }
+
+        /// <summary>Plays a single game to completion. Returns false if the human chose to quit the run.</summary>
+        static bool PlayGame (Options opts, int? seed, string outPath) {
+            var config = new MatchConfig { deathjumpSetting = opts.Deathjump };
+            var match = new Match(null, config, seed);
+
+            int whiteId = match.whitePlayerId;
+            int blackId = match.blackPlayerId;
+
+            var recorder = new OracleRecorder(
+                new GameConfigDto {
+                    white = opts.White.ToString().ToLowerInvariant(),
+                    black = opts.Black.ToString().ToLowerInvariant(),
+                    aiLevel = opts.Level,
+                    randomSeed = seed,
+                    deathjumpSetting = opts.Deathjump.ToString(),
+                    whitePlayerId = whiteId,
+                    blackPlayerId = blackId,
+                },
+                match._GetCommittedBoard().GetChessmanSchemas()
+            );
+
+            bool showBoards = !opts.Quiet;
+            if (showBoards) {
+                Console.WriteLine(Banner(opts, seed, whiteId, blackId));
+            }
+
+            int plyIndex = 0;
+            string endReason = null;
+            bool humanQuit = false;
+
+            while (!match.IsGameOver() && plyIndex < opts.MaxPlies) {
+                ColorEnum moverColor = match.GetCommittedTurnColor();
+                int moverPlayerId = moverColor == ColorEnum.WHITE ? whiteId : blackId;
+                PlayerKind actor = moverColor == ColorEnum.WHITE ? opts.White : opts.Black;
+
+                if (showBoards) {
+                    Console.WriteLine(BoardRenderer.Render(match._GetPendingBoard()));
+                    Console.WriteLine(BoardRenderer.Legend());
+                    Console.WriteLine($"\nTurn {plyIndex + 1}: {moverColor} to move ({actor}).");
+                }
+
+                var turnMoves = new List<OracleMoveDto>();
+                TurnOutcome outcome = actor == PlayerKind.Human
+                    ? PlayHumanTurn(match, moverColor, moverPlayerId, opts.Level, turnMoves, recorder, outPath, showBoards)
+                    : PlayAiTurn(match, moverColor, moverPlayerId, opts.Level, opts.DelayMs, turnMoves, showBoards);
+
+                if (outcome == TurnOutcome.Quit) {
+                    match.ResetTurn();
+                    endReason = "quit";
+                    humanQuit = true;
+                    break;
+                }
+
+                if (outcome == TurnOutcome.Resigned) {
+                    match.ResetTurn();
+                    match.Resign(moverPlayerId);
+                    endReason = "resignation";
+                    break;
+                }
+
+                if (outcome == TurnOutcome.NoLegalMoves) {
+                    // The engine flags mate/stalemate as part of the *opponent's* move, so reaching
+                    // here means an unflagged dead position. Adjudicate as a draw and record it.
+                    endReason = "no-legal-moves";
+                    break;
+                }
+
+                match.CommitTurn();
+
+                recorder.AddPly(new OraclePlyDto {
+                    index = plyIndex + 1,
+                    turnColor = moverColor.ToString(),
+                    playerId = moverPlayerId,
+                    actor = actor.ToString().ToLowerInvariant(),
+                    moves = turnMoves,
+                    committedNotation = match.GetLastMove(),
+                    boardAfter = match._GetCommittedBoard().GetChessmanSchemas(),
+                });
+
+                plyIndex++;
+
+                if (showBoards && turnMoves.Count > 0) {
+                    var last = turnMoves[turnMoves.Count - 1].result;
+                    if (last.isWinningMove) Console.WriteLine("\n** Checkmate! **");
+                    else if (last.isStalemate) Console.WriteLine("\n** Stalemate. **");
+                }
+            }
+
+            if (endReason == null) {
+                if (match.HasWinner()) endReason = "checkmate";
+                else if (match.IsDraw()) endReason = "stalemate";
+                else if (plyIndex >= opts.MaxPlies) endReason = "move-limit";
+            }
+
+            recorder.SetOutcome(BuildOutcome(match, endReason));
+
+            // Final board + result summary.
+            if (showBoards) {
+                Console.WriteLine(BoardRenderer.Render(match._GetCommittedBoard()));
+            }
+            Console.WriteLine(ResultLine(match, endReason, whiteId));
+
+            recorder.Write(outPath);
+            Console.WriteLine($"Oracle written: {outPath}  ({recorder.Game.plies.Count} plies)");
+
+            return !humanQuit;
+        }
+
+        #region Turn logic
+
+        static TurnOutcome PlayAiTurn (
+            Match match,
+            ColorEnum moverColor,
+            int moverPlayerId,
+            int level,
+            int delayMs,
+            List<OracleMoveDto> turnMoves,
+            bool showBoards
+        ) {
+            if (showBoards) {
+                Console.WriteLine($"{moverColor} (AI, level {level}) is thinking...");
+            }
+
+            List<MoveAttempt> attempts = match.CalculateBestMove(level);
+            if (attempts == null || attempts.Count == 0 || attempts[0] == null) {
+                return TurnOutcome.NoLegalMoves;
+            }
+
+            foreach (MoveAttempt attempt in attempts) {
+                attempt.playerId = moverPlayerId;
+                MoveResult result = match.MoveChessman(attempt);
+                if (result == null || !result.valid) {
+                    // Should not happen -- the search only returns legal moves -- but never record a
+                    // bogus sub-move if it does.
+                    break;
+                }
+                RecordMove(turnMoves, attempt, result);
+                if (showBoards) {
+                    Console.WriteLine("  " + moverColor + ": " + BoardRenderer.DescribeMove(result));
+                }
+            }
+
+            if (delayMs > 0) {
+                Thread.Sleep(delayMs);
+            }
+            return turnMoves.Count > 0 ? TurnOutcome.Moved : TurnOutcome.NoLegalMoves;
+        }
+
+        static TurnOutcome PlayHumanTurn (
+            Match match,
+            ColorEnum moverColor,
+            int moverPlayerId,
+            int aiLevel,
+            List<OracleMoveDto> turnMoves,
+            OracleRecorder recorder,
+            string outPath,
+            bool showBoards
+        ) {
+            // The id of the piece that must continue a multi-jump (once one is in progress), else -1.
+            int continuationPieceId = -1;
+
+            while (true) {
+                Board board = match._GetPendingBoard();
+
+                if (continuationPieceId >= 0) {
+                    Chessman cont = match.GetPendingChessman(continuationPieceId);
+                    var jumps = board.GetValidTilesForMovement(cont, jumpsOnly: true);
+                    Console.WriteLine($"  Multi-jump in progress with {BoardRenderer.TileToSquare(cont.GetUnderlyingTile().id)} " +
+                        $"-> continue to: {FormatTargets(jumps)}");
+                }
+
+                Console.Write(continuationPieceId >= 0 ? "  continue> " : "move> ");
+                string line = Console.ReadLine();
+
+                if (line == null) {
+                    // EOF (piped input exhausted / Ctrl-D): treat as quit.
+                    return TurnOutcome.Quit;
+                }
+
+                line = line.Trim();
+                if (line.Length == 0) {
+                    continue;
+                }
+
+                string lower = line.ToLowerInvariant();
+                string[] parts = Regex.Split(lower, @"[\s\-]+").Where(p => p.Length > 0).ToArray();
+                string cmd = parts[0];
+
+                // -- Non-move commands
+                if (cmd == "help" || cmd == "?") { PrintInGameHelp(); continue; }
+                if (cmd == "board") { Console.WriteLine(BoardRenderer.Render(board)); continue; }
+                if (cmd == "legend") { Console.WriteLine(BoardRenderer.Legend()); continue; }
+                if (cmd == "quit" || cmd == "exit") { return TurnOutcome.Quit; }
+                if (cmd == "resign") {
+                    turnMoves.Clear();
+                    return TurnOutcome.Resigned;
+                }
+                if (cmd == "save") {
+                    // Persist a partial record so an in-progress game is never lost.
+                    recorder.SetOutcome(BuildOutcome(match, "in-progress"));
+                    recorder.Write(outPath);
+                    Console.WriteLine($"  saved partial oracle to {outPath}");
+                    continue;
+                }
+                if (cmd == "moves") {
+                    ShowMovesFor(match, moverColor, parts.Length > 1 ? parts[1] : null, continuationPieceId);
+                    continue;
+                }
+                if (cmd == "hint") { ShowHint(match, moverColor, aiLevel); continue; }
+
+                // -- Otherwise, parse as a move
+                if (!TryParseMove(parts, out bool hasFrom, out int fromTile, out int toTile, out int explicitPromo, out string parseErr)) {
+                    Console.WriteLine("  " + parseErr + "  (type 'help' for input formats)");
+                    continue;
+                }
+
+                Chessman piece;
+                if (hasFrom) {
+                    piece = board.GetTileIfExists(fromTile)?.GetPiece();
+                    if (piece == null) {
+                        Console.WriteLine($"  No piece on {BoardRenderer.TileToSquare(fromTile)}.");
+                        continue;
+                    }
+                    if (piece.color != moverColor) {
+                        Console.WriteLine($"  {BoardRenderer.TileToSquare(fromTile)} holds a {piece.color} piece; it's {moverColor}'s turn.");
+                        continue;
+                    }
+                } else {
+                    // Destination-only ("a4"): infer the unique legal mover.
+                    piece = InferMover(match, board, moverColor, toTile, continuationPieceId, out string inferMsg);
+                    if (piece == null) {
+                        Console.WriteLine("  " + inferMsg);
+                        continue;
+                    }
+                }
+
+                if (continuationPieceId >= 0 && piece.id != continuationPieceId) {
+                    Console.WriteLine("  You must continue the multi-jump with the same piece.");
+                    continue;
+                }
+
+                string fromSquare = BoardRenderer.TileToSquare(piece.GetUnderlyingTile().id);
+                int promo = ResolvePromotion(piece, moverColor, toTile, explicitPromo);
+
+                var attempt = new MoveAttempt {
+                    playerId = moverPlayerId,
+                    pieceId = piece.id,
+                    pieceGuid = piece.guid,
+                    tileId = toTile,
+                    promotionRank = promo,
+                };
+
+                MoveResult result = match.MoveChessman(attempt);
+                if (result == null) {
+                    Console.WriteLine("  Rejected (not your turn / target occupied by your own piece).");
+                    RecordRejected(recorder, moverColor, moverPlayerId, attempt, null, board);
+                    continue;
+                }
+                if (!result.valid) {
+                    Console.WriteLine($"  Illegal move for that piece. Try 'moves {fromSquare}' to list legal targets.");
+                    RecordRejected(recorder, moverColor, moverPlayerId, attempt, result, board);
+                    continue;
+                }
+
+                RecordMove(turnMoves, attempt, result);
+                if (showBoards) {
+                    Console.WriteLine("  " + moverColor + ": " + BoardRenderer.DescribeMove(result));
+                }
+
+                if (result.turnChanged || result.isWinningMove || result.isStalemate) {
+                    return TurnOutcome.Moved;
+                }
+
+                // A checker jump that leaves a legal continuation: the same piece must jump again.
+                continuationPieceId = result.pieceId;
+                if (showBoards) {
+                    Console.WriteLine(BoardRenderer.Render(match._GetPendingBoard()));
+                }
+            }
+        }
+
+        #endregion
+
+        #region Move helpers
+
+        static void RecordMove (List<OracleMoveDto> turnMoves, MoveAttempt attempt, MoveResult result) {
+            string notation = result.CreateNotation();
+            result.notation = notation;
+            turnMoves.Add(new OracleMoveDto {
+                attempt = attempt,
+                notation = notation,
+                result = result,
+            });
+        }
+
+        /// <summary>
+        /// Record a move the engine rejected, against the (unchanged) board it was tried on, so a
+        /// port can assert it rejects the same attempt the same way. `result` is null when the
+        /// engine returned null; otherwise it is the invalid MoveResult. No notation is generated
+        /// for a rejected attempt (an invalid result may not hold well-formed coordinates).
+        /// </summary>
+        static void RecordRejected (
+            OracleRecorder recorder,
+            ColorEnum moverColor,
+            int moverPlayerId,
+            MoveAttempt attempt,
+            MoveResult result,
+            Board board
+        ) {
+            recorder.AddRejected(new RejectedAttemptDto {
+                turnColor = moverColor.ToString(),
+                playerId = moverPlayerId,
+                attempt = attempt,
+                result = result,
+                board = board.GetChessmanSchemas(),
+            });
+        }
+
+        /// <summary>
+        /// Decide the promotion rank to attach to a move attempt. Mirrors the engine's own
+        /// auto-queen (Helpers.CanBePromoted) but lets a human under-promote by typing a suffix.
+        /// </summary>
+        static int ResolvePromotion (Chessman piece, ColorEnum moverColor, int toTile, int explicitPromo) {
+            if (toTile < 0 || !piece.IsPawn() || piece.isPromoted) {
+                return -1;
+            }
+            int toRow = toTile / 8;
+            bool backRank = (moverColor == ColorEnum.WHITE && toRow == 7) ||
+                            (moverColor == ColorEnum.BLACK && toRow == 0);
+            if (!backRank) {
+                return -1;
+            }
+            return explicitPromo >= 0 ? explicitPromo : (int) ChessmanKindEnum.QUEEN;
+        }
+
+        /// <summary>
+        /// Parse a typed move. Supports explicit from+to ("a2a4", "a2 a4", "b3-a4") and
+        /// destination-only ("a4"), each with an optional promotion suffix ("a8q", "a7 a8 q").
+        /// When only a destination is given, <paramref name="hasFrom"/> is false and the caller
+        /// infers the mover from the legal moves.
+        /// </summary>
+        static bool TryParseMove (string[] parts, out bool hasFrom, out int fromTile, out int toTile, out int promo, out string error) {
+            hasFrom = false;
+            fromTile = toTile = int.MinValue;
+            promo = -1;
+            error = null;
+
+            // Compact "e2e4" / "e7e8q" form (explicit from+to, pure algebraic).
+            if (parts.Length == 1 && Regex.IsMatch(parts[0], "^[a-h][1-8][a-h][1-8][qrbn]?$")) {
+                BoardRenderer.TryParseTile(parts[0].Substring(0, 2), out fromTile);
+                BoardRenderer.TryParseTile(parts[0].Substring(2, 2), out toTile);
+                if (parts[0].Length == 5) TryParsePromo(parts[0].Substring(4, 1), out promo);
+                hasFrom = true;
+                return true;
+            }
+
+            var toks = new List<string>(parts);
+
+            // Peel off a trailing promotion letter, but only when a square precedes it.
+            if (toks.Count >= 2 && TryParsePromo(toks[toks.Count - 1], out int p)) {
+                promo = p;
+                toks.RemoveAt(toks.Count - 1);
+            }
+
+            if (toks.Count == 1) {
+                // Destination only ("a4", "#-14"); the mover is inferred from the legal moves.
+                if (!BoardRenderer.TryParseTile(toks[0], out toTile)) {
+                    error = $"'{toks[0]}' is not a valid square.";
+                    return false;
+                }
+                hasFrom = false;
+                return true;
+            }
+
+            if (toks.Count == 2) {
+                // Explicit from + to ("a2 a4", "b3 a4").
+                if (!BoardRenderer.TryParseTile(toks[0], out fromTile)) {
+                    error = $"'{toks[0]}' is not a valid square.";
+                    return false;
+                }
+                if (!BoardRenderer.TryParseTile(toks[1], out toTile)) {
+                    error = $"'{toks[1]}' is not a valid square.";
+                    return false;
+                }
+                hasFrom = true;
+                return true;
+            }
+
+            error = "Could not read a move.";
+            return false;
+        }
+
+        /// <summary>
+        /// Resolve a destination-only move ("a4") to the one legal piece that can reach the tile.
+        /// Returns null with an explanatory message when there is no such move, or when more than
+        /// one piece could make it (the caller then asks for an explicit from-square).
+        /// </summary>
+        static Chessman InferMover (Match match, Board board, ColorEnum moverColor, int toTile, int continuationPieceId, out string message) {
+            message = null;
+
+            if (continuationPieceId >= 0) {
+                // Mid multi-jump: only the jumping piece may move, so the mover is unambiguous.
+                return match.GetPendingChessman(continuationPieceId);
+            }
+
+            var candidates = new List<Chessman>();
+            foreach (Chessman c in board.GetActiveChessmenOfColor(moverColor)) {
+                if (board.GetValidTilesForMovement(c, jumpsOnly: false).Any(t => t.id == toTile)) {
+                    candidates.Add(c);
+                }
+            }
+
+            string dest = BoardRenderer.TileToSquare(toTile);
+            if (candidates.Count == 0) {
+                message = $"No legal move to {dest}. (Type 'moves <sq>' to see a piece's options.)";
+                return null;
+            }
+            if (candidates.Count > 1) {
+                var froms = candidates.Select(c => BoardRenderer.TileToSquare(c.GetUnderlyingTile().id)).ToList();
+                message = $"Ambiguous: {string.Join(", ", froms)} can all reach {dest}. " +
+                          $"Name the piece, e.g. {froms[0]}{dest}.";
+                return null;
+            }
+            return candidates[0];
+        }
+
+        static bool TryParsePromo (string tok, out int rank) {
+            rank = -1;
+            switch (tok.Trim().TrimStart('=').ToLowerInvariant()) {
+                case "q": rank = (int) ChessmanKindEnum.QUEEN; return true;
+                case "r": rank = (int) ChessmanKindEnum.ROOK; return true;
+                case "b": rank = (int) ChessmanKindEnum.BISHOP; return true;
+                case "n": rank = (int) ChessmanKindEnum.KNIGHT; return true;
+                default: return false;
+            }
+        }
+
+        static string FormatTargets (List<Tile> tiles) {
+            if (tiles == null || tiles.Count == 0) return "(none)";
+            return string.Join(" ", tiles.Select(t => BoardRenderer.TileToSquare(t.id)));
+        }
+
+        static void ShowMovesFor (Match match, ColorEnum moverColor, string squareTok, int continuationPieceId) {
+            Board board = match._GetPendingBoard();
+
+            if (squareTok == null) {
+                Console.WriteLine("  usage: moves <square>   e.g. 'moves e2'");
+                return;
+            }
+            if (!BoardRenderer.TryParseTile(squareTok, out int tileId)) {
+                Console.WriteLine($"  '{squareTok}' is not a valid square.");
+                return;
+            }
+            Chessman piece = board.GetTileIfExists(tileId)?.GetPiece();
+            if (piece == null) {
+                Console.WriteLine($"  No piece on {BoardRenderer.TileToSquare(tileId)}.");
+                return;
+            }
+            if (piece.color != moverColor) {
+                Console.WriteLine($"  {BoardRenderer.TileToSquare(tileId)} holds a {piece.color} piece.");
+                return;
+            }
+            bool jumpsOnly = continuationPieceId >= 0;
+            var targets = board.GetValidTilesForMovement(piece, jumpsOnly);
+            Console.WriteLine($"  Legal targets for {BoardRenderer.TileToSquare(tileId)}: {FormatTargets(targets)}");
+        }
+
+        static void ShowHint (Match match, ColorEnum moverColor, int level) {
+            List<MoveAttempt> best = match.CalculateBestMove(level);
+            if (best == null || best.Count == 0 || best[0] == null) {
+                Console.WriteLine("  No suggestion available.");
+                return;
+            }
+            var parts = best.Select(a => {
+                Chessman c = match.GetCommittedChessman(a.pieceId);
+                string from = c?.GetUnderlyingTile() != null ? BoardRenderer.TileToSquare(c.GetUnderlyingTile().id) : "?";
+                return $"{from}{BoardRenderer.TileToSquare(a.tileId)}";
+            });
+            Console.WriteLine("  Suggestion: " + string.Join(", ", parts));
+        }
+
+        #endregion
+
+        #region Outcome / banners
+
+        static GameOutcomeDto BuildOutcome (Match match, string reason) {
+            bool hasWinner = match.HasWinner();
+            return new GameOutcomeDto {
+                gameOver = match.IsGameOver(),
+                winningPlayerId = hasWinner ? match.GetWinner() : -1,
+                winningColor = hasWinner ? match.GetWinnerColor().ToString() : null,
+                isDraw = match.IsDraw(),
+                isResignation = reason == "resignation",
+                reason = reason,
+            };
+        }
+
+        static string ResultLine (Match match, string reason, int whiteId) {
+            if (match.HasWinner()) {
+                ColorEnum wc = match.GetWinnerColor();
+                return $"Result: {wc} wins ({reason}).";
+            }
+            if (match.IsDraw()) {
+                return $"Result: draw ({reason}).";
+            }
+            return $"Result: game ended ({reason}); no winner recorded.";
+        }
+
+        static string Banner (Options opts, int? seed, int whiteId, int blackId) {
+            return
+                "\n================ CHESSERS (terminal) ================\n" +
+                $"  White: {opts.White}  (player {whiteId})\n" +
+                $"  Black: {opts.Black}  (player {blackId})\n" +
+                $"  AI level: {opts.Level}   Deathjump: {opts.Deathjump}   Seed: {FormatSeed(seed)}   Theme: {s_themeLabel}\n" +
+                "  Type 'help' at the prompt for commands.\n" +
+                "====================================================";
+        }
+
+        static string FormatSeed (int? seed) => seed.HasValue ? seed.Value.ToString() : "random";
+
+        static void PrintInGameHelp () {
+            Console.WriteLine(
+                "\n  Move input:\n" +
+                "    e2e4        move from e2 to e4 (also 'e2 e4' or 'e2-e4')\n" +
+                "    e4          destination only -- infers the mover (asks if ambiguous)\n" +
+                "    e7e8q       promote to queen (q/r/b/n; auto-queens if omitted)\n" +
+                "    a3 #-14     '#-14' targets deathjump tile -14 (raw tile id)\n" +
+                "                (deathjump targets are shown as #<id> by 'moves')\n" +
+                "  Commands:\n" +
+                "    moves <sq>  list legal targets for the piece on <sq>\n" +
+                "    hint        suggest a move (runs the AI for your side)\n" +
+                "    board       redraw the board\n" +
+                "    legend      explain the piece symbols\n" +
+                "    save        write the game so far to the oracle file\n" +
+                "    resign      resign the game\n" +
+                "    quit        stop without resigning\n");
+        }
+
+        #endregion
+
+        #region Theme detection
+
+        static BoardRenderer.UiTheme ResolveTheme (ThemeChoice choice, out string source) {
+            if (choice == ThemeChoice.Dark) { source = "flag"; return BoardRenderer.UiTheme.Dark; }
+            if (choice == ThemeChoice.Light) { source = "flag"; return BoardRenderer.UiTheme.Light; }
+
+            // Auto-detect WITHOUT touching stdin -- an in-band terminal query (OSC 11) races with
+            // the player's typing and can eat their input, so we use only side-channel signals:
+            // the terminal's COLORFGBG hint first, then the OS appearance, then assume dark.
+            if (TryColorFgBg(out BoardRenderer.UiTheme cfb)) { source = "COLORFGBG"; return cfb; }
+            if (TryOsAppearance(out BoardRenderer.UiTheme os)) { source = "os"; return os; }
+            source = "default";
+            return BoardRenderer.UiTheme.Dark;
+        }
+
+        /// <summary>
+        /// Classify the terminal from the COLORFGBG env var (set by iTerm2, rxvt, konsole, ...).
+        /// Its last field is the background palette index: 0-6/8 are dark, 7/9-15 are light.
+        /// </summary>
+        static bool TryColorFgBg (out BoardRenderer.UiTheme theme) {
+            theme = BoardRenderer.UiTheme.Dark;
+            string v = Environment.GetEnvironmentVariable("COLORFGBG");
+            if (string.IsNullOrWhiteSpace(v)) {
+                return false;
+            }
+            string[] toks = v.Split(';');
+            if (!int.TryParse(toks[toks.Length - 1], out int bg)) {
+                return false;
+            }
+            bool light = (bg == 7) || (bg >= 9 && bg <= 15);
+            theme = light ? BoardRenderer.UiTheme.Light : BoardRenderer.UiTheme.Dark;
+            return true;
+        }
+
+        /// <summary>
+        /// Ask the OS for its light/dark appearance. macOS: `defaults read -g AppleInterfaceStyle`
+        /// prints "Dark" in dark mode and the key is absent in light mode. Returns false on other
+        /// platforms or if the query can't be run, so the caller falls back to the default.
+        /// </summary>
+        static bool TryOsAppearance (out BoardRenderer.UiTheme theme) {
+            theme = BoardRenderer.UiTheme.Dark;
+            try {
+                if (!OperatingSystem.IsMacOS()) {
+                    return false;
+                }
+                var psi = new ProcessStartInfo("defaults", "read -g AppleInterfaceStyle") {
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                };
+                using Process p = Process.Start(psi);
+                if (p == null) {
+                    return false;
+                }
+                string outp = p.StandardOutput.ReadToEnd();
+                p.WaitForExit(1000);
+                // "Dark" => dark mode; anything else on macOS (key absent) => light mode.
+                theme = outp.Trim().Equals("Dark", StringComparison.OrdinalIgnoreCase)
+                    ? BoardRenderer.UiTheme.Dark
+                    : BoardRenderer.UiTheme.Light;
+                return true;
+            } catch {
+                return false; // never let detection break the game
+            }
+        }
+
+        #endregion
+
+        #region Argument parsing
+
+        class ArgException : Exception {
+            public ArgException (string message) : base(message) { }
+        }
+
+        static Options ParseArgs (string[] args) {
+            var o = new Options();
+            for (int i = 0; i < args.Length; i++) {
+                string a = args[i];
+                string Next (string name) {
+                    if (i + 1 >= args.Length) throw new ArgException($"{name} requires a value");
+                    return args[++i];
+                }
+
+                switch (a) {
+                    case "-h":
+                    case "--help":
+                        return null;
+                    case "--white": o.White = ParseKind(Next(a)); break;
+                    case "--black": o.Black = ParseKind(Next(a)); break;
+                    case "--level": o.Level = ParseIntRange(Next(a), 0, 2, a); break;
+                    case "--seed": o.Seed = ParseInt(Next(a), a); break;
+                    case "--deathjump": o.Deathjump = ParseDeathjump(Next(a)); break;
+                    case "--games": o.Games = ParseIntRange(Next(a), 1, 100000, a); break;
+                    case "--max-plies": o.MaxPlies = ParseIntRange(Next(a), 1, 100000, a); break;
+                    case "--delay": o.DelayMs = ParseIntRange(Next(a), 0, 60000, a); break;
+                    case "--out": o.OutDir = Next(a); break;
+                    case "--no-color": o.NoColor = true; break;
+                    case "--quiet": o.Quiet = true; break;
+                    case "--theme": o.Theme = ParseTheme(Next(a)); break;
+                    // Convenience presets
+                    case "--ai-vs-ai": o.White = PlayerKind.Ai; o.Black = PlayerKind.Ai; break;
+                    case "--hotseat": o.White = PlayerKind.Human; o.Black = PlayerKind.Human; break;
+                    default:
+                        throw new ArgException($"unknown option '{a}'");
+                }
+            }
+            return o;
+        }
+
+        static PlayerKind ParseKind (string s) {
+            switch (s.ToLowerInvariant()) {
+                case "human":
+                case "h": return PlayerKind.Human;
+                case "ai":
+                case "cpu": return PlayerKind.Ai;
+                default: throw new ArgException($"player must be 'human' or 'ai', got '{s}'");
+            }
+        }
+
+        static ThemeChoice ParseTheme (string s) {
+            switch (s.ToLowerInvariant()) {
+                case "auto": return ThemeChoice.Auto;
+                case "dark": return ThemeChoice.Dark;
+                case "light": return ThemeChoice.Light;
+                default: throw new ArgException($"theme must be auto|dark|light, got '{s}'");
+            }
+        }
+
+        static DeathjumpSetting ParseDeathjump (string s) {
+            switch (s.ToLowerInvariant()) {
+                case "off": return DeathjumpSetting.OFF;
+                case "sides": return DeathjumpSetting.SIDES;
+                case "back": return DeathjumpSetting.BACK;
+                case "all": return DeathjumpSetting.ALL;
+                default: throw new ArgException($"deathjump must be off|sides|back|all, got '{s}'");
+            }
+        }
+
+        static int ParseInt (string s, string name) {
+            if (!int.TryParse(s, NumberStyles.Integer, CultureInfo.InvariantCulture, out int v)) {
+                throw new ArgException($"{name} expects an integer, got '{s}'");
+            }
+            return v;
+        }
+
+        static int ParseIntRange (string s, int min, int max, string name) {
+            int v = ParseInt(s, name);
+            if (v < min || v > max) {
+                throw new ArgException($"{name} must be between {min} and {max}, got {v}");
+            }
+            return v;
+        }
+
+        static void PrintUsage (System.IO.TextWriter w) {
+            w.WriteLine(
+                "chessers - terminal Chessers game + oracle recorder\n\n" +
+                "USAGE:\n" +
+                "  dotnet run --project ChessersEngine.Cli -- [options]\n\n" +
+                "OPTIONS:\n" +
+                "  --white human|ai     who controls white   (default: human)\n" +
+                "  --black human|ai     who controls black   (default: ai)\n" +
+                "  --ai-vs-ai           shorthand for --white ai --black ai\n" +
+                "  --hotseat            shorthand for two humans\n" +
+                "  --level 0|1|2        AI strength/search depth (default: 2)\n" +
+                "  --seed <int>         RNG seed for reproducible AI (per game: seed+index)\n" +
+                "  --deathjump MODE     off|sides|back|all   (default: off)\n" +
+                "  --games <n>          play n games in a row (default: 1)\n" +
+                "  --max-plies <n>      adjudicate a draw after n plies (default: 400)\n" +
+                "  --delay <ms>         pause after each AI turn, for watching (default: 0)\n" +
+                "  --out <dir>          oracle output directory (default: ./oracle)\n" +
+                "  --quiet              don't render boards (bulk AI-vs-AI corpus runs)\n" +
+                "  --theme MODE         auto|dark|light color palette (default: auto-detect)\n" +
+                "  --no-color           disable ANSI colors\n" +
+                "  -h, --help           show this help\n\n" +
+                "Each game is written as a self-contained golden-corpus JSON file: the initial\n" +
+                "board, every move attempt with its full MoveResult, and a board snapshot after\n" +
+                "each turn -- replayable by the Rust port for differential testing.\n\n" +
+                "EXAMPLES:\n" +
+                "  # Play white against the AI, reproducible via a seed:\n" +
+                "  dotnet run --project ChessersEngine.Cli -- --white human --black ai --seed 42\n\n" +
+                "  # Generate a 50-game AI-vs-AI corpus quietly:\n" +
+                "  dotnet run --project ChessersEngine.Cli -- --ai-vs-ai --games 50 --seed 1 --quiet\n");
+        }
+
+        #endregion
+    }
+}
