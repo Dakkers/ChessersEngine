@@ -161,7 +161,6 @@ namespace ChessersEngine {
         /// White moves queen from d1 to d8 to capture a queen. The queen would then LIKE to jump a
         /// pawn at c7, but there's a bishop at b8 that puts White in check as the king is at h4.
         /// </summary>
-        /// <returns>The check from attempted capture jump.</returns>
         public static MatchData InCheckFromAttemptedCaptureJump () {
             var md = CreateMatchData();
             md.pieces = new List<ChessmanSchema> {
@@ -179,7 +178,6 @@ namespace ChessersEngine {
         /// <summary>
         /// Check via a capture-deathjump. Queen moves to 5 to put Black into check.
         /// </summary>
-        /// <returns>The jump.</returns>
         public static MatchData InCheckFromCaptureDeathjump1 () {
             var md = CreateMatchData();
             md.pieces = new List<ChessmanSchema> {
@@ -195,7 +193,6 @@ namespace ChessersEngine {
         /// <summary>
         /// Check via a capturejump-deathjump. Queen moves to 5 to put Black into check.
         /// </summary>
-        /// <returns>The jump.</returns>
         public static MatchData InCheckFromCaptureDeathjump2 () {
             var md = CreateMatchData();
             md.pieces = new List<ChessmanSchema> {
@@ -213,7 +210,6 @@ namespace ChessersEngine {
         /// <summary>
         /// Check via a movejump-deathjump. Queen moves to 5 to put Black into check.
         /// </summary>
-        /// <returns>The jump.</returns>
         public static MatchData InCheckFromMoveDeathjump1 () {
             var md = CreateMatchData();
             md.pieces = new List<ChessmanSchema> {
@@ -397,7 +393,6 @@ namespace ChessersEngine {
         /// Simple multijump, and also a helper for the AI to determine which move is better between
         /// jumping over 2 knights or capturing 1 rook (the former is better from a Chess value standpoint.)
         /// </summary>
-        /// <returns>The multijump1.</returns>
         public static MatchData Multijump1 () {
             var md = CreateMatchData();
 
@@ -441,7 +436,6 @@ namespace ChessersEngine {
         /// <summary>
         /// Same as `CaptureMultijump1` but the Queen moves to 41 instead of capturing at 41.
         /// </summary>
-        /// <returns>The jump.</returns>
         public static MatchData MoveJump1 () {
             var md = CaptureMultijump1();
             md.pieces = md.pieces.Where((p) => p.id != Constants.ID_BLACK_PAWN_1).ToList();
@@ -451,7 +445,6 @@ namespace ChessersEngine {
         /// <summary>
         /// Queen moves to 6. It should NOT count as a move-jump if queen were to move to 30 after.
         /// </summary>
-        /// <returns>The jump.</returns>
         public static MatchData MoveJumpInvalid1 () {
             var md = CreateMatchData();
             md.pieces = new List<ChessmanSchema> {
@@ -466,7 +459,6 @@ namespace ChessersEngine {
         /// <summary>
         /// Checker at 37 should NOT be able to move to 44 and then jump over 53 to 62.
         /// </summary>
-        /// <returns>The jump.</returns>
         public static MatchData MoveJumpInvalid2 () {
             var md = CreateMatchData();
             var checkerCS = CreateWhiteQueen(37);
@@ -504,7 +496,6 @@ namespace ChessersEngine {
         /// <summary>
         /// A queen that can do a move-deathjump.
         /// </summary>
-        /// <returns>The jump.</returns>
         public static MatchData DeathJump2 () {
             var md = CreateMatchData();
             md.pieces = new List<ChessmanSchema>() {
@@ -520,7 +511,6 @@ namespace ChessersEngine {
         /// <summary>
         /// A queen that can do a capture-deathjump.
         /// </summary>
-        /// <returns>The jump.</returns>
         public static MatchData DeathJump3 () {
             var md = DeathJump2();
             md.pieces.Add(CreatePawn(Constants.ID_BLACK_PAWN_2, 49));
@@ -598,7 +588,6 @@ namespace ChessersEngine {
         /// <summary>
         /// False positive on being in check via jumping.
         /// </summary>
-        /// <returns>The bug20200405.</returns>
         public static MatchData Bug20200405 () {
             var checker = CreateBlackChecker(Constants.ID_BLACK_PAWN_1, 1);
             checker.isKinged = true;
@@ -623,7 +612,6 @@ namespace ChessersEngine {
         /// that if a capture occurred and the piece became a checker, the piece was allowed to move
         /// again in the same turn even when there WASN'T a jump available. This is to test that.
         /// </summary>
-        /// <returns>The minimax calculation20200627.</returns>
         public static MatchData BugMinimaxCalculation20200627 () {
             var md = CreateMatchData();
             md.pieces = new List<ChessmanSchema> {
@@ -656,7 +644,6 @@ namespace ChessersEngine {
         /// Bug I found while playing with Victor online. I was playing as White. Moving the pawn at
         /// 25 to 34 (capturing a piece)
         /// </summary>
-        /// <returns>The 02.</returns>
         public static MatchData Bug20200701_02 () {
             var md = CreateMatchData();
             md.pieces = new List<ChessmanSchema> {
@@ -699,7 +686,6 @@ namespace ChessersEngine {
         /// <summary>
         /// A bug I found with Pieter. (One of the many...)
         /// </summary>
-        /// <returns>Junk.</returns>
         public static MatchData Bug20200705 () {
             return new MatchData {
                 whitePlayerId = 0,
@@ -822,7 +808,6 @@ namespace ChessersEngine {
         ///
         /// THE SOLUTION: always call `UndoMove`.
         /// </summary>
-        /// <returns>The 01.</returns>
         public static MatchData Bug20200924_01 () {
             var md = CreateMatchData();
             md.currentTurn = ColorEnum.BLACK;
@@ -951,7 +936,6 @@ namespace ChessersEngine {
         /// A bug Pieter and I found. Move knight from 57 (b8) to 42 (c6) - this should be a CHECK
         /// move via 42 -> 25 jump 11 jump 4 (c6 -> b4 jump d2 jump e1).
         /// </summary>
-        /// <returns>The 01.</returns>
         public static MatchData Bug20201024_01 () {
             var md = CreateMatchData();
             md.currentTurn = ColorEnum.BLACK;

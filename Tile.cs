@@ -2,7 +2,7 @@ namespace ChessersEngine {
     public class Tile {
 
         /// <summary>
-        /// Tile identifier, one of [0 ... 63]. Represents the location on the board.
+        /// Tile identifier. On-board tiles are [0 ... 63]; deathjump tiles use negative ids.
         /// </summary>
         public int id;
         public Chessman occupant;
