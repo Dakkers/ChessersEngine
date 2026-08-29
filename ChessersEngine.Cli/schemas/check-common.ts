@@ -74,15 +74,7 @@ export function checkFile(filePath: string, schemasDir: string, cfg: CheckConfig
   return errs;
 }
 
-export function runMain(argv: string[], cfg: CheckConfig, usage: string): number {
-  if (argv.length < 2) {
-    process.stderr.write(usage + "\n");
-    return 2;
-  }
-
-  const schemasDir = argv[0];
-  const files = argv.slice(1);
-
+export function runCheck(schemasDir: string, files: string[], cfg: CheckConfig): number {
   const allErrs = files.flatMap((f) => checkFile(f, schemasDir, cfg));
   const label = cfg.family === "oracle" ? "Oracle" : "Codec";
 

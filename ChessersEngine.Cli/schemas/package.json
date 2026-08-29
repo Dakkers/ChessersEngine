@@ -18,6 +18,7 @@
     "lint:check": "oxlint"
   },
   "dependencies": {
+    "commander": "15.0.0",
     "zod": "4.5.2"
   },
   "devDependencies": {

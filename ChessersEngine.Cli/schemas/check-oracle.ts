@@ -1,26 +1,23 @@
 // Validate oracle files and enforce that their version markers are in sync.
 //
-// Usage:
-//   tsx check-oracle.ts <schemas_dir> <oracle.json> [more.json ...]
+// Usage: node check-oracle.ts <schemasDir> <oracle.json> [more.json ...]
 
-import { runMain } from "./check-common.ts";
+import { Command } from "commander";
+import { runCheck } from "./check-common.ts";
 import { oracleSchemas } from "./schemas.ts";
 
-const usage = [
-  "Validate oracle files and enforce version-marker sync.",
-  "",
-  "Usage:",
-  "  node check-oracle.ts <schemas_dir> <oracle.json> [more.json ...]",
-].join("\n");
-
-process.exit(
-  runMain(
-    process.argv.slice(2),
-    {
-      family: "oracle",
-      uriRe: /oracle\.v(\d+)\.schema\.json$/,
-      schemaByVersion: oracleSchemas,
-    },
-    usage,
-  ),
-);
+new Command()
+  .name("check-oracle")
+  .description("Validate oracle files and enforce version-marker sync.")
+  .argument("<schemasDir>", "directory holding the *.vN.schema.json files")
+  .argument("<files...>", "oracle JSON files to validate")
+  .action((schemasDir: string, files: string[]) => {
+    process.exit(
+      runCheck(schemasDir, files, {
+        family: "oracle",
+        uriRe: /oracle\.v(\d+)\.schema\.json$/,
+        schemaByVersion: oracleSchemas,
+      }),
+    );
+  })
+  .parse();

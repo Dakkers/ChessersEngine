@@ -1,27 +1,24 @@
 // Validate a codec dump and enforce that its version markers are in sync.
 // Mirrors check-oracle.ts for the `codec.vN.schema.json` sibling artifact.
 //
-// Usage:
-//   tsx check-codec.ts <schemas_dir> <codec.json> [more.json ...]
+// Usage: node check-codec.ts <schemasDir> <codec.json> [more.json ...]
 
-import { runMain } from "./check-common.ts";
+import { Command } from "commander";
+import { runCheck } from "./check-common.ts";
 import { codecSchemas } from "./schemas.ts";
 
-const usage = [
-  "Validate codec dumps and enforce version-marker sync.",
-  "",
-  "Usage:",
-  "  node check-codec.ts <schemas_dir> <codec.json> [more.json ...]",
-].join("\n");
-
-process.exit(
-  runMain(
-    process.argv.slice(2),
-    {
-      family: "codec",
-      uriRe: /codec\.v(\d+)\.schema\.json$/,
-      schemaByVersion: codecSchemas,
-    },
-    usage,
-  ),
-);
+new Command()
+  .name("check-codec")
+  .description("Validate codec dumps and enforce version-marker sync.")
+  .argument("<schemasDir>", "directory holding the *.vN.schema.json files")
+  .argument("<files...>", "codec JSON files to validate")
+  .action((schemasDir: string, files: string[]) => {
+    process.exit(
+      runCheck(schemasDir, files, {
+        family: "codec",
+        uriRe: /codec\.v(\d+)\.schema\.json$/,
+        schemaByVersion: codecSchemas,
+      }),
+    );
+  })
+  .parse();
