@@ -505,9 +505,11 @@ namespace ChessersEngine {
         bool IsOpposingPlayerCheckmated (List<Tile> tilesThatCheckOpposingPlayer) {
             List<Chessman> chessmenForOpposingPlayer = board.GetActiveChessmenOfColor(Helpers.GetOppositeColor(chessman.color));
 
-            // Sort by King, Queen, Rook, Bishop, Knight, Pawn.
+            // Test pieces in descending value (King, Queen, Rook, Bishop, Knight, Pawn): the
+            // checked king most often has an escape square, so trying it first tends to disprove
+            // checkmate soonest. Order only affects search speed, not the verdict.
 
-            chessmenForOpposingPlayer.Sort((c1, c2) => ConvertChessmanToSortScore(c1) - ConvertChessmanToSortScore(c2));
+            chessmenForOpposingPlayer.Sort((c1, c2) => ConvertChessmanToSortScore(c2) - ConvertChessmanToSortScore(c1));
 
             foreach (Chessman otherChessman in chessmenForOpposingPlayer) {
                 List<Tile> potentialTiles = board.GetPotentialTilesForMovement(otherChessman);
