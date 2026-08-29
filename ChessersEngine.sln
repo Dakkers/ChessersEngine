@@ -1,4 +1,4 @@
-
+﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
@@ -8,8 +8,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChessersEngine.Tests", "ChessersEngine.Tests\ChessersEngine.Tests.csproj", "{EA229944-65E6-407E-B2FB-8208A20A2E42}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChessersEngine.Cli", "ChessersEngine.Cli\ChessersEngine.Cli.csproj", "{C0248996-B408-4BFA-8CB8-60FB905D063B}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Oracle", "oracle\Oracle.csproj", "{3F1C0A22-9E4B-4C77-A1D8-5B6E7F809A12}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,9 +27,8 @@ Global
 		{C0248996-B408-4BFA-8CB8-60FB905D063B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C0248996-B408-4BFA-8CB8-60FB905D063B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C0248996-B408-4BFA-8CB8-60FB905D063B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3F1C0A22-9E4B-4C77-A1D8-5B6E7F809A12}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3F1C0A22-9E4B-4C77-A1D8-5B6E7F809A12}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3F1C0A22-9E4B-4C77-A1D8-5B6E7F809A12}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3F1C0A22-9E4B-4C77-A1D8-5B6E7F809A12}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
 	EndGlobalSection
 EndGlobal
