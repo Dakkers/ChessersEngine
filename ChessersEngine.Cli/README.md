@@ -31,6 +31,27 @@ dotnet run --project ChessersEngine.Cli -- --ai-vs-ai --games 50 --seed 1 --quie
 
 Games are written to `./oracle/` by default (one JSON file per game).
 
+Seed games from the engine's `TestScenarios` fixtures instead of the standard
+opening — exercising hand-crafted edge positions (checks, jumps, castling,
+deathjumps) as full recorded games:
+
+```bash
+# one game per fixture, seeded AI:
+dotnet run --project ChessersEngine.Cli -- --all-scenarios --ai-vs-ai --seed 1 --quiet
+# or a single fixture (see --list-scenarios for names):
+dotnet run --project ChessersEngine.Cli -- --scenario Checkmate1 --ai-vs-ai --seed 1
+```
+
+These files are named `scenario-<Name>.json` and carry a `config.scenario` field;
+each uses its own deathjump setting. A few fixtures are partial positions (e.g.
+missing a king) the engine can't play to completion — those are skipped with a
+note rather than recorded.
+
+`--dump-codec` writes a `codec.v1.json` sibling artifact: the tile-id ↔ (row,col)
+mapping for every id −36..63 and its round-trip, so the port can reproduce the
+negative-id deathjump coordinate math exactly. It has its own versioned schema
+(`schemas/codec.v1.schema.json`, checked by `schemas/check-codec.ts`).
+
 ## Move input (at the `move>` prompt)
 
 | Input          | Meaning                                                        |
@@ -73,6 +94,10 @@ Piece symbols: `UPPER`=white, `lower`=black; `" X "`=chess piece,
 | `--delay <ms>`      | `0`      | pause after each AI turn (for watching)             |
 | `--out <dir>`       | `oracle` | output directory for the JSON corpus                |
 | `--quiet`           |          | don't render boards (bulk corpus runs)              |
+| `--scenario NAME`   |          | seed the game from a `TestScenarios` fixture         |
+| `--all-scenarios`   |          | record one game seeded from every fixture           |
+| `--list-scenarios`  |          | print the fixture names and exit                    |
+| `--dump-codec`      |          | write the tile-id coordinate table to `<out>/codec.v1.json` and exit |
 | `--theme MODE`      | `auto`   | `auto` \| `dark` \| `light` color palette           |
 | `--no-color`        |          | disable ANSI color (auto-off when piped)            |
 
@@ -104,8 +129,8 @@ Each file opens with a `$schema` reference to a versioned JSON Schema (draft
 old files always resolve the schema they were written for. See
 [`schemas/README.md`](schemas/README.md) for the versioning policy. A
 machine-readable `schemaVersion` field mirrors that version; a CI check
-([`schemas/check_oracle.py`](schemas/check_oracle.py)) enforces that the two stay
-in sync (and that generated files validate).
+([`schemas/check-oracle.ts`](schemas/check-oracle.ts), TypeScript + Zod) enforces
+that the two stay in sync (and that generated files validate).
 
 ```jsonc
 {

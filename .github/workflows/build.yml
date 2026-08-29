@@ -16,10 +16,17 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
         with:
-          python-version: '3.x'
+          version: 11.1.2
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ChessersEngine.Cli/schemas/.nvmrc
+          cache: pnpm
+          cache-dependency-path: ChessersEngine.Cli/schemas/pnpm-lock.yaml
 
       - name: Restore
         run: dotnet restore ChessersEngine.sln
@@ -30,10 +37,16 @@ jobs:
       - name: Test
         run: dotnet test ChessersEngine.sln --configuration Release --no-build --verbosity normal
 
-      - name: Oracle schema version check
+      - name: Oracle & codec schema checks
         run: |
-          python3 -m pip install --quiet jsonschema
           out="$(mktemp -d)"
           dotnet run --project ChessersEngine.Cli --configuration Release --no-restore --no-build -- \
             --ai-vs-ai --games 1 --seed 1 --quiet --max-plies 6 --out "$out"
-          python3 ChessersEngine.Cli/schemas/check_oracle.py ChessersEngine.Cli/schemas "$out"/*.json
+          dotnet run --project ChessersEngine.Cli --configuration Release --no-restore --no-build -- \
+            --scenario Checkmate1 --ai-vs-ai --seed 1 --quiet --out "$out"
+          dotnet run --project ChessersEngine.Cli --configuration Release --no-restore --no-build -- \
+            --dump-codec --out "$out"
+          cd ChessersEngine.Cli/schemas
+          pnpm install --frozen-lockfile
+          node check-oracle.ts . "$out"/chessers-*.json "$out"/scenario-*.json
+          node check-codec.ts . "$out"/codec.v1.json

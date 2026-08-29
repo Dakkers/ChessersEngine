@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/Dakkers/ChessersEngine/master/ChessersEngine.Cli/schemas/codec.v1.schema.json",
+  "title": "Chessers tile-id coordinate codec (v1)",
+  "description": "The tile-id <-> (row,col) mapping emitted by `chessers --dump-codec`: for every tile id -36..63, its row/col and the inverse round-trip. A sibling artifact to the game oracle so the Rust port can reproduce the negative-id deathjump coordinate arithmetic exactly. The format version lives in the `$schema` URI.",
+  "type": "object",
+  "required": ["$schema", "schemaVersion", "engine", "minTileId", "maxTileId", "roundTripMismatches", "tiles"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "const": "https://raw.githubusercontent.com/Dakkers/ChessersEngine/master/ChessersEngine.Cli/schemas/codec.v1.schema.json"
+    },
+    "schemaVersion": { "const": 1 },
+    "engine": { "type": "string" },
+    "description": { "type": "string" },
+    "minTileId": { "type": "integer", "const": -36 },
+    "maxTileId": { "type": "integer", "const": 63 },
+    "roundTripMismatches": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of ids whose (row,col) does not map back to the id (codec has lossy branches)."
+    },
+    "tiles": {
+      "type": "array",
+      "minItems": 100,
+      "maxItems": 100,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["tileId", "row", "col", "roundTrip", "ok"],
+        "properties": {
+          "tileId": { "type": "integer", "minimum": -36, "maximum": 63 },
+          "row": { "type": "integer" },
+          "col": { "type": "integer" },
+          "roundTrip": { "type": "integer", "description": "GetTileIdFromRowColumn(row, col)." },
+          "ok": { "type": "boolean", "description": "roundTrip == tileId." }
+        }
+      }
+    }
+  }
+}

@@ -22,7 +22,7 @@ namespace ChessersEngine.Cli {
             "https://raw.githubusercontent.com/Dakkers/ChessersEngine/master/ChessersEngine.Cli/schemas/oracle.v1.schema.json";
 
         // Machine-readable format version, for consumers that don't parse the `$schema` URI. A CI
-        // check (ChessersEngine.Cli/schemas/check_oracle.py) enforces that this stays in sync with
+        // check (ChessersEngine.Cli/schemas/check-oracle.ts) enforces that this stays in sync with
         // the "vN" in `$schema` above.
         public int schemaVersion { get; set; } = 1;
 
@@ -45,6 +45,12 @@ namespace ChessersEngine.Cli {
         public string deathjumpSetting { get; set; }
         public int whitePlayerId { get; set; }
         public int blackPlayerId { get; set; }
+
+        // Non-null when the game was seeded from a named TestScenarios fixture (--scenario);
+        // the field is omitted entirely for games from the standard opening, so default-start
+        // corpora are byte-for-byte unchanged. Additive & optional in oracle.v1.
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string scenario { get; set; }
     }
 
     class OraclePlyDto {

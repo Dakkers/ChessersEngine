@@ -28,4 +28,7 @@ Global
 		{C0248996-B408-4BFA-8CB8-60FB905D063B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C0248996-B408-4BFA-8CB8-60FB905D063B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
 EndGlobal
