@@ -140,6 +140,8 @@ export const oracleV1 = z
         deathjumpSetting: z.enum(["OFF", "SIDES", "BACK", "ALL"]),
         whitePlayerId: int(),
         blackPlayerId: int(),
+        // Present only for --scenario games (absent for the standard opening).
+        scenario: z.string().nullable().optional(),
       })
       .strict(),
     initialPieces: z.array(chessmanSchema),
