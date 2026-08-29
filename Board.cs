@@ -57,6 +57,13 @@ namespace ChessersEngine {
             return chessmenById[id];
         }
 
+        public Chessman GetChessmanIfExists (int id) {
+            if (chessmenById.ContainsKey(id)) {
+                return GetChessman(id);
+            }
+            return null;
+        }
+
         public void CopyState (Board otherBoard) {
             this.matchConfig = otherBoard.matchConfig;
 
@@ -175,12 +182,25 @@ namespace ChessersEngine {
             return color == ColorEnum.BLACK ? GetChessman(Constants.ID_BLACK_KING) : GetChessman(Constants.ID_WHITE_KING);
         }
 
+        /// <summary>
+        /// Like <see cref="GetKingOfColor"/>, but returns null instead of throwing when
+        /// the board has no king of that color (e.g. partial test positions). A missing
+        /// king is treated the same as a captured one by callers such as
+        /// <see cref="IsGameOver"/> and <see cref="CalculateBoardValue"/>.
+        /// </summary>
+        Chessman GetKingOfColorIfExists (ColorEnum color) {
+            return GetChessmanIfExists(color == ColorEnum.BLACK ? Constants.ID_BLACK_KING : Constants.ID_WHITE_KING);
+        }
+
         public Chessman GetWhiteKing () {
             return GetKingOfColor(ColorEnum.WHITE);
         }
 
         public bool IsGameOver () {
-            return (!GetWhiteKing().isActive || !GetBlackKing().isActive);
+            Chessman whiteKing = GetKingOfColorIfExists(ColorEnum.WHITE);
+            Chessman blackKing = GetKingOfColorIfExists(ColorEnum.BLACK);
+            // A side whose king is missing has effectively lost, same as an inactive king.
+            return (whiteKing == null || !whiteKing.isActive || blackKing == null || !blackKing.isActive);
         }
 
         #endregion
@@ -1525,9 +1545,12 @@ namespace ChessersEngine {
         public int CalculateBoardValue (
             int numMoves
         ) {
-            if (!GetWhiteKing().isActive) {
+            Chessman whiteKing = GetKingOfColorIfExists(ColorEnum.WHITE);
+            Chessman blackKing = GetKingOfColorIfExists(ColorEnum.BLACK);
+            // A missing king counts as a captured king: that side has lost.
+            if (whiteKing == null || !whiteKing.isActive) {
                 return int.MinValue;
-            } else if (!GetBlackKing().isActive) {
+            } else if (blackKing == null || !blackKing.isActive) {
                 return int.MaxValue;
             }
 
