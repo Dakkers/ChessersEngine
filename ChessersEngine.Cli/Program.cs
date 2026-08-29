@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
 using ChessersEngine;
@@ -28,6 +29,11 @@ namespace ChessersEngine.Cli {
         public bool NoColor = false;
         public bool Quiet = false; // suppress board rendering (for bulk AI-vs-AI corpus runs)
         public ThemeChoice Theme = ThemeChoice.Auto;
+
+        // Seed games from a named TestScenarios fixture instead of the standard opening.
+        public string Scenario = null;    // one fixture, by name
+        public bool AllScenarios = false; // one game seeded from every fixture
+        public bool ListScenarios = false; // print fixture names and exit
     }
 
     static class Program {
@@ -50,6 +56,13 @@ namespace ChessersEngine.Cli {
                 return 0;
             }
 
+            if (opts.ListScenarios) {
+                foreach (MethodInfo m in ScenarioFixtures()) {
+                    Console.WriteLine(m.Name);
+                }
+                return 0;
+            }
+
             BoardRenderer.UseColor = !opts.NoColor && !Console.IsOutputRedirected;
 
             if (BoardRenderer.UseColor && !opts.Quiet) {
@@ -61,36 +74,100 @@ namespace ChessersEngine.Cli {
 
             string stamp = DateTime.Now.ToString("yyyyMMdd-HHmmss", CultureInfo.InvariantCulture);
             int completed = 0;
+            int failed = 0;
 
-            for (int g = 0; g < opts.Games; g++) {
-                int? seed = opts.Seed.HasValue ? opts.Seed.Value + g : (int?) null;
-                string suffix = opts.Games > 1 ? $"-{g + 1:D3}" : "";
-                string outPath = System.IO.Path.Combine(opts.OutDir, $"chessers-{stamp}{suffix}.json");
+            List<(string name, Func<MatchData> factory)> targets;
+            try {
+                targets = ResolveTargets(opts);
+            } catch (ArgException ex) {
+                Console.Error.WriteLine("error: " + ex.Message);
+                return 2;
+            }
 
-                bool interactive = opts.White == PlayerKind.Human || opts.Black == PlayerKind.Human;
-                if (opts.Games > 1) {
-                    Console.WriteLine($"\n=== Game {g + 1} of {opts.Games} (seed={FormatSeed(seed)}) ===");
+            bool multi = opts.Games > 1 || targets.Count > 1;
+            bool aborted = false;
+
+            foreach ((string scenarioName, Func<MatchData> factory) in targets) {
+                for (int g = 0; g < opts.Games && !aborted; g++) {
+                    int? seed = opts.Seed.HasValue ? opts.Seed.Value + g : (int?) null;
+                    string suffix = opts.Games > 1 ? $"-{g + 1:D3}" : "";
+                    string outPath = scenarioName == null
+                        ? System.IO.Path.Combine(opts.OutDir, $"chessers-{stamp}{suffix}.json")
+                        : System.IO.Path.Combine(opts.OutDir, $"scenario-{scenarioName}{suffix}.json");
+
+                    bool interactive = opts.White == PlayerKind.Human || opts.Black == PlayerKind.Human;
+                    if (multi) {
+                        string label = scenarioName == null
+                            ? $"Game {g + 1} of {opts.Games}"
+                            : $"Scenario {scenarioName}" + (opts.Games > 1 ? $" (game {g + 1}/{opts.Games})" : "");
+                        Console.WriteLine($"\n=== {label} (seed={FormatSeed(seed)}) ===");
+                    }
+
+                    bool keepPlaying = true;
+                    try {
+                        keepPlaying = PlayGame(opts, seed, outPath, factory, scenarioName);
+                        completed++;
+                    } catch (Exception ex) {
+                        // Some fixtures are deliberately partial (e.g. no opposing king), which the
+                        // engine's game-over / king lookups don't tolerate. Skip and keep the batch going.
+                        failed++;
+                        Console.Error.WriteLine($"  ! {(scenarioName ?? "game")} could not be recorded: {ex.GetType().Name}: {ex.Message}");
+                    }
+
+                    if (!keepPlaying && interactive) {
+                        // Human asked to quit the whole run.
+                        aborted = true;
+                    }
                 }
-
-                bool keepPlaying = PlayGame(opts, seed, outPath);
-                completed++;
-
-                if (!keepPlaying && interactive) {
-                    // Human asked to quit the whole run.
+                if (aborted) {
                     break;
                 }
             }
 
-            if (opts.Games > 1) {
-                Console.WriteLine($"\nRecorded {completed} game(s) to ./{opts.OutDir}/");
+            if (multi) {
+                string tail = failed > 0 ? $" ({failed} could not be recorded)" : "";
+                Console.WriteLine($"\nRecorded {completed} game(s){tail} to ./{opts.OutDir}/");
             }
             return 0;
         }
 
+        /// <summary>
+        /// The games to record: a display name (null = standard opening) and a factory that produces
+        /// a FRESH MatchData each call, so replays never share mutable fixture state.
+        /// </summary>
+        static List<(string name, Func<MatchData> factory)> ResolveTargets (Options opts) {
+            if (opts.AllScenarios) {
+                return ScenarioFixtures()
+                    .Select(m => (m.Name, (Func<MatchData>) (() => (MatchData) m.Invoke(null, null))))
+                    .ToList();
+            }
+            if (opts.Scenario != null) {
+                MethodInfo m = typeof(TestScenarios).GetMethod(opts.Scenario, BindingFlags.Public | BindingFlags.Static);
+                if (m == null || m.ReturnType != typeof(MatchData) || m.GetParameters().Length != 0) {
+                    throw new ArgException($"unknown scenario '{opts.Scenario}' (try --list-scenarios)");
+                }
+                return new List<(string, Func<MatchData>)> {
+                    (opts.Scenario, () => (MatchData) m.Invoke(null, null))
+                };
+            }
+            // Standard opening.
+            return new List<(string, Func<MatchData>)> { (null, () => (MatchData) null) };
+        }
+
+        /// <summary>Every zero-arg `public static MatchData` fixture in TestScenarios, ordered by name.</summary>
+        static IEnumerable<MethodInfo> ScenarioFixtures () =>
+            typeof(TestScenarios)
+                .GetMethods(BindingFlags.Public | BindingFlags.Static)
+                .Where(m => m.ReturnType == typeof(MatchData) && m.GetParameters().Length == 0)
+                .OrderBy(m => m.Name, StringComparer.Ordinal);
+
         /// <summary>Plays a single game to completion. Returns false if the human chose to quit the run.</summary>
-        static bool PlayGame (Options opts, int? seed, string outPath) {
-            var config = new MatchConfig { deathjumpSetting = opts.Deathjump };
-            var match = new Match(null, config, seed);
+        static bool PlayGame (Options opts, int? seed, string outPath, Func<MatchData> initialFactory, string scenarioName) {
+            MatchData initial = initialFactory();
+            // A scenario carries its own deathjump rule; the standard opening uses the --deathjump flag.
+            DeathjumpSetting dj = initial != null ? (DeathjumpSetting) initial.deathjumpSetting : opts.Deathjump;
+            var config = new MatchConfig { deathjumpSetting = dj };
+            var match = new Match(initial, config, seed);
 
             int whiteId = match.whitePlayerId;
             int blackId = match.blackPlayerId;
@@ -101,16 +178,17 @@ namespace ChessersEngine.Cli {
                     black = opts.Black.ToString().ToLowerInvariant(),
                     aiLevel = opts.Level,
                     randomSeed = seed,
-                    deathjumpSetting = opts.Deathjump.ToString(),
+                    deathjumpSetting = dj.ToString(),
                     whitePlayerId = whiteId,
                     blackPlayerId = blackId,
+                    scenario = scenarioName,
                 },
                 match._GetCommittedBoard().GetChessmanSchemas()
             );
 
             bool showBoards = !opts.Quiet;
             if (showBoards) {
-                Console.WriteLine(Banner(opts, seed, whiteId, blackId));
+                Console.WriteLine(Banner(opts, seed, whiteId, blackId, dj, scenarioName));
             }
 
             int plyIndex = 0;
@@ -595,12 +673,14 @@ namespace ChessersEngine.Cli {
             return $"Result: game ended ({reason}); no winner recorded.";
         }
 
-        static string Banner (Options opts, int? seed, int whiteId, int blackId) {
+        static string Banner (Options opts, int? seed, int whiteId, int blackId, DeathjumpSetting dj, string scenarioName) {
+            string scenarioLine = scenarioName != null ? $"  Scenario: {scenarioName}\n" : "";
             return
                 "\n================ CHESSERS (terminal) ================\n" +
+                scenarioLine +
                 $"  White: {opts.White}  (player {whiteId})\n" +
                 $"  Black: {opts.Black}  (player {blackId})\n" +
-                $"  AI level: {opts.Level}   Deathjump: {opts.Deathjump}   Seed: {FormatSeed(seed)}   Theme: {s_themeLabel}\n" +
+                $"  AI level: {opts.Level}   Deathjump: {dj}   Seed: {FormatSeed(seed)}   Theme: {s_themeLabel}\n" +
                 "  Type 'help' at the prompt for commands.\n" +
                 "====================================================";
         }
@@ -726,6 +806,9 @@ namespace ChessersEngine.Cli {
                     case "--no-color": o.NoColor = true; break;
                     case "--quiet": o.Quiet = true; break;
                     case "--theme": o.Theme = ParseTheme(Next(a)); break;
+                    case "--scenario": o.Scenario = Next(a); break;
+                    case "--all-scenarios": o.AllScenarios = true; break;
+                    case "--list-scenarios": o.ListScenarios = true; break;
                     // Convenience presets
                     case "--ai-vs-ai": o.White = PlayerKind.Ai; o.Black = PlayerKind.Ai; break;
                     case "--hotseat": o.White = PlayerKind.Human; o.Black = PlayerKind.Human; break;
@@ -800,6 +883,9 @@ namespace ChessersEngine.Cli {
                 "  --quiet              don't render boards (bulk AI-vs-AI corpus runs)\n" +
                 "  --theme MODE         auto|dark|light color palette (default: auto-detect)\n" +
                 "  --no-color           disable ANSI colors\n" +
+                "  --scenario NAME      seed the game from a TestScenarios fixture (see --list-scenarios)\n" +
+                "  --all-scenarios      record one game seeded from every TestScenarios fixture\n" +
+                "  --list-scenarios     print the available scenario names and exit\n" +
                 "  -h, --help           show this help\n\n" +
                 "Each game is written as a self-contained golden-corpus JSON file: the initial\n" +
                 "board, every move attempt with its full MoveResult, and a board snapshot after\n" +
@@ -808,7 +894,9 @@ namespace ChessersEngine.Cli {
                 "  # Play white against the AI, reproducible via a seed:\n" +
                 "  dotnet run --project ChessersEngine.Cli -- --white human --black ai --seed 42\n\n" +
                 "  # Generate a 50-game AI-vs-AI corpus quietly:\n" +
-                "  dotnet run --project ChessersEngine.Cli -- --ai-vs-ai --games 50 --seed 1 --quiet\n");
+                "  dotnet run --project ChessersEngine.Cli -- --ai-vs-ai --games 50 --seed 1 --quiet\n\n" +
+                "  # Record a seeded AI game from every TestScenarios fixture:\n" +
+                "  dotnet run --project ChessersEngine.Cli -- --all-scenarios --ai-vs-ai --seed 1 --quiet\n");
         }
 
         #endregion

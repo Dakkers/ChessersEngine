@@ -31,6 +31,22 @@ dotnet run --project ChessersEngine.Cli -- --ai-vs-ai --games 50 --seed 1 --quie
 
 Games are written to `./oracle/` by default (one JSON file per game).
 
+Seed games from the engine's `TestScenarios` fixtures instead of the standard
+opening — exercising hand-crafted edge positions (checks, jumps, castling,
+deathjumps) as full recorded games:
+
+```bash
+# one game per fixture, seeded AI:
+dotnet run --project ChessersEngine.Cli -- --all-scenarios --ai-vs-ai --seed 1 --quiet
+# or a single fixture (see --list-scenarios for names):
+dotnet run --project ChessersEngine.Cli -- --scenario Checkmate1 --ai-vs-ai --seed 1
+```
+
+These files are named `scenario-<Name>.json` and carry a `config.scenario` field;
+each uses its own deathjump setting. A few fixtures are partial positions (e.g.
+missing a king) the engine can't play to completion — those are skipped with a
+note rather than recorded.
+
 ## Move input (at the `move>` prompt)
 
 | Input          | Meaning                                                        |
@@ -73,6 +89,9 @@ Piece symbols: `UPPER`=white, `lower`=black; `" X "`=chess piece,
 | `--delay <ms>`      | `0`      | pause after each AI turn (for watching)             |
 | `--out <dir>`       | `oracle` | output directory for the JSON corpus                |
 | `--quiet`           |          | don't render boards (bulk corpus runs)              |
+| `--scenario NAME`   |          | seed the game from a `TestScenarios` fixture         |
+| `--all-scenarios`   |          | record one game seeded from every fixture           |
+| `--list-scenarios`  |          | print the fixture names and exit                    |
 | `--theme MODE`      | `auto`   | `auto` \| `dark` \| `light` color palette           |
 | `--no-color`        |          | disable ANSI color (auto-off when piped)            |
 

@@ -64,7 +64,11 @@
           "enum": ["OFF", "SIDES", "BACK", "ALL"]
         },
         "whitePlayerId": { "type": "integer" },
-        "blackPlayerId": { "type": "integer" }
+        "blackPlayerId": { "type": "integer" },
+        "scenario": {
+          "type": ["string", "null"],
+          "description": "Name of the TestScenarios fixture this game was seeded from (--scenario); absent for games from the standard opening."
+        }
       }
     },
     "chessmanSchema": {

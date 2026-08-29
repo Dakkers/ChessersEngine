@@ -45,6 +45,12 @@ namespace ChessersEngine.Cli {
         public string deathjumpSetting { get; set; }
         public int whitePlayerId { get; set; }
         public int blackPlayerId { get; set; }
+
+        // Non-null when the game was seeded from a named TestScenarios fixture (--scenario);
+        // the field is omitted entirely for games from the standard opening, so default-start
+        // corpora are byte-for-byte unchanged. Additive & optional in oracle.v1.
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string scenario { get; set; }
     }
 
     class OraclePlyDto {
