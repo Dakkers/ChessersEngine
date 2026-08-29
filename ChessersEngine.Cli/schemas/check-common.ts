@@ -14,6 +14,11 @@ export interface CheckConfig {
   schemaByVersion: Record<number, z.ZodType>;
 }
 
+// Every corpus file carries a $schema URI and a numeric schemaVersion; validate that shape with
+// Zod before the family-specific checks. (The version integer itself is a regex capture group,
+// which Zod can't extract, so that one step stays procedural.)
+const envelope = z.object({ $schema: z.string(), schemaVersion: z.int() });
+
 export function checkFile(filePath: string, schemasDir: string, cfg: CheckConfig): string[] {
   let doc: unknown;
   try {
@@ -22,25 +27,24 @@ export function checkFile(filePath: string, schemasDir: string, cfg: CheckConfig
     return [`${filePath}: could not read/parse JSON: ${(e as Error).message}`];
   }
 
-  const record = doc as Record<string, unknown>;
-  const schemaUri = record?.$schema;
-  if (typeof schemaUri !== "string") {
-    return [`${filePath}: missing or non-string $schema`];
+  const env = envelope.safeParse(doc);
+  if (!env.success) {
+    return env.error.issues.map((i) => `${filePath}: /${i.path.join("/")}: ${i.message}`);
   }
 
-  const m = cfg.uriRe.exec(schemaUri);
+  const m = cfg.uriRe.exec(env.data.$schema);
   if (!m) {
     return [
-      `${filePath}: $schema must end with ${cfg.family}.vN.schema.json (got ${JSON.stringify(schemaUri)})`,
+      `${filePath}: $schema must end with ${cfg.family}.vN.schema.json (got ${JSON.stringify(env.data.$schema)})`,
     ];
   }
   const uriVersion = Number(m[1]);
 
   const errs: string[] = [];
 
-  if (record.schemaVersion !== uriVersion) {
+  if (env.data.schemaVersion !== uriVersion) {
     errs.push(
-      `${filePath}: schemaVersion=${JSON.stringify(record.schemaVersion)} is out of sync with ` +
+      `${filePath}: schemaVersion=${env.data.schemaVersion} is out of sync with ` +
         `$schema (v${uriVersion}); the two must match`,
     );
   }
