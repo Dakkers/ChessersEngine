@@ -20,7 +20,7 @@ namespace ChessersEngine.Cli {
     }
 
     class CodecDumpDto {
-        // Version lives in the `$schema` URI, mirrored by `schemaVersion`; check_codec.py enforces both.
+        // Version lives in the `$schema` URI, mirrored by `schemaVersion`; check-codec.ts enforces both.
         [JsonPropertyName("$schema")]
         public string Schema { get; set; } =
             "https://raw.githubusercontent.com/Dakkers/ChessersEngine/master/ChessersEngine.Cli/schemas/codec.v1.schema.json";

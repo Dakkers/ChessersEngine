@@ -10,17 +10,23 @@ the exact schema it was written for, e.g.:
 ```
 
 A machine-readable `schemaVersion` field mirrors that version for consumers that
-don't parse the URI. [`check_oracle.py`](check_oracle.py) enforces that the two
-markers agree and that files validate; it runs in CI (`.github/workflows/build.yml`)
-and can be run locally:
+don't parse the URI. [`check-oracle.ts`](check-oracle.ts) (TypeScript + Zod)
+enforces that the two markers agree and that files validate; it runs in CI
+(`.github/workflows/build.yml`) and can be run locally:
 
 ```bash
-python3 ChessersEngine.Cli/schemas/check_oracle.py ChessersEngine.Cli/schemas path/to/*.json
+cd ChessersEngine.Cli/schemas
+npm ci
+npx tsx check-oracle.ts . path/to/*.json
 ```
 
 A second artifact family lives here too: `codec.vN.schema.json` for the
 `chessers --dump-codec` tile-id coordinate table, validated by
-[`check_codec.py`](check_codec.py). It follows the same policy below.
+[`check-codec.ts`](check-codec.ts). It follows the same policy below.
+
+The `*.vN.schema.json` files are the language-neutral published contract; the Zod
+schemas in [`schemas.ts`](schemas.ts) mirror them and are the validator
+implementation — keep the two in lockstep when adding a version.
 
 ## Versioning policy
 
@@ -28,7 +34,8 @@ A second artifact family lives here too: `codec.vN.schema.json` for the
 - **Released versions are immutable.** Once a version has produced corpus files,
   its schema file is never edited again — older files must keep validating.
 - A **breaking** change (removing/renaming a field, tightening a type) means a new
-  `oracle.vN.schema.json` and bumping the `$schema` the recorder emits
+  `oracle.vN.schema.json`, a matching Zod schema in `schemas.ts` (registered in the
+  `oracleSchemas`/`codecSchemas` map), and bumping the `$schema` the recorder emits
   (`OracleRecorder.cs`). The previous file stays here as the backup for old corpus.
 - Purely **additive**, backward-compatible tweaks can be made to the current
   version's file in place (all existing files still validate).

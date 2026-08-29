@@ -50,7 +50,7 @@ note rather than recorded.
 `--dump-codec` writes a `codec.v1.json` sibling artifact: the tile-id ↔ (row,col)
 mapping for every id −36..63 and its round-trip, so the port can reproduce the
 negative-id deathjump coordinate math exactly. It has its own versioned schema
-(`schemas/codec.v1.schema.json`, checked by `schemas/check_codec.py`).
+(`schemas/codec.v1.schema.json`, checked by `schemas/check-codec.ts`).
 
 ## Move input (at the `move>` prompt)
 
@@ -129,8 +129,8 @@ Each file opens with a `$schema` reference to a versioned JSON Schema (draft
 old files always resolve the schema they were written for. See
 [`schemas/README.md`](schemas/README.md) for the versioning policy. A
 machine-readable `schemaVersion` field mirrors that version; a CI check
-([`schemas/check_oracle.py`](schemas/check_oracle.py)) enforces that the two stay
-in sync (and that generated files validate).
+([`schemas/check-oracle.ts`](schemas/check-oracle.ts), TypeScript + Zod) enforces
+that the two stay in sync (and that generated files validate).
 
 ```jsonc
 {
