@@ -19,9 +19,6 @@ namespace ChessersEngine {
 
     public class MatchData {
         public int blackPlayerId;
-        /// <summary>
-        /// The ID of the user whose turn it is. (One of blackPlayerId, whitePlayerId)
-        /// </summary>
         public ColorEnum currentTurn;
         public int deathjumpSetting;
         public bool isDraw = false;
@@ -83,11 +80,7 @@ namespace ChessersEngine {
         bool isResignation = false;
         readonly System.Random rng;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="T:ChessersEngine.Match"/> class.
-        /// </summary>
         /// <param name="data">The data to initialize the match with. If null, a new match is created.</param>
-        /// <param name="_config">Optional match configuration.</param>
         /// <param name="randomSeed">Optional seed for the move-search RNG, for reproducible AI (e.g. in tests).</param>
         public Match (MatchData data, MatchConfig? _config = null, int? randomSeed = null) {
             rng = randomSeed.HasValue ? new System.Random(randomSeed.Value) : new System.Random();
@@ -235,7 +228,6 @@ namespace ChessersEngine {
         /// <summary>
         /// Gets the ID of the player whose turn it is.
         /// </summary>
-        /// <returns>The turn player identifier.</returns>
         public int GetCommittedTurnPlayerId () {
             if (committedTurnColor == ColorEnum.WHITE) {
                 return whitePlayerId;
@@ -256,7 +248,6 @@ namespace ChessersEngine {
             // -- Base validation
             if (turnColor == ColorEnum.WHITE) {
                 if (moveAttempt.playerId == blackPlayerId) {
-                    // White's turn, black is trying to move --> no!
                     //Match.Log("Invalid turn. (is WHITE)");
                     return null;
                 }
@@ -264,7 +255,6 @@ namespace ChessersEngine {
 
             if (turnColor == ColorEnum.BLACK) {
                 if (moveAttempt.playerId == whitePlayerId) {
-                    // Black's turn, white is trying to move --> no!
                     //Match.Log("Invalid turn. (is BLACK)");
                     return null;
                 }
@@ -317,7 +307,6 @@ namespace ChessersEngine {
         /// <summary>
         /// Promote a piece.
         /// </summary>
-        /// <param name="moveResult">Move result.</param>
         public void Promote (MoveResult moveResult) {
             pendingBoard.Promote(moveResult.pieceId, (ChessmanKindEnum) moveResult.promotionRank);
         }
@@ -368,8 +357,6 @@ namespace ChessersEngine {
         /// <summary>
         /// Minimax!
         /// </summary>
-        /// <param name="b">Board.</param>
-        /// <param name="currentDepth">Depth.</param>
         /// <param name="isMaximizingPlayer">TRUE = WHITE, FALSE = BLACK</param>
         (List<MoveAttempt>, int) MinimaxHelper (
             Board board,

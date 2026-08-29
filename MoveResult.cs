@@ -30,37 +30,30 @@ namespace ChessersEngine {
         /// <summary>
         /// Whether or not this move triggers a polarity flip (checker piece to chess piece or vice versa)
         /// </summary>
-        /// <value><c>true</c> if polarity changed; otherwise, <c>false</c>.</value>
         public bool polarityChanged { get; set; }
 
         /// <summary>
         /// Whether or not this move was the first time the piece had moved.
         /// </summary>
-        /// <value><c>true</c> if was first move for piece; otherwise, <c>false</c>.</value>
         public bool wasFirstMoveForPiece { get; set; }
 
         /// <summary>
         /// Whether or not this move triggers a king-ing of a checkers piece
         /// </summary>
-        /// <value><c>true</c> if kinged; otherwise, <c>false</c>.</value>
         public bool kinged { get; set; }
 
         /// <summary>
         /// Whether or not this move is a castle-ing of the king.
         /// </summary>
-        /// <value><c>true</c> if is castle; otherwise, <c>false</c>.</value>
         public bool isCastle { get; set; }
 
-        // Whether or not this move triggers a Promotion
         public bool promotionOccurred { get; set; }
         public ChessmanKindEnum? promotionRank { get; set; }
 
-        // Piece that gets jumped, if applicable
         public bool wasPieceJumped { get; set; } = false;
         public int jumpedPieceId { get; set; } = -1;
         public int jumpedTileId { get; set; } = -1;
 
-        // Piece that gets captured, if applicable
         public bool wasPieceCaptured { get; set; } = false;
         public int capturedPieceId { get; set; } = -1;
 
@@ -79,7 +72,6 @@ namespace ChessersEngine {
         /// This is the kind the chessman STARTED as. So, if a pawn was promoted
         /// then this would be PAWN and `promotionRank` would be e.g. QUEEN.
         /// </summary>
-        /// <value>The kind of the chessman.</value>
         public ChessmanKindEnum chessmanKind { get; set; }
 
         public override string ToString () {
@@ -170,8 +162,6 @@ namespace ChessersEngine {
         /// Create a move result based off of <paramref name="_notation"/>. It is NOT possible
         /// to know which color this move was for from the notation alone; more context is required.
         /// </summary>
-        /// <returns>The notation.</returns>
-        /// <param name="_notation">Notation.</param>
         public static MoveResult CreatePartialMoveResultFromNotation (string _notation) {
             MoveResult moveResult = new MoveResult();
             string[] notationSplit = _notation.Split('_');

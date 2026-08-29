@@ -109,7 +109,6 @@ namespace ChessersEngine {
         /// is the diagonal line from the bottom-left towards the top-right, or
         /// vice versa.
         /// </summary>
-        /// <returns><c>true</c>, if positive diagonal move was ised, <c>false</c> otherwise.</returns>
         bool IsPositiveDiagonalMove () {
             if ((Math.Abs(delta) % 9) != 0) {
                 return false;
@@ -130,10 +129,10 @@ namespace ChessersEngine {
             }
 
             if (delta > 0) {
-                // Bottom-right to top-left; check that the "to" column is to the right of the "from" column
+                // Bottom-right to top-left; check that the "to" column is to the left of the "from" column
                 return toColumn < fromColumn;
             } else {
-                // Top-left to bottom-right; check that the "to" column is to the left of the "from" column
+                // Top-left to bottom-right; check that the "to" column is to the right of the "from" column
                 return toColumn > fromColumn;
             }
         }
@@ -179,12 +178,6 @@ namespace ChessersEngine {
         /// check that we are trying to jump over occupied tiles, but it will not consider the kinged-ness
         /// of the piece that would do the jump (so it may be an illegal move).
         /// </summary>
-        /// <param name="result">Result.</param>
-        /// <param name="currentPath">Current path.</param>
-        /// <param name="targetColor">Target color.</param>
-        /// <param name="tile">Tile.</param>
-        /// <param name="tilesToIgnore">Tiles to ignore.</param>
-        /// <param name="depth">Depth.</param>
         void _CalculatePotentialJumpPaths (
             List<List<int>> result,
             List<int> currentPath,
@@ -338,7 +331,6 @@ namespace ChessersEngine {
         ///
         /// TODO -- should we return paths instead?
         /// </summary>
-        /// <returns>The check tiles.</returns>
         /// <param name="color">Color of the player.</param>
         /// <param name="exitEarly">If set to <c>true</c> exit when the first tile
         /// is found.</param>
@@ -505,7 +497,6 @@ namespace ChessersEngine {
         /// Determines if the moving player is in check. We don't need to know the details of
         /// how they're in check - just whether or not they're in check.
         /// </summary>
-        /// <returns><c>true</c>, if moving player in check was ised, <c>false</c> otherwise.</returns>
         bool IsMovingPlayerInCheck () {
             List<Tile> result = (CalculateCheckTiles(chessman.color, exitEarly: true));
             return result.Count > 0;
@@ -774,7 +765,6 @@ namespace ChessersEngine {
         /// `ExecuteBaseMove` + `PostValidationHandler`. To be used when a move needs to be made but
         /// we don't care about the check/checkmate validations.
         /// </summary>
-        /// <returns>The the crazy move.</returns>
         public MoveResult ExecuteMoveWithoutCheckValidations () {
             if (!(potentialTilesForMovement.Exists((t) => t.id == toTile.id))) {
                 // Not a legal move to the specified tile.
@@ -792,7 +782,6 @@ namespace ChessersEngine {
         /// Gets the pseudo legal move result. Skips the piece-specific validation - only checks that
         /// the player is not in  check.
         /// </summary>
-        /// <returns>The pseudo legal move result.</returns>
         public MoveResult GetPseudoLegalMoveResult () {
             ExecuteBaseMoveWithCheckValidation();
             return moveResult;

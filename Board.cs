@@ -143,7 +143,6 @@ namespace ChessersEngine {
         /// between a tile and the tile that is adjacent to it in the upper-left
         /// direction.
         /// </summary>
-        /// <returns>The positive diagonal delta.</returns>
         public int GetNegativeDiagonalDelta () {
             return (numRealColumns - 1);
         }
@@ -153,7 +152,6 @@ namespace ChessersEngine {
         /// between a tile and the tile that is adjacent to it in the upper-right
         /// direction.
         /// </summary>
-        /// <returns>The positive diagonal delta.</returns>
         public int GetPositiveDiagonalDelta () {
             return (numRealColumns + 1);
         }
@@ -226,9 +224,6 @@ namespace ChessersEngine {
         /// Gets the tile by row+column combination. If either value is out of
         /// bounds, null is returned.
         /// </summary>
-        /// <returns>Tile at (col, row).</returns>
-        /// <param name="row">Row.</param>
-        /// <param name="col">Col.</param>
         public Tile GetTileByRowColumn (int row, int col) {
             int
                 rowLimitLower = 0,
@@ -418,8 +413,6 @@ namespace ChessersEngine {
         /// Gets a list of valid tiles for knight movement. Ignores occupation
         /// of any kind.
         /// </summary>
-        /// <returns>The tiles for knight movement.</returns>
-        /// <param name="baseTile">Base tile.</param>
         public List<Tile> GetTilesForKnightMovement (Tile baseTile) {
             (int row, int col) = GetRowColumn(baseTile);
 
@@ -442,7 +435,6 @@ namespace ChessersEngine {
         /// Given 2 tiles that are diagonally separated by 1 tile in between, get that in-between tile.
         /// (Suitable for jump movements.) If the tiles are not actually separated correctly, return null.
         /// </summary>
-        /// <returns>The in between tile.</returns>
         public Tile GetInBetweenTile (Tile tile1, Tile tile2) {
             (int rowDelta, int colDelta) = CalculateRowColumnDelta(tile1, tile2);
             if (Math.Abs(rowDelta) != 2 || Math.Abs(colDelta) != 2) {
@@ -495,8 +487,6 @@ namespace ChessersEngine {
         /// Given color `color`, determine if `tile` is on the opposite half of the board from the
         /// color's perspective.
         /// </summary>
-        /// <param name="tile">Tile.</param>
-        /// <param name="color">Color.</param>
         public bool IsTileOnOtherHalfOfBoard (Tile tile, ColorEnum color) {
             int halfwayRow = GetNumberOfRows() / 2;
             int row = GetRow(tile);
@@ -601,9 +591,6 @@ namespace ChessersEngine {
         /// chessman that has an opponent piece. No other tiles are needed because
         /// the path would be blocked by the first opponent chessman that appears.
         /// </summary>
-        /// <returns>The chessman be captured from direction subset2.</returns>
-        /// <param name="chessman">Chessman.</param>
-        /// <param name="tilesInDirection">Tiles in direction.</param>
         Tile CanChessmanBeCapturedFromDirectionSubset (
             Chessman chessman,
             List<Tile> tilesInDirection
@@ -862,8 +849,6 @@ namespace ChessersEngine {
         /// <summary>
         /// Given a tile, gets all of the diagonally adjacent tiles.
         /// </summary>
-        /// <returns>The diagonally adjacent tiles.</returns>
-        /// <param name="tile">Tile.</param>
         public List<Tile> GetDiagonallyAdjacentTiles (Tile tile) {
             (int row, int col) = GetRowColumn(tile);
 
@@ -912,8 +897,6 @@ namespace ChessersEngine {
         /// We do NOT check that the distant tile (2 and 2 away) is occupied or
         /// not. (Again, IF there is a piece here.)
         /// </summary>
-        /// <returns>Tiles that could have pieces jump to the supplied tile.</returns>
-        /// <param name="tile">Tile.</param>
         public List<Tile> GetPotentialJumpLocationsForTile (Tile tile) {
             List<Tile> tiles = new List<Tile>();
 
@@ -996,17 +979,12 @@ namespace ChessersEngine {
         }
 
         /// <summary>
-        ///
         /// Gets a list of tiles the chessman could potentially move to, in a single line. For
         /// example, a rook can move anywhere horizontally and vertically, but they can only move to
         /// the tiles that are not blocked by other chessmen. If the chessman blocking the rook's
         /// path is of the opposite color, then the rook can move at most to that tile. (If the
         /// blocking chessman is of the same color, the rook can move to at most the tile before.)
-        ///
         /// </summary>
-        ///
-        /// <returns>The tile iterator.</returns>
-        /// <param name="chessman">Chessman.</param>
         List<Tile> PotentialTileIterator (
             Chessman chessman,
             List<Tile> tiles,
@@ -1090,11 +1068,6 @@ namespace ChessersEngine {
             return potentialTiles;
         }
 
-        /// <summary>
-        /// Gets the potential tiles for pawn movement.
-        /// </summary>
-        /// <returns>The potential tiles for pawn movement.</returns>
-        /// <param name="chessman">Chessman.</param>
         List<Tile> GetPotentialTilesForPawnMovement (Chessman chessman) {
             List<Tile> potentialTiles = new List<Tile>();
             Tile tile = chessman.GetUnderlyingTile();
@@ -1173,8 +1146,6 @@ namespace ChessersEngine {
         ///
         /// Kings can move only by 1 tile at a time.
         /// </summary>
-        /// <returns>The potential tiles for king movement.</returns>
-        /// <param name="kingChessman">Chessman.</param>
         List<Tile> GetPotentialTilesForKingMovement (Chessman kingChessman) {
             List<Tile> potentialTiles = new List<Tile>();
 
