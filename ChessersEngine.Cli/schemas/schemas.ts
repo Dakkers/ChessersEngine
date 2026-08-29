@@ -10,7 +10,6 @@ import { z } from "zod";
 const SCHEMA_BASE =
   "https://raw.githubusercontent.com/Dakkers/ChessersEngine/master/ChessersEngine.Cli/schemas";
 
-// -- shared enums ------------------------------------------------------------
 const color = z.enum(["WHITE", "BLACK"]);
 const chessmanKind = z.enum(["PAWN", "KNIGHT", "BISHOP", "ROOK", "QUEEN", "KING"]);
 const playerKind = z.enum(["human", "ai"]);
