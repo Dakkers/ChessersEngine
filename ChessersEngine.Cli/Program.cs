@@ -15,6 +15,18 @@ namespace ChessersEngine.Cli {
 
     enum ThemeChoice { Auto, Dark, Light }
 
+    /// <summary>A predetermined move used to script a documented scenario expectation.</summary>
+    readonly struct ScriptedMove {
+        public readonly int PieceId;
+        public readonly int ToTile;
+        public readonly int Promo;
+        public ScriptedMove (int pieceId, int toTile, int promo = -1) {
+            PieceId = pieceId;
+            ToTile = toTile;
+            Promo = promo;
+        }
+    }
+
     /// <summary>Parsed command-line options for a run.</summary>
     class Options {
         public PlayerKind White = PlayerKind.Human;
@@ -38,6 +50,17 @@ namespace ChessersEngine.Cli {
 
     static class Program {
         static string s_themeLabel = "off";
+
+        // Documented, human-verified opening moves for specific fixtures, mined from the prose
+        // comments in TestScenarios.cs. Playing these as the first ply (instead of an AI/human
+        // choice) makes the golden capture the intended MoveResult -- e.g. the documented
+        // checkmate / stalemate -- rather than whatever move the search happens to pick.
+        static readonly Dictionary<string, List<ScriptedMove>> ScenarioScripts = new Dictionary<string, List<ScriptedMove>> {
+            // "If Rook @56 captures the pawn @32, White is in checkmate." (Black to move)
+            ["Checkmate1"] = new List<ScriptedMove> { new ScriptedMove(Constants.ID_BLACK_ROOK_2, 32) },
+            // "If Black rook moves from 33 to 57, White is in stalemate." (Black to move)
+            ["Stalemate1"] = new List<ScriptedMove> { new ScriptedMove(Constants.ID_BLACK_ROOK_1, 57) },
+        };
 
         static int Main (string[] args) {
             Options opts;
@@ -191,6 +214,8 @@ namespace ChessersEngine.Cli {
                 Console.WriteLine(Banner(opts, seed, whiteId, blackId, dj, scenarioName));
             }
 
+            ScenarioScripts.TryGetValue(scenarioName ?? "", out List<ScriptedMove> script);
+
             int plyIndex = 0;
             string endReason = null;
             bool humanQuit = false;
@@ -207,9 +232,19 @@ namespace ChessersEngine.Cli {
                 }
 
                 var turnMoves = new List<OracleMoveDto>();
-                TurnOutcome outcome = actor == PlayerKind.Human
-                    ? PlayHumanTurn(match, moverColor, moverPlayerId, opts.Level, turnMoves, recorder, outPath, showBoards)
-                    : PlayAiTurn(match, moverColor, moverPlayerId, opts.Level, opts.DelayMs, turnMoves, showBoards);
+                ScriptedMove? scripted = (script != null && plyIndex < script.Count) ? script[plyIndex] : (ScriptedMove?) null;
+
+                TurnOutcome outcome;
+                string plyActor;
+                if (scripted != null) {
+                    outcome = PlayScriptedTurn(match, moverColor, moverPlayerId, scripted.Value, turnMoves, recorder, showBoards);
+                    plyActor = "human"; // a documented, human-authored expectation move
+                } else {
+                    outcome = actor == PlayerKind.Human
+                        ? PlayHumanTurn(match, moverColor, moverPlayerId, opts.Level, turnMoves, recorder, outPath, showBoards)
+                        : PlayAiTurn(match, moverColor, moverPlayerId, opts.Level, opts.DelayMs, turnMoves, showBoards);
+                    plyActor = actor.ToString().ToLowerInvariant();
+                }
 
                 if (outcome == TurnOutcome.Quit) {
                     match.ResetTurn();
@@ -238,7 +273,7 @@ namespace ChessersEngine.Cli {
                     index = plyIndex + 1,
                     turnColor = moverColor.ToString(),
                     playerId = moverPlayerId,
-                    actor = actor.ToString().ToLowerInvariant(),
+                    actor = plyActor,
                     moves = turnMoves,
                     committedNotation = match.GetLastMove(),
                     boardAfter = match._GetCommittedBoard().GetChessmanSchemas(),
@@ -311,6 +346,45 @@ namespace ChessersEngine.Cli {
                 Thread.Sleep(delayMs);
             }
             return turnMoves.Count > 0 ? TurnOutcome.Moved : TurnOutcome.NoLegalMoves;
+        }
+
+        /// <summary>
+        /// Play a single predetermined move (a documented expectation mined from a fixture's own
+        /// comments) rather than asking the AI/human, so the golden captures that move's MoveResult
+        /// -- e.g. isWinningMove for a documented checkmate. A rejected scripted move is a real
+        /// finding: it is recorded as a rejected attempt and ends the game (no-legal-moves).
+        /// </summary>
+        static TurnOutcome PlayScriptedTurn (
+            Match match,
+            ColorEnum moverColor,
+            int moverPlayerId,
+            ScriptedMove sm,
+            List<OracleMoveDto> turnMoves,
+            OracleRecorder recorder,
+            bool showBoards
+        ) {
+            Board board = match._GetPendingBoard();
+            Chessman piece = match.GetPendingChessman(sm.PieceId);
+            var attempt = new MoveAttempt {
+                playerId = moverPlayerId,
+                pieceId = sm.PieceId,
+                pieceGuid = piece != null ? piece.guid : sm.PieceId,
+                tileId = sm.ToTile,
+                promotionRank = sm.Promo,
+            };
+
+            MoveResult result = match.MoveChessman(attempt);
+            if (result == null || !result.valid) {
+                Console.Error.WriteLine($"  ! scripted move (piece {sm.PieceId} -> tile {sm.ToTile}) was rejected by the engine.");
+                RecordRejected(recorder, moverColor, moverPlayerId, attempt, result, board);
+                return TurnOutcome.NoLegalMoves;
+            }
+
+            RecordMove(turnMoves, attempt, result);
+            if (showBoards) {
+                Console.WriteLine("  " + moverColor + " (scripted): " + BoardRenderer.DescribeMove(result));
+            }
+            return TurnOutcome.Moved;
         }
 
         static TurnOutcome PlayHumanTurn (
