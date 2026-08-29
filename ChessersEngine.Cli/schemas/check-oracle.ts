@@ -1,7 +1,3 @@
-// Validate oracle files and enforce that their version markers are in sync.
-//
-// Usage: node check-oracle.ts <schemasDir> <oracle.json> [more.json ...]
-
 import { Command } from "commander";
 import { runCheck } from "./check-common.ts";
 import { oracleSchemas } from "./schemas.ts";

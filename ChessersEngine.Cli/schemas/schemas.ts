@@ -157,6 +157,5 @@ export const codecV1 = z.strictObject({
     .length(100),
 });
 
-// version registries: N -> Zod schema for that version
 export const oracleSchemas: Record<number, z.ZodType> = { 1: oracleV1 };
 export const codecSchemas: Record<number, z.ZodType> = { 1: codecV1 };

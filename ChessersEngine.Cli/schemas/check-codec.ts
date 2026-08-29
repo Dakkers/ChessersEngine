@@ -1,7 +1,4 @@
-// Validate a codec dump and enforce that its version markers are in sync.
 // Mirrors check-oracle.ts for the `codec.vN.schema.json` sibling artifact.
-//
-// Usage: node check-codec.ts <schemasDir> <codec.json> [more.json ...]
 
 import { Command } from "commander";
 import { runCheck } from "./check-common.ts";
