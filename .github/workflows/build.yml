@@ -16,10 +16,12 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
-          python-version: '3.x'
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: ChessersEngine.Cli/schemas/package-lock.json
 
       - name: Restore
         run: dotnet restore ChessersEngine.sln
@@ -32,14 +34,14 @@ jobs:
 
       - name: Oracle & codec schema checks
         run: |
-          python3 -m pip install --quiet jsonschema
           out="$(mktemp -d)"
           dotnet run --project ChessersEngine.Cli --configuration Release --no-restore --no-build -- \
             --ai-vs-ai --games 1 --seed 1 --quiet --max-plies 6 --out "$out"
           dotnet run --project ChessersEngine.Cli --configuration Release --no-restore --no-build -- \
             --scenario Checkmate1 --ai-vs-ai --seed 1 --quiet --out "$out"
-          python3 ChessersEngine.Cli/schemas/check_oracle.py ChessersEngine.Cli/schemas \
-            "$out"/chessers-*.json "$out"/scenario-*.json
           dotnet run --project ChessersEngine.Cli --configuration Release --no-restore --no-build -- \
             --dump-codec --out "$out"
-          python3 ChessersEngine.Cli/schemas/check_codec.py ChessersEngine.Cli/schemas "$out"/codec.v1.json
+          cd ChessersEngine.Cli/schemas
+          npm ci
+          npx tsx check-oracle.ts . "$out"/chessers-*.json "$out"/scenario-*.json
+          npx tsx check-codec.ts . "$out"/codec.v1.json
