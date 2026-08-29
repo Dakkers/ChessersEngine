@@ -10,13 +10,17 @@ const usage = [
   "Validate oracle files and enforce version-marker sync.",
   "",
   "Usage:",
-  "  tsx check-oracle.ts <schemas_dir> <oracle.json> [more.json ...]",
+  "  node check-oracle.ts <schemas_dir> <oracle.json> [more.json ...]",
 ].join("\n");
 
 process.exit(
-  runMain(process.argv.slice(2), {
-    family: "oracle",
-    uriRe: /oracle\.v(\d+)\.schema\.json$/,
-    schemaByVersion: oracleSchemas,
-  }, usage)
+  runMain(
+    process.argv.slice(2),
+    {
+      family: "oracle",
+      uriRe: /oracle\.v(\d+)\.schema\.json$/,
+      schemaByVersion: oracleSchemas,
+    },
+    usage,
+  ),
 );

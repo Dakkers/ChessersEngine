@@ -11,7 +11,7 @@ import { z } from "zod";
 export interface CheckConfig {
   family: "oracle" | "codec";
   uriRe: RegExp; // one capture group = the version integer
-  schemaByVersion: Record<number, z.ZodTypeAny>;
+  schemaByVersion: Record<number, z.ZodType>;
 }
 
 export function checkFile(filePath: string, schemasDir: string, cfg: CheckConfig): string[] {
@@ -30,7 +30,9 @@ export function checkFile(filePath: string, schemasDir: string, cfg: CheckConfig
 
   const m = cfg.uriRe.exec(schemaUri);
   if (!m) {
-    return [`${filePath}: $schema must end with ${cfg.family}.vN.schema.json (got ${JSON.stringify(schemaUri)})`];
+    return [
+      `${filePath}: $schema must end with ${cfg.family}.vN.schema.json (got ${JSON.stringify(schemaUri)})`,
+    ];
   }
   const uriVersion = Number(m[1]);
 
@@ -39,7 +41,7 @@ export function checkFile(filePath: string, schemasDir: string, cfg: CheckConfig
   if (record.schemaVersion !== uriVersion) {
     errs.push(
       `${filePath}: schemaVersion=${JSON.stringify(record.schemaVersion)} is out of sync with ` +
-        `$schema (v${uriVersion}); the two must match`
+        `$schema (v${uriVersion}); the two must match`,
     );
   }
 
@@ -57,8 +59,8 @@ export function checkFile(filePath: string, schemasDir: string, cfg: CheckConfig
 
   const result = zodSchema.safeParse(doc);
   if (!result.success) {
-    const issues = [...result.error.issues].sort((a, b) =>
-      a.path.join("/").localeCompare(b.path.join("/"))
+    const issues = result.error.issues.toSorted((a, b) =>
+      a.path.join("/").localeCompare(b.path.join("/")),
     );
     for (const issue of issues) {
       errs.push(`${filePath}: schema violation at /${issue.path.join("/")}: ${issue.message}`);
@@ -86,6 +88,8 @@ export function runMain(argv: string[], cfg: CheckConfig, usage: string): number
     return 1;
   }
 
-  process.stdout.write(`${label} schema check OK: ${files.length} file(s) valid and version-synced.\n`);
+  process.stdout.write(
+    `${label} schema check OK: ${files.length} file(s) valid and version-synced.\n`,
+  );
   return 0;
 }

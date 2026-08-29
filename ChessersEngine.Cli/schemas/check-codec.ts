@@ -11,13 +11,17 @@ const usage = [
   "Validate codec dumps and enforce version-marker sync.",
   "",
   "Usage:",
-  "  tsx check-codec.ts <schemas_dir> <codec.json> [more.json ...]",
+  "  node check-codec.ts <schemas_dir> <codec.json> [more.json ...]",
 ].join("\n");
 
 process.exit(
-  runMain(process.argv.slice(2), {
-    family: "codec",
-    uriRe: /codec\.v(\d+)\.schema\.json$/,
-    schemaByVersion: codecSchemas,
-  }, usage)
+  runMain(
+    process.argv.slice(2),
+    {
+      family: "codec",
+      uriRe: /codec\.v(\d+)\.schema\.json$/,
+      schemaByVersion: codecSchemas,
+    },
+    usage,
+  ),
 );

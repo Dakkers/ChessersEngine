@@ -16,12 +16,17 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.1.2
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
-          cache: npm
-          cache-dependency-path: ChessersEngine.Cli/schemas/package-lock.json
+          node-version-file: ChessersEngine.Cli/schemas/.nvmrc
+          cache: pnpm
+          cache-dependency-path: ChessersEngine.Cli/schemas/pnpm-lock.yaml
 
       - name: Restore
         run: dotnet restore ChessersEngine.sln
@@ -42,6 +47,6 @@ jobs:
           dotnet run --project ChessersEngine.Cli --configuration Release --no-restore --no-build -- \
             --dump-codec --out "$out"
           cd ChessersEngine.Cli/schemas
-          npm ci
-          npx tsx check-oracle.ts . "$out"/chessers-*.json "$out"/scenario-*.json
-          npx tsx check-codec.ts . "$out"/codec.v1.json
+          pnpm install --frozen-lockfile
+          node check-oracle.ts . "$out"/chessers-*.json "$out"/scenario-*.json
+          node check-codec.ts . "$out"/codec.v1.json
