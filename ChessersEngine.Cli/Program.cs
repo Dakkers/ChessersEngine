@@ -46,6 +46,9 @@ namespace ChessersEngine.Cli {
         public string Scenario = null;    // one fixture, by name
         public bool AllScenarios = false; // one game seeded from every fixture
         public bool ListScenarios = false; // print fixture names and exit
+
+        // Dump the tile-id coordinate codec table (a sibling artifact) instead of playing a game.
+        public bool DumpCodec = false;
     }
 
     static class Program {
@@ -83,6 +86,13 @@ namespace ChessersEngine.Cli {
                 foreach (MethodInfo m in ScenarioFixtures()) {
                     Console.WriteLine(m.Name);
                 }
+                return 0;
+            }
+
+            if (opts.DumpCodec) {
+                string codecPath = System.IO.Path.Combine(opts.OutDir, "codec.v1.json");
+                int mismatches = CodecDump.Write(codecPath);
+                Console.WriteLine($"Codec table written: {codecPath}  (100 tiles, {mismatches} round-trip mismatch(es))");
                 return 0;
             }
 
@@ -883,6 +893,7 @@ namespace ChessersEngine.Cli {
                     case "--scenario": o.Scenario = Next(a); break;
                     case "--all-scenarios": o.AllScenarios = true; break;
                     case "--list-scenarios": o.ListScenarios = true; break;
+                    case "--dump-codec": o.DumpCodec = true; break;
                     // Convenience presets
                     case "--ai-vs-ai": o.White = PlayerKind.Ai; o.Black = PlayerKind.Ai; break;
                     case "--hotseat": o.White = PlayerKind.Human; o.Black = PlayerKind.Human; break;
@@ -960,6 +971,7 @@ namespace ChessersEngine.Cli {
                 "  --scenario NAME      seed the game from a TestScenarios fixture (see --list-scenarios)\n" +
                 "  --all-scenarios      record one game seeded from every TestScenarios fixture\n" +
                 "  --list-scenarios     print the available scenario names and exit\n" +
+                "  --dump-codec         write the tile-id coordinate table to <out>/codec.v1.json and exit\n" +
                 "  -h, --help           show this help\n\n" +
                 "Each game is written as a self-contained golden-corpus JSON file: the initial\n" +
                 "board, every move attempt with its full MoveResult, and a board snapshot after\n" +

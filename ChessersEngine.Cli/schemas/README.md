@@ -18,6 +18,10 @@ and can be run locally:
 python3 ChessersEngine.Cli/schemas/check_oracle.py ChessersEngine.Cli/schemas path/to/*.json
 ```
 
+A second artifact family lives here too: `codec.vN.schema.json` for the
+`chessers --dump-codec` tile-id coordinate table, validated by
+[`check_codec.py`](check_codec.py). It follows the same policy below.
+
 ## Versioning policy
 
 - One file per released version: `oracle.v1.schema.json`, `oracle.v2.schema.json`, …

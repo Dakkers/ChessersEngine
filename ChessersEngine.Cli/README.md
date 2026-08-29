@@ -47,6 +47,11 @@ each uses its own deathjump setting. A few fixtures are partial positions (e.g.
 missing a king) the engine can't play to completion — those are skipped with a
 note rather than recorded.
 
+`--dump-codec` writes a `codec.v1.json` sibling artifact: the tile-id ↔ (row,col)
+mapping for every id −36..63 and its round-trip, so the port can reproduce the
+negative-id deathjump coordinate math exactly. It has its own versioned schema
+(`schemas/codec.v1.schema.json`, checked by `schemas/check_codec.py`).
+
 ## Move input (at the `move>` prompt)
 
 | Input          | Meaning                                                        |
@@ -92,6 +97,7 @@ Piece symbols: `UPPER`=white, `lower`=black; `" X "`=chess piece,
 | `--scenario NAME`   |          | seed the game from a `TestScenarios` fixture         |
 | `--all-scenarios`   |          | record one game seeded from every fixture           |
 | `--list-scenarios`  |          | print the fixture names and exit                    |
+| `--dump-codec`      |          | write the tile-id coordinate table to `<out>/codec.v1.json` and exit |
 | `--theme MODE`      | `auto`   | `auto` \| `dark` \| `light` color palette           |
 | `--no-color`        |          | disable ANSI color (auto-off when piped)            |
 

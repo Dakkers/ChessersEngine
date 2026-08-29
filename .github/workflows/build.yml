@@ -30,7 +30,7 @@ jobs:
       - name: Test
         run: dotnet test ChessersEngine.sln --configuration Release --no-build --verbosity normal
 
-      - name: Oracle schema version check
+      - name: Oracle & codec schema checks
         run: |
           python3 -m pip install --quiet jsonschema
           out="$(mktemp -d)"
@@ -38,4 +38,8 @@ jobs:
             --ai-vs-ai --games 1 --seed 1 --quiet --max-plies 6 --out "$out"
           dotnet run --project ChessersEngine.Cli --configuration Release --no-restore --no-build -- \
             --scenario Checkmate1 --ai-vs-ai --seed 1 --quiet --out "$out"
-          python3 ChessersEngine.Cli/schemas/check_oracle.py ChessersEngine.Cli/schemas "$out"/*.json
+          python3 ChessersEngine.Cli/schemas/check_oracle.py ChessersEngine.Cli/schemas \
+            "$out"/chessers-*.json "$out"/scenario-*.json
+          dotnet run --project ChessersEngine.Cli --configuration Release --no-restore --no-build -- \
+            --dump-codec --out "$out"
+          python3 ChessersEngine.Cli/schemas/check_codec.py ChessersEngine.Cli/schemas "$out"/codec.v1.json
