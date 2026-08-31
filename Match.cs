@@ -367,6 +367,7 @@ namespace ChessersEngine {
             bool isMaximizingPlayer,
             Chessman movingChessman = null
         ) {
+            EngineCounters.Node();
             bool isMultipleMoves = (movingChessman != null);
 
             if (currentDepth == optimizationConfig.maxDepth || board.IsGameOver()) {
