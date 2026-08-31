@@ -11,6 +11,9 @@
   "scripts": {
     "check:oracle": "node check-oracle.ts",
     "check:codec": "node check-codec.ts",
+    "check:perf": "node check-perf.ts",
+    "check:workloads": "node check-workloads.ts",
+    "compare:perf": "node compare-perf.ts",
     "typecheck": "tsc --noEmit",
     "fmt": "oxfmt *.ts",
     "fmt:check": "oxfmt --check *.ts",
