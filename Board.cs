@@ -65,6 +65,7 @@ namespace ChessersEngine {
         }
 
         public void CopyState (Board otherBoard) {
+            EngineCounters.CopyState();
             this.matchConfig = otherBoard.matchConfig;
 
             // Update the states of the Chessmen
@@ -111,6 +112,7 @@ namespace ChessersEngine {
         }
 
         public Board CreateCopy (List<ChessmanSchema> _pieces = null) {
+            EngineCounters.BoardClone();
             Board otherBoard = new Board(_pieces ?? this.GetChessmanSchemas(), this.matchConfig);
             otherBoard.CopyState(this);
             return otherBoard;
@@ -1367,6 +1369,7 @@ namespace ChessersEngine {
             }
 
             if (potentialTilesGetter == null) {
+                EngineCounters.MoveGen(0);
                 return new List<Tile>();
             }
 
@@ -1375,6 +1378,7 @@ namespace ChessersEngine {
                 result = result.Where((Tile t) => !t.IsDeathjumpTile()).ToList();
             }
 
+            EngineCounters.MoveGen(result.Count);
             return result;
         }
 
@@ -1431,6 +1435,7 @@ namespace ChessersEngine {
         }
 
         public void UndoMove (MoveResult moveResult) {
+            EngineCounters.MoveUndo();
             Chessman movedChessman = GetChessman(moveResult.pieceId);
             Tile fromTile = GetTile(moveResult.fromTileId);
             Tile toTile = GetTile(moveResult.tileId);
@@ -1516,6 +1521,7 @@ namespace ChessersEngine {
         public int CalculateBoardValue (
             int numMoves
         ) {
+            EngineCounters.Eval();
             Chessman whiteKing = GetKingOfColorIfExists(ColorEnum.WHITE);
             Chessman blackKing = GetKingOfColorIfExists(ColorEnum.BLACK);
             // A missing king counts as a captured king: that side has lost.
