@@ -1,0 +1,162 @@
+{
+  "version": 1,
+  "workloads": [
+    {
+      "id": "counter.overhead",
+      "layer": "micro",
+      "description": "1000 bare counter increments; quantifies what instrumentation costs the timed runs.",
+      "fixture": null,
+      "warmup": 100,
+      "measured": 1000,
+      "samples": 7
+    },
+    {
+      "id": "movegen.potential.opening",
+      "layer": "micro",
+      "description": "GetPotentialTilesForMovement over every active piece, standard opening.",
+      "fixture": null,
+      "warmup": 50,
+      "measured": 500,
+      "samples": 7
+    },
+    {
+      "id": "movegen.potential.Multijump1",
+      "layer": "micro",
+      "description": "GetPotentialTilesForMovement over every active piece, a checker-heavy position.",
+      "fixture": "Multijump1",
+      "warmup": 50,
+      "measured": 500,
+      "samples": 7
+    },
+    {
+      "id": "movegen.valid.opening",
+      "layer": "micro",
+      "description": "GetValidTilesForMovement over every active piece: clone plus pseudo-legal plus undo per tile.",
+      "fixture": null,
+      "warmup": 10,
+      "measured": 50,
+      "samples": 7
+    },
+    {
+      "id": "board.clone.opening",
+      "layer": "micro",
+      "description": "Board.CreateCopy of the standard opening.",
+      "fixture": null,
+      "warmup": 100,
+      "measured": 2000,
+      "samples": 7
+    },
+    {
+      "id": "board.copystate.opening",
+      "layer": "micro",
+      "description": "Board.CopyState onto a pre-built board.",
+      "fixture": null,
+      "warmup": 100,
+      "measured": 2000,
+      "samples": 7
+    },
+    {
+      "id": "board.apply-undo.opening",
+      "layer": "micro",
+      "description": "Move.GetPseudoLegalMoveResult followed by Board.UndoMove, one legal opening move.",
+      "fixture": null,
+      "warmup": 100,
+      "measured": 2000,
+      "samples": 7
+    },
+    {
+      "id": "eval.boardvalue.opening",
+      "layer": "micro",
+      "description": "Board.CalculateBoardValue of the standard opening.",
+      "fixture": null,
+      "warmup": 100,
+      "measured": 5000,
+      "samples": 7
+    },
+    {
+      "id": "notation.create.opening",
+      "layer": "micro",
+      "description": "MoveResult.CreateNotation for one opening move result.",
+      "fixture": null,
+      "warmup": 100,
+      "measured": 5000,
+      "samples": 7
+    },
+    {
+      "id": "search.level0.opening",
+      "layer": "search",
+      "description": "CalculateBestMove level 0 from the standard opening.",
+      "fixture": null,
+      "level": 0,
+      "warmup": 2,
+      "measured": 5,
+      "samples": 5,
+      "countersComparable": false
+    },
+    {
+      "id": "search.level1.Multijump1",
+      "layer": "search",
+      "description": "CalculateBestMove level 1 (multijumps allowed) from a checker-rich position; level 1 differs from level 0 only by allowMultijumps, which the standard opening cannot exercise.",
+      "fixture": "Multijump1",
+      "level": 1,
+      "warmup": 2,
+      "measured": 5,
+      "samples": 5,
+      "countersComparable": false
+    },
+    {
+      "id": "search.level2.opening",
+      "layer": "search",
+      "description": "CalculateBestMove level 2 (depth 4) from the standard opening.",
+      "fixture": null,
+      "level": 2,
+      "warmup": 1,
+      "measured": 2,
+      "samples": 3,
+      "countersComparable": false
+    },
+    {
+      "id": "search.level2.AlmostCheckmate1",
+      "layer": "search",
+      "description": "CalculateBestMove level 2 from a sparse near-mate position.",
+      "fixture": "AlmostCheckmate1",
+      "level": 2,
+      "warmup": 1,
+      "measured": 2,
+      "samples": 3,
+      "countersComparable": false
+    },
+    {
+      "id": "search.level2.Multijump1",
+      "layer": "search",
+      "description": "CalculateBestMove level 2 from a position with checker multi-jumps available.",
+      "fixture": "Multijump1",
+      "level": 2,
+      "warmup": 1,
+      "measured": 2,
+      "samples": 3,
+      "countersComparable": false
+    },
+    {
+      "id": "replay.game",
+      "layer": "e2e",
+      "description": "Replay the committed replay-sequence.v1.json move sequence through a fresh Match, from the standard opening.",
+      "fixture": null,
+      "level": 0,
+      "warmup": 1,
+      "measured": 3,
+      "samples": 5
+    },
+    {
+      "id": "selfplay.level0",
+      "layer": "e2e",
+      "description": "One seeded AI-vs-AI game at level 0, capped at 40 turns.",
+      "fixture": null,
+      "level": 0,
+      "warmup": 1,
+      "measured": 1,
+      "samples": 3,
+      "countersComparable": false
+    }
+  ]
+}

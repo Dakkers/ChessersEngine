@@ -5,7 +5,7 @@
     <!-- The engine sources live at the repo root, so default globbing would
          otherwise pull the sibling test/CLI projects' sources (and their
          generated obj/ files) into this project. -->
-    <DefaultItemExcludes>$(DefaultItemExcludes);ChessersEngine.Tests/**;ChessersEngine.Cli/**</DefaultItemExcludes>
+    <DefaultItemExcludes>$(DefaultItemExcludes);ChessersEngine.Tests/**;ChessersEngine.Cli/**;ChessersEngine.Bench/**</DefaultItemExcludes>
   </PropertyGroup>
 
   <ItemGroup>
