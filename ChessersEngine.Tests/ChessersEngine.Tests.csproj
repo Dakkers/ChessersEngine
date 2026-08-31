@@ -17,4 +17,15 @@
     <ProjectReference Include="..\ChessersEngine.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Bench sources compiled in directly: a ProjectReference to ChessersEngine.Bench would
+         duplicate every engine type. WorkloadRegistry.cs needs the engine types, which the
+         ProjectReference above already supplies. -->
+    <Compile Include="..\ChessersEngine.Bench\Stats.cs" />
+    <Compile Include="..\ChessersEngine.Bench\Workloads.cs" />
+    <Compile Include="..\ChessersEngine.Bench\WorkloadRegistry.cs" />
+    <Content Include="..\ChessersEngine.Bench\workloads.v1.json" CopyToOutputDirectory="PreserveNewest" Link="workloads.v1.json" />
+    <Content Include="..\ChessersEngine.Bench\replay-sequence.v1.json" CopyToOutputDirectory="PreserveNewest" Link="replay-sequence.v1.json" />
+  </ItemGroup>
+
 </Project>
