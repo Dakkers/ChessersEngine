@@ -156,5 +156,71 @@ export const codecV1 = z.strictObject({
     .length(100),
 });
 
+// ===========================================================================
+// perf.v1
+// ===========================================================================
+const nonNegative = () => z.number().min(0);
+
+const perfCounters = z.strictObject({
+  nodes: int().min(0),
+  moveGen: int().min(0),
+  tilesProduced: int().min(0),
+  boardClones: int().min(0),
+  copyStates: int().min(0),
+  moveApplies: int().min(0),
+  moveUndos: int().min(0),
+  evals: int().min(0),
+});
+
+const perfTime = z.strictObject({
+  minNsPerOp: nonNegative(),
+  medianNsPerOp: nonNegative(),
+  p90NsPerOp: nonNegative(),
+  maxNsPerOp: nonNegative(),
+  meanNsPerOp: nonNegative(),
+  stddevNsPerOp: nonNegative(),
+  opsPerSecond: nonNegative(),
+});
+
+const perfResult = z.strictObject({
+  id: z.string(),
+  layer: z.enum(["micro", "search", "e2e"]),
+  description: z.string(),
+  iterations: z.strictObject({
+    warmup: int().min(0),
+    measured: int().min(1),
+    samples: int().min(1),
+  }),
+  time: perfTime,
+  // False marks a workload whose counters depend on the host language's seeded RNG stream.
+  countersComparable: z.boolean(),
+  counters: perfCounters,
+});
+
+export const perfV1 = z.strictObject({
+  $schema: z.literal(`${SCHEMA_BASE}/perf.v1.schema.json`),
+  schemaVersion: z.literal(1),
+  engine: z.string(),
+  environment: z.strictObject({
+    os: z.enum(["darwin", "linux", "windows", "unknown"]),
+    arch: z.string(),
+    cpuModel: z.string(),
+    logicalCores: int().min(1),
+    runtime: z.string(),
+    buildConfig: z.string(),
+    gitSha: z.string(),
+    jitMode: z.string(),
+    countersEnabled: z.boolean(),
+  }),
+  manifest: z.strictObject({
+    version: int().min(1),
+    sha256: z.string().regex(/^[0-9a-f]{64}$/),
+  }),
+  results: z.array(perfResult).min(1),
+});
+
+export type PerfV1 = z.infer<typeof perfV1>;
+
 export const oracleSchemas: Record<number, z.ZodType> = { 1: oracleV1 };
 export const codecSchemas: Record<number, z.ZodType> = { 1: codecV1 };
+export const perfSchemas: Record<number, z.ZodType> = { 1: perfV1 };

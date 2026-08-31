@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/Dakkers/ChessersEngine/master/ChessersEngine.Cli/schemas/perf.v1.schema.json",
+  "title": "Chessers performance oracle (v1)",
+  "description": "Benchmark results emitted by `chessers-bench`: per-workload wall-clock statistics and deterministic work counters, plus the machine and manifest they were produced with. A sibling artifact to the game oracle so the Rust port can be measured identically and compared. The format version lives in the `$schema` URI.",
+  "type": "object",
+  "required": ["$schema", "schemaVersion", "engine", "environment", "manifest", "results"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "const": "https://raw.githubusercontent.com/Dakkers/ChessersEngine/master/ChessersEngine.Cli/schemas/perf.v1.schema.json"
+    },
+    "schemaVersion": { "const": 1 },
+    "engine": { "type": "string" },
+    "environment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["os", "arch", "cpuModel", "logicalCores", "runtime", "buildConfig", "gitSha", "jitMode", "countersEnabled"],
+      "properties": {
+        "os": { "enum": ["darwin", "linux", "windows", "unknown"] },
+        "arch": { "type": "string" },
+        "cpuModel": { "type": "string" },
+        "logicalCores": { "type": "integer", "minimum": 1 },
+        "runtime": { "type": "string", "description": "Language runtime or toolchain identification." },
+        "buildConfig": { "type": "string" },
+        "gitSha": { "type": "string" },
+        "jitMode": {
+          "type": "string",
+          "description": "How the measured code was compiled. The C# bench disables tiered compilation (\"tiered-disabled\") because its background, time-gated promotion makes a workload's timing depend on its position in the run. Times produced under different jitModes are not comparable."
+        },
+        "countersEnabled": { "type": "boolean" }
+      }
+    },
+    "manifest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "sha256"],
+      "properties": {
+        "version": { "type": "integer", "minimum": 1 },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "SHA-256 of the workloads.vN.json bytes the run used; two runs are only comparable when these match."
+        }
+      }
+    },
+    "results": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "layer", "description", "iterations", "time", "countersComparable", "counters"],
+        "properties": {
+          "id": { "type": "string" },
+          "layer": { "enum": ["micro", "search", "e2e"] },
+          "description": { "type": "string" },
+          "iterations": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["warmup", "measured", "samples"],
+            "properties": {
+              "warmup": { "type": "integer", "minimum": 0 },
+              "measured": { "type": "integer", "minimum": 1 },
+              "samples": { "type": "integer", "minimum": 1 }
+            }
+          },
+          "time": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["minNsPerOp", "medianNsPerOp", "p90NsPerOp", "maxNsPerOp", "meanNsPerOp", "stddevNsPerOp", "opsPerSecond"],
+            "properties": {
+              "minNsPerOp": { "type": "number", "minimum": 0, "description": "The headline figure: the least noise-contaminated sample." },
+              "medianNsPerOp": { "type": "number", "minimum": 0 },
+              "p90NsPerOp": { "type": "number", "minimum": 0 },
+              "maxNsPerOp": { "type": "number", "minimum": 0 },
+              "meanNsPerOp": { "type": "number", "minimum": 0 },
+              "stddevNsPerOp": { "type": "number", "minimum": 0 },
+              "opsPerSecond": { "type": "number", "minimum": 0 }
+            }
+          },
+          "countersComparable": {
+            "type": "boolean",
+            "description": "False when the workload's counters depend on the host language's seeded RNG stream, so a difference between two implementations is expected rather than a porting bug. Mirrors the manifest's optional `countersComparable` field, which defaults to true."
+          },
+          "counters": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["nodes", "moveGen", "tilesProduced", "boardClones", "copyStates", "moveApplies", "moveUndos", "evals"],
+            "description": "Per-op work tallies from a single dedicated pass. A difference between two implementations is a porting bug, not a performance result.",
+            "properties": {
+              "nodes": { "type": "integer", "minimum": 0 },
+              "moveGen": { "type": "integer", "minimum": 0 },
+              "tilesProduced": { "type": "integer", "minimum": 0 },
+              "boardClones": { "type": "integer", "minimum": 0 },
+              "copyStates": { "type": "integer", "minimum": 0 },
+              "moveApplies": { "type": "integer", "minimum": 0 },
+              "moveUndos": { "type": "integer", "minimum": 0 },
+              "evals": { "type": "integer", "minimum": 0 }
+            }
+          }
+        }
+      }
+    }
+  }
+}
