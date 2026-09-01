@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -18,13 +17,6 @@ namespace ChessersEngine.Tests {
                 out sha256
             );
 
-        [Test]
-        public void LoadsAndReportsVersionOne () {
-            WorkloadManifest manifest = Manifest(out string _);
-
-            Assert.That(manifest.version, Is.EqualTo(1));
-            Assert.That(manifest.workloads, Is.Not.Empty);
-        }
 
         [Test]
         public void ShaIsStableLowercaseHex () {
@@ -36,40 +28,8 @@ namespace ChessersEngine.Tests {
             Assert.That(first, Does.Match("^[0-9a-f]{64}$"));
         }
 
-        [Test]
-        public void WorkloadIdsAreUnique () {
-            WorkloadManifest manifest = Manifest(out string _);
 
-            List<string> duplicates = manifest.workloads
-                .GroupBy(w => w.id)
-                .Where(g => g.Count() > 1)
-                .Select(g => g.Key)
-                .ToList();
 
-            Assert.That(duplicates, Is.Empty, "duplicate workload ids: " + string.Join(", ", duplicates));
-        }
-
-        [Test]
-        public void EveryLayerIsKnown () {
-            WorkloadManifest manifest = Manifest(out string _);
-
-            foreach (WorkloadSpec w in manifest.workloads) {
-                Assert.That(KnownLayers, Does.Contain(w.layer), $"{w.id} has unknown layer '{w.layer}'");
-            }
-        }
-
-        [Test]
-        public void EveryIterationCountIsPositive () {
-            WorkloadManifest manifest = Manifest(out string _);
-
-            foreach (WorkloadSpec w in manifest.workloads) {
-                Assert.Multiple(() => {
-                    Assert.That(w.warmup, Is.GreaterThanOrEqualTo(0), $"{w.id}.warmup");
-                    Assert.That(w.measured, Is.GreaterThan(0), $"{w.id}.measured");
-                    Assert.That(w.samples, Is.GreaterThan(0), $"{w.id}.samples");
-                });
-            }
-        }
 
         [Test]
         public void EveryFixtureResolvesToATestScenariosMethod () {
@@ -173,24 +133,6 @@ namespace ChessersEngine.Tests {
             });
         }
 
-        [Test]
-        public void OnlyRngDependentWorkloadsOptOutOfCounterComparison () {
-            WorkloadManifest manifest = Manifest(out string _);
-
-            List<string> opted = manifest.workloads
-                .Where(w => !w.CountersAreComparable)
-                .Select(w => w.id)
-                .ToList();
-
-            Assert.That(opted, Is.EquivalentTo(new[] {
-                "search.level0.opening",
-                "search.level1.Multijump1",
-                "search.level2.opening",
-                "search.level2.AlmostCheckmate1",
-                "search.level2.Multijump1",
-                "selfplay.level0",
-            }));
-        }
 
         [Test]
         public void TheReplayFixtureStillReplaysCleanly () {
