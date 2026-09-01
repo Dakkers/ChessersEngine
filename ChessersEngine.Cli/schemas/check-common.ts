@@ -9,7 +9,7 @@ import { join } from "node:path";
 import { z } from "zod";
 
 export interface CheckConfig {
-  family: "oracle" | "codec";
+  family: "oracle" | "codec" | "perf";
   uriRe: RegExp; // one capture group = the version integer
   schemaByVersion: Record<number, z.ZodType>;
 }
@@ -76,7 +76,7 @@ export function checkFile(filePath: string, schemasDir: string, cfg: CheckConfig
 
 export function runCheck(schemasDir: string, files: string[], cfg: CheckConfig): number {
   const allErrs = files.flatMap((f) => checkFile(f, schemasDir, cfg));
-  const label = cfg.family === "oracle" ? "Oracle" : "Codec";
+  const label = cfg.family[0].toUpperCase() + cfg.family.slice(1);
 
   if (allErrs.length) {
     process.stdout.write(`${label} schema check FAILED:\n`);
