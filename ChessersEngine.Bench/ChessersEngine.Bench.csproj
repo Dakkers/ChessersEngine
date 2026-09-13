@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <RootNamespace>ChessersEngine.Bench</RootNamespace>
+    <AssemblyName>chessers-bench</AssemblyName>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <!-- Tiered compilation promotes to optimised code on a background, elapsed-time-gated delay,
+         so workloads early in the process are measured before they reach steady state and their
+         timings depend on run order. Disabling it makes a run reproducible; `jitMode` in the
+         report records that the numbers were produced this way. -->
+    <TieredCompilation>false</TieredCompilation>
+    <!-- The engine sources are compiled INTO this project rather than referenced, because
+         DefineConstants does not flow across a ProjectReference: a referenced engine would
+         link without BENCH and silently report all-zero counters. -->
+    <DefineConstants>$(DefineConstants);BENCH</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\*.cs" />
+    <Content Include="workloads.v1.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="replay-sequence.v1.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

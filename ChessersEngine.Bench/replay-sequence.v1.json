@@ -1,0 +1,326 @@
+{
+  "version": 1,
+  "description": "Move sequence for the replay.game workload: the first 40 turns of a level-0 self-play game seeded with 1, from the standard opening.",
+  "turns": [
+    [
+      {
+        "pieceId": 2,
+        "tileId": 17,
+        "playerId": 0,
+        "promotionRank": -1
+      }
+    ],
+    [
+      {
+        "pieceId": 23,
+        "tileId": 45,
+        "playerId": 1,
+        "promotionRank": -1
+      }
+    ],
+    [
+      {
+        "pieceId": 10,
+        "tileId": 21,
+        "playerId": 0,
+        "promotionRank": -1
+      }
+    ],
+    [
+      {
+        "pieceId": 21,
+        "tileId": 40,
+        "playerId": 1,
+        "promotionRank": -1
+      }
+    ],
+    [
+      {
+        "pieceId": 8,
+        "tileId": 20,
+        "playerId": 0,
+        "promotionRank": -1
+      }
+    ],
+    [
+      {
+        "pieceId": 21,
+        "tileId": 57,
+        "playerId": 1,
+        "promotionRank": -1
+      }
+    ],
+    [
+      {
+        "pieceId": 0,
+        "tileId": 24,
+        "playerId": 0,
+        "promotionRank": -1
+      }
+    ],
+    [
+      {
+        "pieceId": 1,
+        "tileId": 32,
+        "playerId": 1,
+        "promotionRank": -1
+      }
+    ],
+    [
+      {
+        "pieceId": 12,
+        "tileId": 22,
+        "playerId": 0,
+        "promotionRank": -1
+      }
+    ],
+    [
+      {
+        "pieceId": 13,
+        "tileId": 46,
+        "playerId": 1,
+        "promotionRank": -1
+      }
+    ],
+    [
+      {
+        "pieceId": 4,
+        "tileId": 18,
+        "playerId": 0,
+        "promotionRank": -1
+      }
+    ],
+    [
+      {
+        "pieceId": 23,
+        "tileId": 62,
+        "playerId": 1,
+        "promotionRank": -1
+      }
+    ],
+    [
+      {
+        "pieceId": 8,
+        "tileId": 28,
+        "playerId": 0,
+        "promotionRank": -1
+      }
+    ],
+    [
+      {
+        "pieceId": 9,
+        "tileId": 36,
+        "playerId": 1,
+        "promotionRank": -1
+      }
+    ],
+    [
+      {
+        "pieceId": 6,
+        "tileId": 19,
+        "playerId": 0,
+        "promotionRank": -1
+      }
+    ],
+    [
+      {
+        "pieceId": 29,
+        "tileId": 52,
+        "playerId": 1,
+        "promotionRank": -1
+      }
+    ],
+    [
+      {
+        "pieceId": 22,
+        "tileId": 23,
+        "playerId": 0,
+        "promotionRank": -1
+      }
+    ],
+    [
+      {
+        "pieceId": 21,
+        "tileId": 42,
+        "playerId": 1,
+        "promotionRank": -1
+      }
+    ],
+    [
+      {
+        "pieceId": 18,
+        "tileId": 6,
+        "playerId": 0,
+        "promotionRank": -1
+      }
+    ],
+    [
+      {
+        "pieceId": 27,
+        "tileId": 54,
+        "playerId": 1,
+        "promotionRank": -1
+      }
+    ],
+    [
+      {
+        "pieceId": 18,
+        "tileId": 14,
+        "playerId": 0,
+        "promotionRank": -1
+      }
+    ],
+    [
+      {
+        "pieceId": 17,
+        "tileId": 40,
+        "playerId": 1,
+        "promotionRank": -1
+      }
+    ],
+    [
+      {
+        "pieceId": 26,
+        "tileId": 12,
+        "playerId": 0,
+        "promotionRank": -1
+      }
+    ],
+    [
+      {
+        "pieceId": 17,
+        "tileId": 41,
+        "playerId": 1,
+        "promotionRank": -1
+      }
+    ],
+    [
+      {
+        "pieceId": 24,
+        "tileId": 20,
+        "playerId": 0,
+        "promotionRank": -1
+      }
+    ],
+    [
+      {
+        "pieceId": 17,
+        "tileId": 40,
+        "playerId": 1,
+        "promotionRank": -1
+      }
+    ],
+    [
+      {
+        "pieceId": 30,
+        "tileId": 13,
+        "playerId": 0,
+        "promotionRank": -1
+      }
+    ],
+    [
+      {
+        "pieceId": 7,
+        "tileId": 43,
+        "playerId": 1,
+        "promotionRank": -1
+      }
+    ],
+    [
+      {
+        "pieceId": 12,
+        "tileId": 30,
+        "playerId": 0,
+        "promotionRank": -1
+      }
+    ],
+    [
+      {
+        "pieceId": 3,
+        "tileId": 41,
+        "playerId": 1,
+        "promotionRank": -1
+      }
+    ],
+    [
+      {
+        "pieceId": 16,
+        "tileId": 8,
+        "playerId": 0,
+        "promotionRank": -1
+      }
+    ],
+    [
+      {
+        "pieceId": 29,
+        "tileId": 45,
+        "playerId": 1,
+        "promotionRank": -1
+      }
+    ],
+    [
+      {
+        "pieceId": 28,
+        "tileId": 2,
+        "playerId": 0,
+        "promotionRank": -1
+      }
+    ],
+    [
+      {
+        "pieceId": 13,
+        "tileId": 38,
+        "playerId": 1,
+        "promotionRank": -1
+      }
+    ],
+    [
+      {
+        "pieceId": 18,
+        "tileId": 6,
+        "playerId": 0,
+        "promotionRank": -1
+      }
+    ],
+    [
+      {
+        "pieceId": 27,
+        "tileId": 61,
+        "playerId": 1,
+        "promotionRank": -1
+      }
+    ],
+    [
+      {
+        "pieceId": 30,
+        "tileId": 22,
+        "playerId": 0,
+        "promotionRank": -1
+      }
+    ],
+    [
+      {
+        "pieceId": 25,
+        "tileId": 44,
+        "playerId": 1,
+        "promotionRank": -1
+      }
+    ],
+    [
+      {
+        "pieceId": 4,
+        "tileId": 26,
+        "playerId": 0,
+        "promotionRank": -1
+      }
+    ],
+    [
+      {
+        "pieceId": 17,
+        "tileId": 56,
+        "playerId": 1,
+        "promotionRank": -1
+      }
+    ]
+  ]
+}
