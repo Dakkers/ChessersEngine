@@ -783,6 +783,7 @@ namespace ChessersEngine {
         /// the player is not in  check.
         /// </summary>
         public MoveResult GetPseudoLegalMoveResult () {
+            EngineCounters.MoveApply();
             ExecuteBaseMoveWithCheckValidation();
             return moveResult;
         }
