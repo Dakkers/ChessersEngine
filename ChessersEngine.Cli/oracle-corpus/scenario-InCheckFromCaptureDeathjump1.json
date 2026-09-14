@@ -1,0 +1,175 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Dakkers/ChessersEngine/master/ChessersEngine.Cli/schemas/oracle.v1.schema.json",
+  "schemaVersion": 1,
+  "engine": "ChessersEngine (C#)",
+  "config": {
+    "white": "ai",
+    "black": "ai",
+    "aiLevel": 2,
+    "randomSeed": 1,
+    "deathjumpSetting": "OFF",
+    "whitePlayerId": 0,
+    "blackPlayerId": 1,
+    "scenario": "InCheckFromCaptureDeathjump1"
+  },
+  "initialPieces": [
+    {
+      "colorId": 0,
+      "guid": 30,
+      "hasMoved": false,
+      "id": 30,
+      "isActive": true,
+      "isChecker": false,
+      "isKinged": false,
+      "isPromoted": false,
+      "kind": 5,
+      "location": 0
+    },
+    {
+      "colorId": 0,
+      "guid": 28,
+      "hasMoved": false,
+      "id": 28,
+      "isActive": true,
+      "isChecker": false,
+      "isKinged": false,
+      "isPromoted": false,
+      "kind": 4,
+      "location": 4
+    },
+    {
+      "colorId": 1,
+      "guid": 1,
+      "hasMoved": false,
+      "id": 1,
+      "isActive": true,
+      "isChecker": false,
+      "isKinged": false,
+      "isPromoted": false,
+      "kind": 0,
+      "location": 53
+    },
+    {
+      "colorId": 1,
+      "guid": 31,
+      "hasMoved": false,
+      "id": 31,
+      "isActive": true,
+      "isChecker": false,
+      "isKinged": false,
+      "isPromoted": false,
+      "kind": 5,
+      "location": 60
+    }
+  ],
+  "plies": [
+    {
+      "index": 1,
+      "turnColor": "WHITE",
+      "playerId": 0,
+      "actor": "ai",
+      "moves": [
+        {
+          "attempt": {
+            "pieceGuid": 28,
+            "pieceId": 28,
+            "playerId": 0,
+            "promotionRank": -1,
+            "tileId": 60
+          },
+          "notation": "28_Qe1xe8#",
+          "result": {
+            "playerId": 0,
+            "pieceId": 28,
+            "pieceGuid": 28,
+            "fromTileId": 4,
+            "tileId": 60,
+            "turnChanged": true,
+            "type": 0,
+            "polarityChanged": true,
+            "wasFirstMoveForPiece": true,
+            "kinged": true,
+            "isCastle": false,
+            "promotionOccurred": false,
+            "promotionRank": null,
+            "wasPieceJumped": false,
+            "jumpedPieceId": -1,
+            "jumpedTileId": -1,
+            "wasPieceCaptured": true,
+            "capturedPieceId": 31,
+            "isWinningMove": true,
+            "isInCheck": true,
+            "isStalemate": false,
+            "valid": true,
+            "notation": "28_Qe1xe8#",
+            "fromRow": 0,
+            "toRow": 7,
+            "fromColumn": 4,
+            "toColumn": 4,
+            "chessmanKind": "QUEEN"
+          }
+        }
+      ],
+      "committedNotation": "28_Qe1xe8#",
+      "boardAfter": [
+        {
+          "colorId": 0,
+          "guid": 30,
+          "hasMoved": false,
+          "id": 30,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 5,
+          "location": 0
+        },
+        {
+          "colorId": 0,
+          "guid": 28,
+          "hasMoved": true,
+          "id": 28,
+          "isActive": true,
+          "isChecker": true,
+          "isKinged": true,
+          "isPromoted": false,
+          "kind": 4,
+          "location": 60
+        },
+        {
+          "colorId": 1,
+          "guid": 1,
+          "hasMoved": false,
+          "id": 1,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 0,
+          "location": 53
+        },
+        {
+          "colorId": 1,
+          "guid": 31,
+          "hasMoved": false,
+          "id": 31,
+          "isActive": false,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 5,
+          "location": 60
+        }
+      ]
+    }
+  ],
+  "outcome": {
+    "gameOver": true,
+    "winningPlayerId": 0,
+    "winningColor": "WHITE",
+    "isDraw": false,
+    "isResignation": false,
+    "reason": "checkmate"
+  },
+  "rejectedAttempts": []
+}
