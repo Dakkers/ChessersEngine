@@ -5,7 +5,7 @@ using System.Linq;
 namespace ChessersEngine {
     public class Board {
         public readonly long id;
-        Dictionary<int, Tile> tilesById;
+        readonly Tile[] tiles = new Tile[Constants.NUM_TILES];
         readonly Chessman[] chessmen = new Chessman[Constants.NUM_CHESSMEN];
         readonly List<Chessman> chessmenInOrder = new List<Chessman>();
         MatchConfig matchConfig;
@@ -20,13 +20,12 @@ namespace ChessersEngine {
             matchConfig = _matchConfig;
 
             id = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-            tilesById = new Dictionary<int, Tile>();
 
             rightDiagonalDelta = numRealColumns - 1;
             leftDiagonalDelta = numRealColumns + 1;
 
-            for (int i = -36; i < 64; i++) {
-                tilesById[i] = new Tile {
+            for (int i = Constants.MIN_TILE_ID; i < Constants.MIN_TILE_ID + Constants.NUM_TILES; i++) {
+                tiles[i - Constants.MIN_TILE_ID] = new Tile {
                     id = i
                 };
             }
@@ -42,12 +41,6 @@ namespace ChessersEngine {
                 chessmen[newChessman.id] = newChessman;
                 chessmenInOrder.Add(newChessman);
             }
-
-            //for (int i = 0; i < 64; i++) {
-            //    if (tilesById[i].IsOccupied()) {
-            //        Match.Log($"{i} -- occupied by {tilesById[i].occupant.id}");
-            //    }
-            //}
         }
 
         public List<ChessmanSchema> GetChessmanSchemas () {
@@ -79,8 +72,8 @@ namespace ChessersEngine {
             }
 
             // Update the states of the Tiles, and which Chessmen they reference
-            foreach (KeyValuePair<int, Tile> pair in tilesById) {
-                int tileId = pair.Key;
+            foreach (Tile tileEntry in tiles) {
+                int tileId = tileEntry.id;
                 Tile otherTile = otherBoard.GetTile(tileId);
                 Tile tile = GetTile(tileId);
 
@@ -213,12 +206,13 @@ namespace ChessersEngine {
         #region Tile-getters
 
         public Tile GetTile (int id) {
-            return tilesById[id];
+            return tiles[id - Constants.MIN_TILE_ID];
         }
 
         public Tile GetTileIfExists (int id) {
-            if (tilesById.ContainsKey(id)) {
-                return GetTile(id);
+            int index = id - Constants.MIN_TILE_ID;
+            if (index >= 0 && index < tiles.Length) {
+                return tiles[index];
             }
             return null;
         }

@@ -108,5 +108,20 @@
 
         #endregion
 
+        #region Tile arena
+
+        /// <summary>
+        /// Lowest tile id. Tile ids are dense in [MIN_TILE_ID, MIN_TILE_ID + NUM_TILES);
+        /// deathjump tiles occupy the negative ids, the 8x8 board occupies [0, 64).
+        /// </summary>
+        public const int MIN_TILE_ID = -36;
+
+        /// <summary>
+        /// Number of tiles. Arena index of a tile id is (id - MIN_TILE_ID).
+        /// </summary>
+        public const int NUM_TILES = 100;
+
+        #endregion
+
     }
 }
