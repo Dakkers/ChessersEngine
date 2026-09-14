@@ -6,7 +6,8 @@ namespace ChessersEngine {
     public class Board {
         public readonly long id;
         Dictionary<int, Tile> tilesById;
-        Dictionary<int, Chessman> chessmenById;
+        readonly Chessman[] chessmen = new Chessman[Constants.NUM_CHESSMEN];
+        readonly List<Chessman> chessmenInOrder = new List<Chessman>();
         MatchConfig matchConfig;
 
         readonly int numRealColumns = 8;
@@ -20,7 +21,6 @@ namespace ChessersEngine {
 
             id = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             tilesById = new Dictionary<int, Tile>();
-            chessmenById = new Dictionary<int, Chessman>();
 
             rightDiagonalDelta = numRealColumns - 1;
             leftDiagonalDelta = numRealColumns + 1;
@@ -39,7 +39,8 @@ namespace ChessersEngine {
                     underlyingTile.SetPiece(newChessman);
                 }
 
-                chessmenById[newChessman.id] = newChessman;
+                chessmen[newChessman.id] = newChessman;
+                chessmenInOrder.Add(newChessman);
             }
 
             //for (int i = 0; i < 64; i++) {
@@ -50,16 +51,16 @@ namespace ChessersEngine {
         }
 
         public List<ChessmanSchema> GetChessmanSchemas () {
-            return chessmenById.Values.Select((c) => c.CreateSchema()).ToList();
+            return chessmenInOrder.Select((c) => c.CreateSchema()).ToList();
         }
 
         public Chessman GetChessman (int id) {
-            return chessmenById[id];
+            return chessmen[id];
         }
 
         public Chessman GetChessmanIfExists (int id) {
-            if (chessmenById.ContainsKey(id)) {
-                return GetChessman(id);
+            if (id >= 0 && id < chessmen.Length && chessmen[id] != null) {
+                return chessmen[id];
             }
             return null;
         }
@@ -69,8 +70,8 @@ namespace ChessersEngine {
             this.matchConfig = otherBoard.matchConfig;
 
             // Update the states of the Chessmen
-            foreach (KeyValuePair<int, Chessman> pair in chessmenById) {
-                int chessmanId = pair.Key;
+            foreach (Chessman entry in chessmenInOrder) {
+                int chessmanId = entry.id;
                 Chessman otherChessman = otherBoard.GetChessman(chessmanId);
                 Chessman chessman = GetChessman(chessmanId);
 
@@ -97,8 +98,8 @@ namespace ChessersEngine {
             }
 
             // Update the Tile references for the Chessmen
-            foreach (KeyValuePair<int, Chessman> pair in chessmenById) {
-                int chessmanId = pair.Key;
+            foreach (Chessman entry in chessmenInOrder) {
+                int chessmanId = entry.id;
                 Chessman otherChessman = otherBoard.GetChessman(chessmanId);
                 Chessman chessman = GetChessman(chessmanId);
 
@@ -163,7 +164,7 @@ namespace ChessersEngine {
         #region Chessman getters
 
         public List<Chessman> GetActiveChessmen () {
-            return chessmenById.Values.Where((c) => c.isActive).ToList();
+            return chessmenInOrder.Where((c) => c.isActive).ToList();
         }
 
         public List<Chessman> GetActiveChessmenOfColor (ColorEnum color) {
@@ -171,7 +172,11 @@ namespace ChessersEngine {
         }
 
         public Dictionary<int, Chessman> GetAllChessmen () {
-            return chessmenById;
+            var result = new Dictionary<int, Chessman>();
+            foreach (Chessman c in chessmenInOrder) {
+                result[c.id] = c;
+            }
+            return result;
         }
 
         public Chessman GetBlackKing () {
@@ -1641,9 +1646,9 @@ namespace ChessersEngine {
 
         public void PrintPieces () {
             var result = new List<string>();
-            foreach (var item in chessmenById) {
-                if (item.Value.isActive) {
-                    result.Add($"{item.Key} {item.Value.kind} | {item.Value.GetUnderlyingTile()?.id}");
+            foreach (Chessman item in chessmenInOrder) {
+                if (item.isActive) {
+                    result.Add($"{item.id} {item.kind} | {item.GetUnderlyingTile()?.id}");
                 }
             }
             Match.Log(string.Join("\n", result));

@@ -52,6 +52,11 @@
         public const int ID_WHITE_KING = 30;
         public const int ID_BLACK_KING = 31;
 
+        /// <summary>
+        /// Number of chessmen on a full board. Piece ids are dense in [0, NUM_CHESSMEN).
+        /// </summary>
+        public const int NUM_CHESSMEN = 32;
+
         #endregion
 
         #region Move Types
