@@ -1,0 +1,271 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Dakkers/ChessersEngine/master/ChessersEngine.Cli/schemas/oracle.v1.schema.json",
+  "schemaVersion": 1,
+  "engine": "ChessersEngine (C#)",
+  "config": {
+    "white": "ai",
+    "black": "ai",
+    "aiLevel": 2,
+    "randomSeed": 1,
+    "deathjumpSetting": "OFF",
+    "whitePlayerId": 0,
+    "blackPlayerId": 1,
+    "scenario": "AlmostCheckmate3"
+  },
+  "initialPieces": [
+    {
+      "colorId": 0,
+      "guid": 30,
+      "hasMoved": false,
+      "id": 30,
+      "isActive": true,
+      "isChecker": false,
+      "isKinged": false,
+      "isPromoted": false,
+      "kind": 5,
+      "location": 27
+    },
+    {
+      "colorId": 1,
+      "guid": 1,
+      "hasMoved": false,
+      "id": 1,
+      "isActive": true,
+      "isChecker": false,
+      "isKinged": false,
+      "isPromoted": false,
+      "kind": 0,
+      "location": 52
+    },
+    {
+      "colorId": 1,
+      "guid": 3,
+      "hasMoved": false,
+      "id": 3,
+      "isActive": true,
+      "isChecker": false,
+      "isKinged": false,
+      "isPromoted": false,
+      "kind": 0,
+      "location": 45
+    },
+    {
+      "colorId": 1,
+      "guid": 25,
+      "hasMoved": false,
+      "id": 25,
+      "isActive": true,
+      "isChecker": false,
+      "isKinged": false,
+      "isPromoted": false,
+      "kind": 2,
+      "location": 38
+    },
+    {
+      "colorId": 1,
+      "guid": 27,
+      "hasMoved": false,
+      "id": 27,
+      "isActive": true,
+      "isChecker": false,
+      "isKinged": false,
+      "isPromoted": false,
+      "kind": 2,
+      "location": 46
+    },
+    {
+      "colorId": 1,
+      "guid": 19,
+      "hasMoved": false,
+      "id": 19,
+      "isActive": true,
+      "isChecker": false,
+      "isKinged": false,
+      "isPromoted": false,
+      "kind": 3,
+      "location": 59
+    },
+    {
+      "colorId": 1,
+      "guid": 29,
+      "hasMoved": false,
+      "id": 29,
+      "isActive": true,
+      "isChecker": false,
+      "isKinged": false,
+      "isPromoted": false,
+      "kind": 4,
+      "location": 58
+    },
+    {
+      "colorId": 1,
+      "guid": 31,
+      "hasMoved": false,
+      "id": 31,
+      "isActive": true,
+      "isChecker": false,
+      "isKinged": false,
+      "isPromoted": false,
+      "kind": 5,
+      "location": 56
+    }
+  ],
+  "plies": [
+    {
+      "index": 1,
+      "turnColor": "BLACK",
+      "playerId": 1,
+      "actor": "ai",
+      "moves": [
+        {
+          "attempt": {
+            "pieceGuid": 19,
+            "pieceId": 19,
+            "playerId": 1,
+            "promotionRank": -1,
+            "tileId": 43
+          },
+          "notation": "19_Rd8d6#",
+          "result": {
+            "playerId": 1,
+            "pieceId": 19,
+            "pieceGuid": 19,
+            "fromTileId": 59,
+            "tileId": 43,
+            "turnChanged": true,
+            "type": 0,
+            "polarityChanged": false,
+            "wasFirstMoveForPiece": true,
+            "kinged": false,
+            "isCastle": false,
+            "promotionOccurred": false,
+            "promotionRank": null,
+            "wasPieceJumped": false,
+            "jumpedPieceId": -1,
+            "jumpedTileId": -1,
+            "wasPieceCaptured": false,
+            "capturedPieceId": -1,
+            "isWinningMove": true,
+            "isInCheck": true,
+            "isStalemate": false,
+            "valid": true,
+            "notation": "19_Rd8d6#",
+            "fromRow": 7,
+            "toRow": 5,
+            "fromColumn": 3,
+            "toColumn": 3,
+            "chessmanKind": "ROOK"
+          }
+        }
+      ],
+      "committedNotation": "19_Rd8d6#",
+      "boardAfter": [
+        {
+          "colorId": 0,
+          "guid": 30,
+          "hasMoved": false,
+          "id": 30,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 5,
+          "location": 27
+        },
+        {
+          "colorId": 1,
+          "guid": 1,
+          "hasMoved": false,
+          "id": 1,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 0,
+          "location": 52
+        },
+        {
+          "colorId": 1,
+          "guid": 3,
+          "hasMoved": false,
+          "id": 3,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 0,
+          "location": 45
+        },
+        {
+          "colorId": 1,
+          "guid": 25,
+          "hasMoved": false,
+          "id": 25,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 2,
+          "location": 38
+        },
+        {
+          "colorId": 1,
+          "guid": 27,
+          "hasMoved": false,
+          "id": 27,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 2,
+          "location": 46
+        },
+        {
+          "colorId": 1,
+          "guid": 19,
+          "hasMoved": true,
+          "id": 19,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 3,
+          "location": 43
+        },
+        {
+          "colorId": 1,
+          "guid": 29,
+          "hasMoved": false,
+          "id": 29,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 4,
+          "location": 58
+        },
+        {
+          "colorId": 1,
+          "guid": 31,
+          "hasMoved": false,
+          "id": 31,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 5,
+          "location": 56
+        }
+      ]
+    }
+  ],
+  "outcome": {
+    "gameOver": true,
+    "winningPlayerId": 1,
+    "winningColor": "BLACK",
+    "isDraw": false,
+    "isResignation": false,
+    "reason": "checkmate"
+  },
+  "rejectedAttempts": []
+}

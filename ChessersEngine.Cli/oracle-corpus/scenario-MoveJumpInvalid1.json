@@ -1,0 +1,2065 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Dakkers/ChessersEngine/master/ChessersEngine.Cli/schemas/oracle.v1.schema.json",
+  "schemaVersion": 1,
+  "engine": "ChessersEngine (C#)",
+  "config": {
+    "white": "ai",
+    "black": "ai",
+    "aiLevel": 2,
+    "randomSeed": 1,
+    "deathjumpSetting": "OFF",
+    "whitePlayerId": 0,
+    "blackPlayerId": 1,
+    "scenario": "MoveJumpInvalid1"
+  },
+  "initialPieces": [
+    {
+      "colorId": 0,
+      "guid": 30,
+      "hasMoved": false,
+      "id": 30,
+      "isActive": true,
+      "isChecker": false,
+      "isKinged": false,
+      "isPromoted": false,
+      "kind": 5,
+      "location": 4
+    },
+    {
+      "colorId": 0,
+      "guid": 28,
+      "hasMoved": false,
+      "id": 28,
+      "isActive": true,
+      "isChecker": false,
+      "isKinged": false,
+      "isPromoted": false,
+      "kind": 4,
+      "location": 7
+    },
+    {
+      "colorId": 1,
+      "guid": 31,
+      "hasMoved": false,
+      "id": 31,
+      "isActive": true,
+      "isChecker": false,
+      "isKinged": false,
+      "isPromoted": false,
+      "kind": 5,
+      "location": 37
+    }
+  ],
+  "plies": [
+    {
+      "index": 1,
+      "turnColor": "WHITE",
+      "playerId": 0,
+      "actor": "ai",
+      "moves": [
+        {
+          "attempt": {
+            "pieceGuid": 28,
+            "pieceId": 28,
+            "playerId": 0,
+            "promotionRank": -1,
+            "tileId": 31
+          },
+          "notation": "28_Qh1h4",
+          "result": {
+            "playerId": 0,
+            "pieceId": 28,
+            "pieceGuid": 28,
+            "fromTileId": 7,
+            "tileId": 31,
+            "turnChanged": true,
+            "type": 0,
+            "polarityChanged": false,
+            "wasFirstMoveForPiece": true,
+            "kinged": false,
+            "isCastle": false,
+            "promotionOccurred": false,
+            "promotionRank": null,
+            "wasPieceJumped": false,
+            "jumpedPieceId": -1,
+            "jumpedTileId": -1,
+            "wasPieceCaptured": false,
+            "capturedPieceId": -1,
+            "isWinningMove": false,
+            "isInCheck": false,
+            "isStalemate": false,
+            "valid": true,
+            "notation": "28_Qh1h4",
+            "fromRow": 0,
+            "toRow": 3,
+            "fromColumn": 7,
+            "toColumn": 7,
+            "chessmanKind": "QUEEN"
+          }
+        }
+      ],
+      "committedNotation": "28_Qh1h4",
+      "boardAfter": [
+        {
+          "colorId": 0,
+          "guid": 30,
+          "hasMoved": false,
+          "id": 30,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 5,
+          "location": 4
+        },
+        {
+          "colorId": 0,
+          "guid": 28,
+          "hasMoved": true,
+          "id": 28,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 4,
+          "location": 31
+        },
+        {
+          "colorId": 1,
+          "guid": 31,
+          "hasMoved": false,
+          "id": 31,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 5,
+          "location": 37
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "turnColor": "BLACK",
+      "playerId": 1,
+      "actor": "ai",
+      "moves": [
+        {
+          "attempt": {
+            "pieceGuid": 31,
+            "pieceId": 31,
+            "playerId": 1,
+            "promotionRank": -1,
+            "tileId": 36
+          },
+          "notation": "31_Kf5e5",
+          "result": {
+            "playerId": 1,
+            "pieceId": 31,
+            "pieceGuid": 31,
+            "fromTileId": 37,
+            "tileId": 36,
+            "turnChanged": true,
+            "type": 0,
+            "polarityChanged": false,
+            "wasFirstMoveForPiece": true,
+            "kinged": false,
+            "isCastle": false,
+            "promotionOccurred": false,
+            "promotionRank": null,
+            "wasPieceJumped": false,
+            "jumpedPieceId": -1,
+            "jumpedTileId": -1,
+            "wasPieceCaptured": false,
+            "capturedPieceId": -1,
+            "isWinningMove": false,
+            "isInCheck": false,
+            "isStalemate": false,
+            "valid": true,
+            "notation": "31_Kf5e5",
+            "fromRow": 4,
+            "toRow": 4,
+            "fromColumn": 5,
+            "toColumn": 4,
+            "chessmanKind": "KING"
+          }
+        }
+      ],
+      "committedNotation": "31_Kf5e5",
+      "boardAfter": [
+        {
+          "colorId": 0,
+          "guid": 30,
+          "hasMoved": false,
+          "id": 30,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 5,
+          "location": 4
+        },
+        {
+          "colorId": 0,
+          "guid": 28,
+          "hasMoved": true,
+          "id": 28,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 4,
+          "location": 31
+        },
+        {
+          "colorId": 1,
+          "guid": 31,
+          "hasMoved": true,
+          "id": 31,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 5,
+          "location": 36
+        }
+      ]
+    },
+    {
+      "index": 3,
+      "turnColor": "WHITE",
+      "playerId": 0,
+      "actor": "ai",
+      "moves": [
+        {
+          "attempt": {
+            "pieceGuid": 28,
+            "pieceId": 28,
+            "playerId": 0,
+            "promotionRank": -1,
+            "tileId": 26
+          },
+          "notation": "28_Qh4c4",
+          "result": {
+            "playerId": 0,
+            "pieceId": 28,
+            "pieceGuid": 28,
+            "fromTileId": 31,
+            "tileId": 26,
+            "turnChanged": true,
+            "type": 0,
+            "polarityChanged": false,
+            "wasFirstMoveForPiece": false,
+            "kinged": false,
+            "isCastle": false,
+            "promotionOccurred": false,
+            "promotionRank": null,
+            "wasPieceJumped": false,
+            "jumpedPieceId": -1,
+            "jumpedTileId": -1,
+            "wasPieceCaptured": false,
+            "capturedPieceId": -1,
+            "isWinningMove": false,
+            "isInCheck": false,
+            "isStalemate": false,
+            "valid": true,
+            "notation": "28_Qh4c4",
+            "fromRow": 3,
+            "toRow": 3,
+            "fromColumn": 7,
+            "toColumn": 2,
+            "chessmanKind": "QUEEN"
+          }
+        }
+      ],
+      "committedNotation": "28_Qh4c4",
+      "boardAfter": [
+        {
+          "colorId": 0,
+          "guid": 30,
+          "hasMoved": false,
+          "id": 30,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 5,
+          "location": 4
+        },
+        {
+          "colorId": 0,
+          "guid": 28,
+          "hasMoved": true,
+          "id": 28,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 4,
+          "location": 26
+        },
+        {
+          "colorId": 1,
+          "guid": 31,
+          "hasMoved": true,
+          "id": 31,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 5,
+          "location": 36
+        }
+      ]
+    },
+    {
+      "index": 4,
+      "turnColor": "BLACK",
+      "playerId": 1,
+      "actor": "ai",
+      "moves": [
+        {
+          "attempt": {
+            "pieceGuid": 31,
+            "pieceId": 31,
+            "playerId": 1,
+            "promotionRank": -1,
+            "tileId": 37
+          },
+          "notation": "31_Ke5f5",
+          "result": {
+            "playerId": 1,
+            "pieceId": 31,
+            "pieceGuid": 31,
+            "fromTileId": 36,
+            "tileId": 37,
+            "turnChanged": true,
+            "type": 0,
+            "polarityChanged": false,
+            "wasFirstMoveForPiece": false,
+            "kinged": false,
+            "isCastle": false,
+            "promotionOccurred": false,
+            "promotionRank": null,
+            "wasPieceJumped": false,
+            "jumpedPieceId": -1,
+            "jumpedTileId": -1,
+            "wasPieceCaptured": false,
+            "capturedPieceId": -1,
+            "isWinningMove": false,
+            "isInCheck": false,
+            "isStalemate": false,
+            "valid": true,
+            "notation": "31_Ke5f5",
+            "fromRow": 4,
+            "toRow": 4,
+            "fromColumn": 4,
+            "toColumn": 5,
+            "chessmanKind": "KING"
+          }
+        }
+      ],
+      "committedNotation": "31_Ke5f5",
+      "boardAfter": [
+        {
+          "colorId": 0,
+          "guid": 30,
+          "hasMoved": false,
+          "id": 30,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 5,
+          "location": 4
+        },
+        {
+          "colorId": 0,
+          "guid": 28,
+          "hasMoved": true,
+          "id": 28,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 4,
+          "location": 26
+        },
+        {
+          "colorId": 1,
+          "guid": 31,
+          "hasMoved": true,
+          "id": 31,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 5,
+          "location": 37
+        }
+      ]
+    },
+    {
+      "index": 5,
+      "turnColor": "WHITE",
+      "playerId": 0,
+      "actor": "ai",
+      "moves": [
+        {
+          "attempt": {
+            "pieceGuid": 28,
+            "pieceId": 28,
+            "playerId": 0,
+            "promotionRank": -1,
+            "tileId": 31
+          },
+          "notation": "28_Qc4h4",
+          "result": {
+            "playerId": 0,
+            "pieceId": 28,
+            "pieceGuid": 28,
+            "fromTileId": 26,
+            "tileId": 31,
+            "turnChanged": true,
+            "type": 0,
+            "polarityChanged": false,
+            "wasFirstMoveForPiece": false,
+            "kinged": false,
+            "isCastle": false,
+            "promotionOccurred": false,
+            "promotionRank": null,
+            "wasPieceJumped": false,
+            "jumpedPieceId": -1,
+            "jumpedTileId": -1,
+            "wasPieceCaptured": false,
+            "capturedPieceId": -1,
+            "isWinningMove": false,
+            "isInCheck": false,
+            "isStalemate": false,
+            "valid": true,
+            "notation": "28_Qc4h4",
+            "fromRow": 3,
+            "toRow": 3,
+            "fromColumn": 2,
+            "toColumn": 7,
+            "chessmanKind": "QUEEN"
+          }
+        }
+      ],
+      "committedNotation": "28_Qc4h4",
+      "boardAfter": [
+        {
+          "colorId": 0,
+          "guid": 30,
+          "hasMoved": false,
+          "id": 30,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 5,
+          "location": 4
+        },
+        {
+          "colorId": 0,
+          "guid": 28,
+          "hasMoved": true,
+          "id": 28,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 4,
+          "location": 31
+        },
+        {
+          "colorId": 1,
+          "guid": 31,
+          "hasMoved": true,
+          "id": 31,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 5,
+          "location": 37
+        }
+      ]
+    },
+    {
+      "index": 6,
+      "turnColor": "BLACK",
+      "playerId": 1,
+      "actor": "ai",
+      "moves": [
+        {
+          "attempt": {
+            "pieceGuid": 31,
+            "pieceId": 31,
+            "playerId": 1,
+            "promotionRank": -1,
+            "tileId": 36
+          },
+          "notation": "31_Kf5e5",
+          "result": {
+            "playerId": 1,
+            "pieceId": 31,
+            "pieceGuid": 31,
+            "fromTileId": 37,
+            "tileId": 36,
+            "turnChanged": true,
+            "type": 0,
+            "polarityChanged": false,
+            "wasFirstMoveForPiece": false,
+            "kinged": false,
+            "isCastle": false,
+            "promotionOccurred": false,
+            "promotionRank": null,
+            "wasPieceJumped": false,
+            "jumpedPieceId": -1,
+            "jumpedTileId": -1,
+            "wasPieceCaptured": false,
+            "capturedPieceId": -1,
+            "isWinningMove": false,
+            "isInCheck": false,
+            "isStalemate": false,
+            "valid": true,
+            "notation": "31_Kf5e5",
+            "fromRow": 4,
+            "toRow": 4,
+            "fromColumn": 5,
+            "toColumn": 4,
+            "chessmanKind": "KING"
+          }
+        }
+      ],
+      "committedNotation": "31_Kf5e5",
+      "boardAfter": [
+        {
+          "colorId": 0,
+          "guid": 30,
+          "hasMoved": false,
+          "id": 30,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 5,
+          "location": 4
+        },
+        {
+          "colorId": 0,
+          "guid": 28,
+          "hasMoved": true,
+          "id": 28,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 4,
+          "location": 31
+        },
+        {
+          "colorId": 1,
+          "guid": 31,
+          "hasMoved": true,
+          "id": 31,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 5,
+          "location": 36
+        }
+      ]
+    },
+    {
+      "index": 7,
+      "turnColor": "WHITE",
+      "playerId": 0,
+      "actor": "ai",
+      "moves": [
+        {
+          "attempt": {
+            "pieceGuid": 28,
+            "pieceId": 28,
+            "playerId": 0,
+            "promotionRank": -1,
+            "tileId": 13
+          },
+          "notation": "28_Qh4f2",
+          "result": {
+            "playerId": 0,
+            "pieceId": 28,
+            "pieceGuid": 28,
+            "fromTileId": 31,
+            "tileId": 13,
+            "turnChanged": true,
+            "type": 0,
+            "polarityChanged": false,
+            "wasFirstMoveForPiece": false,
+            "kinged": false,
+            "isCastle": false,
+            "promotionOccurred": false,
+            "promotionRank": null,
+            "wasPieceJumped": false,
+            "jumpedPieceId": -1,
+            "jumpedTileId": -1,
+            "wasPieceCaptured": false,
+            "capturedPieceId": -1,
+            "isWinningMove": false,
+            "isInCheck": false,
+            "isStalemate": false,
+            "valid": true,
+            "notation": "28_Qh4f2",
+            "fromRow": 3,
+            "toRow": 1,
+            "fromColumn": 7,
+            "toColumn": 5,
+            "chessmanKind": "QUEEN"
+          }
+        }
+      ],
+      "committedNotation": "28_Qh4f2",
+      "boardAfter": [
+        {
+          "colorId": 0,
+          "guid": 30,
+          "hasMoved": false,
+          "id": 30,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 5,
+          "location": 4
+        },
+        {
+          "colorId": 0,
+          "guid": 28,
+          "hasMoved": true,
+          "id": 28,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 4,
+          "location": 13
+        },
+        {
+          "colorId": 1,
+          "guid": 31,
+          "hasMoved": true,
+          "id": 31,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 5,
+          "location": 36
+        }
+      ]
+    },
+    {
+      "index": 8,
+      "turnColor": "BLACK",
+      "playerId": 1,
+      "actor": "ai",
+      "moves": [
+        {
+          "attempt": {
+            "pieceGuid": 31,
+            "pieceId": 31,
+            "playerId": 1,
+            "promotionRank": -1,
+            "tileId": 35
+          },
+          "notation": "31_Ke5d5",
+          "result": {
+            "playerId": 1,
+            "pieceId": 31,
+            "pieceGuid": 31,
+            "fromTileId": 36,
+            "tileId": 35,
+            "turnChanged": true,
+            "type": 0,
+            "polarityChanged": false,
+            "wasFirstMoveForPiece": false,
+            "kinged": false,
+            "isCastle": false,
+            "promotionOccurred": false,
+            "promotionRank": null,
+            "wasPieceJumped": false,
+            "jumpedPieceId": -1,
+            "jumpedTileId": -1,
+            "wasPieceCaptured": false,
+            "capturedPieceId": -1,
+            "isWinningMove": false,
+            "isInCheck": false,
+            "isStalemate": false,
+            "valid": true,
+            "notation": "31_Ke5d5",
+            "fromRow": 4,
+            "toRow": 4,
+            "fromColumn": 4,
+            "toColumn": 3,
+            "chessmanKind": "KING"
+          }
+        }
+      ],
+      "committedNotation": "31_Ke5d5",
+      "boardAfter": [
+        {
+          "colorId": 0,
+          "guid": 30,
+          "hasMoved": false,
+          "id": 30,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 5,
+          "location": 4
+        },
+        {
+          "colorId": 0,
+          "guid": 28,
+          "hasMoved": true,
+          "id": 28,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 4,
+          "location": 13
+        },
+        {
+          "colorId": 1,
+          "guid": 31,
+          "hasMoved": true,
+          "id": 31,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 5,
+          "location": 35
+        }
+      ]
+    },
+    {
+      "index": 9,
+      "turnColor": "WHITE",
+      "playerId": 0,
+      "actor": "ai",
+      "moves": [
+        {
+          "attempt": {
+            "pieceGuid": 28,
+            "pieceId": 28,
+            "playerId": 0,
+            "promotionRank": -1,
+            "tileId": 29
+          },
+          "notation": "28_Qf2f4",
+          "result": {
+            "playerId": 0,
+            "pieceId": 28,
+            "pieceGuid": 28,
+            "fromTileId": 13,
+            "tileId": 29,
+            "turnChanged": true,
+            "type": 0,
+            "polarityChanged": false,
+            "wasFirstMoveForPiece": false,
+            "kinged": false,
+            "isCastle": false,
+            "promotionOccurred": false,
+            "promotionRank": null,
+            "wasPieceJumped": false,
+            "jumpedPieceId": -1,
+            "jumpedTileId": -1,
+            "wasPieceCaptured": false,
+            "capturedPieceId": -1,
+            "isWinningMove": false,
+            "isInCheck": false,
+            "isStalemate": false,
+            "valid": true,
+            "notation": "28_Qf2f4",
+            "fromRow": 1,
+            "toRow": 3,
+            "fromColumn": 5,
+            "toColumn": 5,
+            "chessmanKind": "QUEEN"
+          }
+        }
+      ],
+      "committedNotation": "28_Qf2f4",
+      "boardAfter": [
+        {
+          "colorId": 0,
+          "guid": 30,
+          "hasMoved": false,
+          "id": 30,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 5,
+          "location": 4
+        },
+        {
+          "colorId": 0,
+          "guid": 28,
+          "hasMoved": true,
+          "id": 28,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 4,
+          "location": 29
+        },
+        {
+          "colorId": 1,
+          "guid": 31,
+          "hasMoved": true,
+          "id": 31,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 5,
+          "location": 35
+        }
+      ]
+    },
+    {
+      "index": 10,
+      "turnColor": "BLACK",
+      "playerId": 1,
+      "actor": "ai",
+      "moves": [
+        {
+          "attempt": {
+            "pieceGuid": 31,
+            "pieceId": 31,
+            "playerId": 1,
+            "promotionRank": -1,
+            "tileId": 34
+          },
+          "notation": "31_Kd5c5",
+          "result": {
+            "playerId": 1,
+            "pieceId": 31,
+            "pieceGuid": 31,
+            "fromTileId": 35,
+            "tileId": 34,
+            "turnChanged": true,
+            "type": 0,
+            "polarityChanged": false,
+            "wasFirstMoveForPiece": false,
+            "kinged": false,
+            "isCastle": false,
+            "promotionOccurred": false,
+            "promotionRank": null,
+            "wasPieceJumped": false,
+            "jumpedPieceId": -1,
+            "jumpedTileId": -1,
+            "wasPieceCaptured": false,
+            "capturedPieceId": -1,
+            "isWinningMove": false,
+            "isInCheck": false,
+            "isStalemate": false,
+            "valid": true,
+            "notation": "31_Kd5c5",
+            "fromRow": 4,
+            "toRow": 4,
+            "fromColumn": 3,
+            "toColumn": 2,
+            "chessmanKind": "KING"
+          }
+        }
+      ],
+      "committedNotation": "31_Kd5c5",
+      "boardAfter": [
+        {
+          "colorId": 0,
+          "guid": 30,
+          "hasMoved": false,
+          "id": 30,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 5,
+          "location": 4
+        },
+        {
+          "colorId": 0,
+          "guid": 28,
+          "hasMoved": true,
+          "id": 28,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 4,
+          "location": 29
+        },
+        {
+          "colorId": 1,
+          "guid": 31,
+          "hasMoved": true,
+          "id": 31,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 5,
+          "location": 34
+        }
+      ]
+    },
+    {
+      "index": 11,
+      "turnColor": "WHITE",
+      "playerId": 0,
+      "actor": "ai",
+      "moves": [
+        {
+          "attempt": {
+            "pieceGuid": 28,
+            "pieceId": 28,
+            "playerId": 0,
+            "promotionRank": -1,
+            "tileId": 24
+          },
+          "notation": "28_Qf4a4",
+          "result": {
+            "playerId": 0,
+            "pieceId": 28,
+            "pieceGuid": 28,
+            "fromTileId": 29,
+            "tileId": 24,
+            "turnChanged": true,
+            "type": 0,
+            "polarityChanged": false,
+            "wasFirstMoveForPiece": false,
+            "kinged": false,
+            "isCastle": false,
+            "promotionOccurred": false,
+            "promotionRank": null,
+            "wasPieceJumped": false,
+            "jumpedPieceId": -1,
+            "jumpedTileId": -1,
+            "wasPieceCaptured": false,
+            "capturedPieceId": -1,
+            "isWinningMove": false,
+            "isInCheck": false,
+            "isStalemate": false,
+            "valid": true,
+            "notation": "28_Qf4a4",
+            "fromRow": 3,
+            "toRow": 3,
+            "fromColumn": 5,
+            "toColumn": 0,
+            "chessmanKind": "QUEEN"
+          }
+        }
+      ],
+      "committedNotation": "28_Qf4a4",
+      "boardAfter": [
+        {
+          "colorId": 0,
+          "guid": 30,
+          "hasMoved": false,
+          "id": 30,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 5,
+          "location": 4
+        },
+        {
+          "colorId": 0,
+          "guid": 28,
+          "hasMoved": true,
+          "id": 28,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 4,
+          "location": 24
+        },
+        {
+          "colorId": 1,
+          "guid": 31,
+          "hasMoved": true,
+          "id": 31,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 5,
+          "location": 34
+        }
+      ]
+    },
+    {
+      "index": 12,
+      "turnColor": "BLACK",
+      "playerId": 1,
+      "actor": "ai",
+      "moves": [
+        {
+          "attempt": {
+            "pieceGuid": 31,
+            "pieceId": 31,
+            "playerId": 1,
+            "promotionRank": -1,
+            "tileId": 35
+          },
+          "notation": "31_Kc5d5",
+          "result": {
+            "playerId": 1,
+            "pieceId": 31,
+            "pieceGuid": 31,
+            "fromTileId": 34,
+            "tileId": 35,
+            "turnChanged": true,
+            "type": 0,
+            "polarityChanged": false,
+            "wasFirstMoveForPiece": false,
+            "kinged": false,
+            "isCastle": false,
+            "promotionOccurred": false,
+            "promotionRank": null,
+            "wasPieceJumped": false,
+            "jumpedPieceId": -1,
+            "jumpedTileId": -1,
+            "wasPieceCaptured": false,
+            "capturedPieceId": -1,
+            "isWinningMove": false,
+            "isInCheck": false,
+            "isStalemate": false,
+            "valid": true,
+            "notation": "31_Kc5d5",
+            "fromRow": 4,
+            "toRow": 4,
+            "fromColumn": 2,
+            "toColumn": 3,
+            "chessmanKind": "KING"
+          }
+        }
+      ],
+      "committedNotation": "31_Kc5d5",
+      "boardAfter": [
+        {
+          "colorId": 0,
+          "guid": 30,
+          "hasMoved": false,
+          "id": 30,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 5,
+          "location": 4
+        },
+        {
+          "colorId": 0,
+          "guid": 28,
+          "hasMoved": true,
+          "id": 28,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 4,
+          "location": 24
+        },
+        {
+          "colorId": 1,
+          "guid": 31,
+          "hasMoved": true,
+          "id": 31,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 5,
+          "location": 35
+        }
+      ]
+    },
+    {
+      "index": 13,
+      "turnColor": "WHITE",
+      "playerId": 0,
+      "actor": "ai",
+      "moves": [
+        {
+          "attempt": {
+            "pieceGuid": 30,
+            "pieceId": 30,
+            "playerId": 0,
+            "promotionRank": -1,
+            "tileId": 3
+          },
+          "notation": "30_Ke1d1",
+          "result": {
+            "playerId": 0,
+            "pieceId": 30,
+            "pieceGuid": 30,
+            "fromTileId": 4,
+            "tileId": 3,
+            "turnChanged": true,
+            "type": 0,
+            "polarityChanged": false,
+            "wasFirstMoveForPiece": true,
+            "kinged": false,
+            "isCastle": false,
+            "promotionOccurred": false,
+            "promotionRank": null,
+            "wasPieceJumped": false,
+            "jumpedPieceId": -1,
+            "jumpedTileId": -1,
+            "wasPieceCaptured": false,
+            "capturedPieceId": -1,
+            "isWinningMove": false,
+            "isInCheck": false,
+            "isStalemate": false,
+            "valid": true,
+            "notation": "30_Ke1d1",
+            "fromRow": 0,
+            "toRow": 0,
+            "fromColumn": 4,
+            "toColumn": 3,
+            "chessmanKind": "KING"
+          }
+        }
+      ],
+      "committedNotation": "30_Ke1d1",
+      "boardAfter": [
+        {
+          "colorId": 0,
+          "guid": 30,
+          "hasMoved": true,
+          "id": 30,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 5,
+          "location": 3
+        },
+        {
+          "colorId": 0,
+          "guid": 28,
+          "hasMoved": true,
+          "id": 28,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 4,
+          "location": 24
+        },
+        {
+          "colorId": 1,
+          "guid": 31,
+          "hasMoved": true,
+          "id": 31,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 5,
+          "location": 35
+        }
+      ]
+    },
+    {
+      "index": 14,
+      "turnColor": "BLACK",
+      "playerId": 1,
+      "actor": "ai",
+      "moves": [
+        {
+          "attempt": {
+            "pieceGuid": 31,
+            "pieceId": 31,
+            "playerId": 1,
+            "promotionRank": -1,
+            "tileId": 36
+          },
+          "notation": "31_Kd5e5",
+          "result": {
+            "playerId": 1,
+            "pieceId": 31,
+            "pieceGuid": 31,
+            "fromTileId": 35,
+            "tileId": 36,
+            "turnChanged": true,
+            "type": 0,
+            "polarityChanged": false,
+            "wasFirstMoveForPiece": false,
+            "kinged": false,
+            "isCastle": false,
+            "promotionOccurred": false,
+            "promotionRank": null,
+            "wasPieceJumped": false,
+            "jumpedPieceId": -1,
+            "jumpedTileId": -1,
+            "wasPieceCaptured": false,
+            "capturedPieceId": -1,
+            "isWinningMove": false,
+            "isInCheck": false,
+            "isStalemate": false,
+            "valid": true,
+            "notation": "31_Kd5e5",
+            "fromRow": 4,
+            "toRow": 4,
+            "fromColumn": 3,
+            "toColumn": 4,
+            "chessmanKind": "KING"
+          }
+        }
+      ],
+      "committedNotation": "31_Kd5e5",
+      "boardAfter": [
+        {
+          "colorId": 0,
+          "guid": 30,
+          "hasMoved": true,
+          "id": 30,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 5,
+          "location": 3
+        },
+        {
+          "colorId": 0,
+          "guid": 28,
+          "hasMoved": true,
+          "id": 28,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 4,
+          "location": 24
+        },
+        {
+          "colorId": 1,
+          "guid": 31,
+          "hasMoved": true,
+          "id": 31,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 5,
+          "location": 36
+        }
+      ]
+    },
+    {
+      "index": 15,
+      "turnColor": "WHITE",
+      "playerId": 0,
+      "actor": "ai",
+      "moves": [
+        {
+          "attempt": {
+            "pieceGuid": 28,
+            "pieceId": 28,
+            "playerId": 0,
+            "promotionRank": -1,
+            "tileId": 31
+          },
+          "notation": "28_Qa4h4",
+          "result": {
+            "playerId": 0,
+            "pieceId": 28,
+            "pieceGuid": 28,
+            "fromTileId": 24,
+            "tileId": 31,
+            "turnChanged": true,
+            "type": 0,
+            "polarityChanged": false,
+            "wasFirstMoveForPiece": false,
+            "kinged": false,
+            "isCastle": false,
+            "promotionOccurred": false,
+            "promotionRank": null,
+            "wasPieceJumped": false,
+            "jumpedPieceId": -1,
+            "jumpedTileId": -1,
+            "wasPieceCaptured": false,
+            "capturedPieceId": -1,
+            "isWinningMove": false,
+            "isInCheck": false,
+            "isStalemate": false,
+            "valid": true,
+            "notation": "28_Qa4h4",
+            "fromRow": 3,
+            "toRow": 3,
+            "fromColumn": 0,
+            "toColumn": 7,
+            "chessmanKind": "QUEEN"
+          }
+        }
+      ],
+      "committedNotation": "28_Qa4h4",
+      "boardAfter": [
+        {
+          "colorId": 0,
+          "guid": 30,
+          "hasMoved": true,
+          "id": 30,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 5,
+          "location": 3
+        },
+        {
+          "colorId": 0,
+          "guid": 28,
+          "hasMoved": true,
+          "id": 28,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 4,
+          "location": 31
+        },
+        {
+          "colorId": 1,
+          "guid": 31,
+          "hasMoved": true,
+          "id": 31,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 5,
+          "location": 36
+        }
+      ]
+    },
+    {
+      "index": 16,
+      "turnColor": "BLACK",
+      "playerId": 1,
+      "actor": "ai",
+      "moves": [
+        {
+          "attempt": {
+            "pieceGuid": 31,
+            "pieceId": 31,
+            "playerId": 1,
+            "promotionRank": -1,
+            "tileId": 37
+          },
+          "notation": "31_Ke5f5",
+          "result": {
+            "playerId": 1,
+            "pieceId": 31,
+            "pieceGuid": 31,
+            "fromTileId": 36,
+            "tileId": 37,
+            "turnChanged": true,
+            "type": 0,
+            "polarityChanged": false,
+            "wasFirstMoveForPiece": false,
+            "kinged": false,
+            "isCastle": false,
+            "promotionOccurred": false,
+            "promotionRank": null,
+            "wasPieceJumped": false,
+            "jumpedPieceId": -1,
+            "jumpedTileId": -1,
+            "wasPieceCaptured": false,
+            "capturedPieceId": -1,
+            "isWinningMove": false,
+            "isInCheck": false,
+            "isStalemate": false,
+            "valid": true,
+            "notation": "31_Ke5f5",
+            "fromRow": 4,
+            "toRow": 4,
+            "fromColumn": 4,
+            "toColumn": 5,
+            "chessmanKind": "KING"
+          }
+        }
+      ],
+      "committedNotation": "31_Ke5f5",
+      "boardAfter": [
+        {
+          "colorId": 0,
+          "guid": 30,
+          "hasMoved": true,
+          "id": 30,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 5,
+          "location": 3
+        },
+        {
+          "colorId": 0,
+          "guid": 28,
+          "hasMoved": true,
+          "id": 28,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 4,
+          "location": 31
+        },
+        {
+          "colorId": 1,
+          "guid": 31,
+          "hasMoved": true,
+          "id": 31,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 5,
+          "location": 37
+        }
+      ]
+    },
+    {
+      "index": 17,
+      "turnColor": "WHITE",
+      "playerId": 0,
+      "actor": "ai",
+      "moves": [
+        {
+          "attempt": {
+            "pieceGuid": 30,
+            "pieceId": 30,
+            "playerId": 0,
+            "promotionRank": -1,
+            "tileId": 12
+          },
+          "notation": "30_Kd1e2",
+          "result": {
+            "playerId": 0,
+            "pieceId": 30,
+            "pieceGuid": 30,
+            "fromTileId": 3,
+            "tileId": 12,
+            "turnChanged": true,
+            "type": 0,
+            "polarityChanged": false,
+            "wasFirstMoveForPiece": false,
+            "kinged": false,
+            "isCastle": false,
+            "promotionOccurred": false,
+            "promotionRank": null,
+            "wasPieceJumped": false,
+            "jumpedPieceId": -1,
+            "jumpedTileId": -1,
+            "wasPieceCaptured": false,
+            "capturedPieceId": -1,
+            "isWinningMove": false,
+            "isInCheck": false,
+            "isStalemate": false,
+            "valid": true,
+            "notation": "30_Kd1e2",
+            "fromRow": 0,
+            "toRow": 1,
+            "fromColumn": 3,
+            "toColumn": 4,
+            "chessmanKind": "KING"
+          }
+        }
+      ],
+      "committedNotation": "30_Kd1e2",
+      "boardAfter": [
+        {
+          "colorId": 0,
+          "guid": 30,
+          "hasMoved": true,
+          "id": 30,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 5,
+          "location": 12
+        },
+        {
+          "colorId": 0,
+          "guid": 28,
+          "hasMoved": true,
+          "id": 28,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 4,
+          "location": 31
+        },
+        {
+          "colorId": 1,
+          "guid": 31,
+          "hasMoved": true,
+          "id": 31,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 5,
+          "location": 37
+        }
+      ]
+    },
+    {
+      "index": 18,
+      "turnColor": "BLACK",
+      "playerId": 1,
+      "actor": "ai",
+      "moves": [
+        {
+          "attempt": {
+            "pieceGuid": 31,
+            "pieceId": 31,
+            "playerId": 1,
+            "promotionRank": -1,
+            "tileId": 36
+          },
+          "notation": "31_Kf5e5",
+          "result": {
+            "playerId": 1,
+            "pieceId": 31,
+            "pieceGuid": 31,
+            "fromTileId": 37,
+            "tileId": 36,
+            "turnChanged": true,
+            "type": 0,
+            "polarityChanged": false,
+            "wasFirstMoveForPiece": false,
+            "kinged": false,
+            "isCastle": false,
+            "promotionOccurred": false,
+            "promotionRank": null,
+            "wasPieceJumped": false,
+            "jumpedPieceId": -1,
+            "jumpedTileId": -1,
+            "wasPieceCaptured": false,
+            "capturedPieceId": -1,
+            "isWinningMove": false,
+            "isInCheck": false,
+            "isStalemate": false,
+            "valid": true,
+            "notation": "31_Kf5e5",
+            "fromRow": 4,
+            "toRow": 4,
+            "fromColumn": 5,
+            "toColumn": 4,
+            "chessmanKind": "KING"
+          }
+        }
+      ],
+      "committedNotation": "31_Kf5e5",
+      "boardAfter": [
+        {
+          "colorId": 0,
+          "guid": 30,
+          "hasMoved": true,
+          "id": 30,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 5,
+          "location": 12
+        },
+        {
+          "colorId": 0,
+          "guid": 28,
+          "hasMoved": true,
+          "id": 28,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 4,
+          "location": 31
+        },
+        {
+          "colorId": 1,
+          "guid": 31,
+          "hasMoved": true,
+          "id": 31,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 5,
+          "location": 36
+        }
+      ]
+    },
+    {
+      "index": 19,
+      "turnColor": "WHITE",
+      "playerId": 0,
+      "actor": "ai",
+      "moves": [
+        {
+          "attempt": {
+            "pieceGuid": 28,
+            "pieceId": 28,
+            "playerId": 0,
+            "promotionRank": -1,
+            "tileId": 28
+          },
+          "notation": "28_Qh4e4\u002B",
+          "result": {
+            "playerId": 0,
+            "pieceId": 28,
+            "pieceGuid": 28,
+            "fromTileId": 31,
+            "tileId": 28,
+            "turnChanged": true,
+            "type": 0,
+            "polarityChanged": false,
+            "wasFirstMoveForPiece": false,
+            "kinged": false,
+            "isCastle": false,
+            "promotionOccurred": false,
+            "promotionRank": null,
+            "wasPieceJumped": false,
+            "jumpedPieceId": -1,
+            "jumpedTileId": -1,
+            "wasPieceCaptured": false,
+            "capturedPieceId": -1,
+            "isWinningMove": false,
+            "isInCheck": true,
+            "isStalemate": false,
+            "valid": true,
+            "notation": "28_Qh4e4\u002B",
+            "fromRow": 3,
+            "toRow": 3,
+            "fromColumn": 7,
+            "toColumn": 4,
+            "chessmanKind": "QUEEN"
+          }
+        }
+      ],
+      "committedNotation": "28_Qh4e4\u002B",
+      "boardAfter": [
+        {
+          "colorId": 0,
+          "guid": 30,
+          "hasMoved": true,
+          "id": 30,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 5,
+          "location": 12
+        },
+        {
+          "colorId": 0,
+          "guid": 28,
+          "hasMoved": true,
+          "id": 28,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 4,
+          "location": 28
+        },
+        {
+          "colorId": 1,
+          "guid": 31,
+          "hasMoved": true,
+          "id": 31,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 5,
+          "location": 36
+        }
+      ]
+    },
+    {
+      "index": 20,
+      "turnColor": "BLACK",
+      "playerId": 1,
+      "actor": "ai",
+      "moves": [
+        {
+          "attempt": {
+            "pieceGuid": 31,
+            "pieceId": 31,
+            "playerId": 1,
+            "promotionRank": -1,
+            "tileId": 28
+          },
+          "notation": "31_Ke5xe4",
+          "result": {
+            "playerId": 1,
+            "pieceId": 31,
+            "pieceGuid": 31,
+            "fromTileId": 36,
+            "tileId": 28,
+            "turnChanged": true,
+            "type": 0,
+            "polarityChanged": true,
+            "wasFirstMoveForPiece": false,
+            "kinged": false,
+            "isCastle": false,
+            "promotionOccurred": false,
+            "promotionRank": null,
+            "wasPieceJumped": false,
+            "jumpedPieceId": -1,
+            "jumpedTileId": -1,
+            "wasPieceCaptured": true,
+            "capturedPieceId": 28,
+            "isWinningMove": false,
+            "isInCheck": false,
+            "isStalemate": false,
+            "valid": true,
+            "notation": "31_Ke5xe4",
+            "fromRow": 4,
+            "toRow": 3,
+            "fromColumn": 4,
+            "toColumn": 4,
+            "chessmanKind": "KING"
+          }
+        }
+      ],
+      "committedNotation": "31_Ke5xe4",
+      "boardAfter": [
+        {
+          "colorId": 0,
+          "guid": 30,
+          "hasMoved": true,
+          "id": 30,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 5,
+          "location": 12
+        },
+        {
+          "colorId": 0,
+          "guid": 28,
+          "hasMoved": true,
+          "id": 28,
+          "isActive": false,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 4,
+          "location": 28
+        },
+        {
+          "colorId": 1,
+          "guid": 31,
+          "hasMoved": true,
+          "id": 31,
+          "isActive": true,
+          "isChecker": true,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 5,
+          "location": 28
+        }
+      ]
+    },
+    {
+      "index": 21,
+      "turnColor": "WHITE",
+      "playerId": 0,
+      "actor": "ai",
+      "moves": [
+        {
+          "attempt": {
+            "pieceGuid": 30,
+            "pieceId": 30,
+            "playerId": 0,
+            "promotionRank": -1,
+            "tileId": 4
+          },
+          "notation": "30_Ke2e1",
+          "result": {
+            "playerId": 0,
+            "pieceId": 30,
+            "pieceGuid": 30,
+            "fromTileId": 12,
+            "tileId": 4,
+            "turnChanged": true,
+            "type": 0,
+            "polarityChanged": false,
+            "wasFirstMoveForPiece": false,
+            "kinged": false,
+            "isCastle": false,
+            "promotionOccurred": false,
+            "promotionRank": null,
+            "wasPieceJumped": false,
+            "jumpedPieceId": -1,
+            "jumpedTileId": -1,
+            "wasPieceCaptured": false,
+            "capturedPieceId": -1,
+            "isWinningMove": false,
+            "isInCheck": false,
+            "isStalemate": false,
+            "valid": true,
+            "notation": "30_Ke2e1",
+            "fromRow": 1,
+            "toRow": 0,
+            "fromColumn": 4,
+            "toColumn": 4,
+            "chessmanKind": "KING"
+          }
+        }
+      ],
+      "committedNotation": "30_Ke2e1",
+      "boardAfter": [
+        {
+          "colorId": 0,
+          "guid": 30,
+          "hasMoved": true,
+          "id": 30,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 5,
+          "location": 4
+        },
+        {
+          "colorId": 0,
+          "guid": 28,
+          "hasMoved": true,
+          "id": 28,
+          "isActive": false,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 4,
+          "location": 28
+        },
+        {
+          "colorId": 1,
+          "guid": 31,
+          "hasMoved": true,
+          "id": 31,
+          "isActive": true,
+          "isChecker": true,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 5,
+          "location": 28
+        }
+      ]
+    },
+    {
+      "index": 22,
+      "turnColor": "BLACK",
+      "playerId": 1,
+      "actor": "ai",
+      "moves": [
+        {
+          "attempt": {
+            "pieceGuid": 31,
+            "pieceId": 31,
+            "playerId": 1,
+            "promotionRank": -1,
+            "tileId": 21
+          },
+          "notation": "31_Ke4f3",
+          "result": {
+            "playerId": 1,
+            "pieceId": 31,
+            "pieceGuid": 31,
+            "fromTileId": 28,
+            "tileId": 21,
+            "turnChanged": true,
+            "type": 0,
+            "polarityChanged": false,
+            "wasFirstMoveForPiece": false,
+            "kinged": false,
+            "isCastle": false,
+            "promotionOccurred": false,
+            "promotionRank": null,
+            "wasPieceJumped": false,
+            "jumpedPieceId": -1,
+            "jumpedTileId": -1,
+            "wasPieceCaptured": false,
+            "capturedPieceId": -1,
+            "isWinningMove": false,
+            "isInCheck": false,
+            "isStalemate": false,
+            "valid": true,
+            "notation": "31_Ke4f3",
+            "fromRow": 3,
+            "toRow": 2,
+            "fromColumn": 4,
+            "toColumn": 5,
+            "chessmanKind": "KING"
+          }
+        }
+      ],
+      "committedNotation": "31_Ke4f3",
+      "boardAfter": [
+        {
+          "colorId": 0,
+          "guid": 30,
+          "hasMoved": true,
+          "id": 30,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 5,
+          "location": 4
+        },
+        {
+          "colorId": 0,
+          "guid": 28,
+          "hasMoved": true,
+          "id": 28,
+          "isActive": false,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 4,
+          "location": 28
+        },
+        {
+          "colorId": 1,
+          "guid": 31,
+          "hasMoved": true,
+          "id": 31,
+          "isActive": true,
+          "isChecker": true,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 5,
+          "location": 21
+        }
+      ]
+    },
+    {
+      "index": 23,
+      "turnColor": "WHITE",
+      "playerId": 0,
+      "actor": "ai",
+      "moves": [
+        {
+          "attempt": {
+            "pieceGuid": 30,
+            "pieceId": 30,
+            "playerId": 0,
+            "promotionRank": -1,
+            "tileId": 13
+          },
+          "notation": "30_Ke1f2#",
+          "result": {
+            "playerId": 0,
+            "pieceId": 30,
+            "pieceGuid": 30,
+            "fromTileId": 4,
+            "tileId": 13,
+            "turnChanged": true,
+            "type": 0,
+            "polarityChanged": false,
+            "wasFirstMoveForPiece": false,
+            "kinged": false,
+            "isCastle": false,
+            "promotionOccurred": false,
+            "promotionRank": null,
+            "wasPieceJumped": false,
+            "jumpedPieceId": -1,
+            "jumpedTileId": -1,
+            "wasPieceCaptured": false,
+            "capturedPieceId": -1,
+            "isWinningMove": true,
+            "isInCheck": true,
+            "isStalemate": false,
+            "valid": true,
+            "notation": "30_Ke1f2#",
+            "fromRow": 0,
+            "toRow": 1,
+            "fromColumn": 4,
+            "toColumn": 5,
+            "chessmanKind": "KING"
+          }
+        }
+      ],
+      "committedNotation": "30_Ke1f2#",
+      "boardAfter": [
+        {
+          "colorId": 0,
+          "guid": 30,
+          "hasMoved": true,
+          "id": 30,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 5,
+          "location": 13
+        },
+        {
+          "colorId": 0,
+          "guid": 28,
+          "hasMoved": true,
+          "id": 28,
+          "isActive": false,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 4,
+          "location": 28
+        },
+        {
+          "colorId": 1,
+          "guid": 31,
+          "hasMoved": true,
+          "id": 31,
+          "isActive": true,
+          "isChecker": true,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 5,
+          "location": 21
+        }
+      ]
+    }
+  ],
+  "outcome": {
+    "gameOver": true,
+    "winningPlayerId": 0,
+    "winningColor": "WHITE",
+    "isDraw": false,
+    "isResignation": false,
+    "reason": "checkmate"
+  },
+  "rejectedAttempts": []
+}
