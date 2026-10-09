@@ -34,9 +34,6 @@ jobs:
       - name: Build
         run: dotnet build ChessersEngine.sln --configuration Release --no-restore
 
-      - name: Test
-        run: dotnet test ChessersEngine.sln --configuration Release --no-build --verbosity normal
-
       - name: Oracle, codec, perf & workloads schema checks
         run: |
           out="$(mktemp -d)"
@@ -57,3 +54,29 @@ jobs:
           node check-oracle.ts . "$out"/chessers-*.json "$out"/scenario-*.json
           node check-codec.ts . "$out"/codec.v1.json
           node check-perf.ts . "$out"/perf.v1.json
+
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard:
+          - name: unit
+            filter: FullyQualifiedName!~ChessersEngine.Tests.FuzzTests
+          - name: fuzz-random
+            filter: FullyQualifiedName~ChessersEngine.Tests.FuzzTests.RandomLegalGames
+          - name: fuzz-ai
+            filter: FullyQualifiedName~ChessersEngine.Tests.FuzzTests.AiGames
+          - name: fuzz-determinism
+            filter: FullyQualifiedName~ChessersEngine.Tests.FuzzTests.SameSeed
+    name: test (${{ matrix.shard.name }})
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Test
+        run: dotnet test ChessersEngine.Tests --configuration Release --filter "${{ matrix.shard.filter }}" --verbosity normal
