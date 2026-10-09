@@ -43,3 +43,6 @@ Thumbs.db
 
 # Node (schema-check tooling)
 node_modules/
+
+# CLI game dumps
+oracle/
