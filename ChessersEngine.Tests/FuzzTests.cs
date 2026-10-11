@@ -78,6 +78,10 @@ namespace ChessersEngine.Tests {
 
             if (rt.pieceId != mr.pieceId) fail($"'{notation}' pieceId {rt.pieceId} != {mr.pieceId}");
 
+            if (rt.isWinningMove != mr.isWinningMove) fail($"'{notation}' isWinningMove {rt.isWinningMove} != {mr.isWinningMove}");
+            bool expectedCheck = mr.isInCheck && !mr.isWinningMove;
+            if (rt.isInCheck != expectedCheck) fail($"'{notation}' isInCheck {rt.isInCheck} != {expectedCheck}");
+
             if (mr.isCastle) {
                 if (!rt.isCastle) fail($"'{notation}' lost isCastle");
                 if (rt.toColumn != mr.toColumn) fail($"'{notation}' castle toColumn {rt.toColumn} != {mr.toColumn}");
@@ -89,6 +93,10 @@ namespace ChessersEngine.Tests {
 
             int toRt = (mr.tileId < 0) ? Helpers.GetTileIdFromRowColumn(rt.toRow, rt.toColumn) : (8 * rt.toRow + rt.toColumn);
             if (toRt != mr.tileId) fail($"'{notation}' toTile {toRt} != {mr.tileId}");
+
+            if (rt.wasPieceCaptured != mr.WasPieceCaptured()) fail($"'{notation}' captured {rt.wasPieceCaptured} != {mr.WasPieceCaptured()}");
+            if (rt.wasPieceJumped != mr.WasPieceJumped()) fail($"'{notation}' jumped {rt.wasPieceJumped} != {mr.WasPieceJumped()}");
+            if (rt.chessmanKind != mr.chessmanKind) fail($"'{notation}' kind {rt.chessmanKind} != {mr.chessmanKind}");
 
             if (mr.promotionOccurred && rt.promotionRank != mr.promotionRank)
                 fail($"'{notation}' promo {rt.promotionRank} != {mr.promotionRank}");
