@@ -62,13 +62,13 @@ jobs:
       matrix:
         shard:
           - name: unit
-            filter: FullyQualifiedName!~ChessersEngine.Tests.FuzzTests
+            filter: TestCategory!=FuzzRandom&TestCategory!=FuzzAi&TestCategory!=FuzzDeterminism
           - name: fuzz-random
-            filter: FullyQualifiedName~ChessersEngine.Tests.FuzzTests.RandomLegalGames
+            filter: TestCategory=FuzzRandom
           - name: fuzz-ai
-            filter: FullyQualifiedName~ChessersEngine.Tests.FuzzTests.AiGames
+            filter: TestCategory=FuzzAi
           - name: fuzz-determinism
-            filter: FullyQualifiedName~ChessersEngine.Tests.FuzzTests.SameSeed
+            filter: TestCategory=FuzzDeterminism
     name: test (${{ matrix.shard.name }})
     steps:
       - uses: actions/checkout@v4

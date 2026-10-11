@@ -249,6 +249,7 @@ namespace ChessersEngine.Tests {
         [TestCase(DeathjumpSetting.SIDES)]
         [TestCase(DeathjumpSetting.BACK)]
         [TestCase(DeathjumpSetting.ALL)]
+        [Category("FuzzRandom")]
         public void RandomLegalGames_UpholdInvariants (DeathjumpSetting setting) {
             var failures = new List<string>();
             for (int seed = 0; seed < GamesPerSetting; seed++) {
@@ -262,6 +263,7 @@ namespace ChessersEngine.Tests {
         [TestCase(DeathjumpSetting.SIDES, 0)]
         [TestCase(DeathjumpSetting.BACK, 0)]
         [TestCase(DeathjumpSetting.ALL, 0)]
+        [Category("FuzzAi")]
         public void AiGames_UpholdInvariants (DeathjumpSetting setting, int level) {
             var failures = new List<string>();
             for (int seed = 0; seed < AiGamesPerSetting; seed++) {
@@ -272,6 +274,7 @@ namespace ChessersEngine.Tests {
 
         [TestCase(DeathjumpSetting.OFF)]
         [TestCase(DeathjumpSetting.ALL)]
+        [Category("FuzzDeterminism")]
         public void SameSeed_ReplaysSameGame (DeathjumpSetting setting) {
             var mismatches = new List<string>();
             for (int seed = 0; seed < DeterminismSeeds; seed++) {
