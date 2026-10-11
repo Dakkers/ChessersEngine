@@ -45,7 +45,7 @@ namespace ChessersEngine {
             int i = start;
 
             if (step == 0) {
-                throw new System.Exception("Step cannot be 0.");
+                throw new ArgumentOutOfRangeException(nameof(step), "Step cannot be 0.");
             }
 
             if (step > 0) {
@@ -282,7 +282,7 @@ namespace ChessersEngine {
                 case 8:
                     return "h";
                 default:
-                    throw new System.Exception($"Invalid column: {column}");
+                    throw new ArgumentOutOfRangeException(nameof(column), $"Invalid column: {column}");
             }
         }
 
@@ -305,7 +305,7 @@ namespace ChessersEngine {
                 case 'h':
                     return 7;
                 default:
-                    throw new System.Exception($"Invalid file: {file}");
+                    throw new ArgumentOutOfRangeException(nameof(file), $"Invalid file: {file}");
             }
         }
 
@@ -324,7 +324,7 @@ namespace ChessersEngine {
                 case ChessmanKindEnum.BISHOP:
                     return "B";
                 default:
-                    throw new Exception($"Invalid chessman kind: {kind}");
+                    throw new ArgumentOutOfRangeException(nameof(kind), $"Invalid chessman kind: {kind}");
             }
         }
 
