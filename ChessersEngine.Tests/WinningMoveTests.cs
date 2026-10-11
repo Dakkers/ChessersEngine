@@ -19,8 +19,10 @@ namespace ChessersEngine.Tests {
             whiteChecker.isChecker = true;
 
             MatchData md = new MatchData {
-                currentTurn = ColorEnum.WHITE, matchId = 1,
-                whitePlayerId = 0, blackPlayerId = 1,
+                currentTurn = ColorEnum.WHITE,
+                matchId = 1,
+                whitePlayerId = 0,
+                blackPlayerId = 1,
                 pieces = new List<ChessmanSchema> {
                     TestScenarios.CreateWhiteKing(4),
                     whiteChecker,
@@ -31,7 +33,9 @@ namespace ChessersEngine.Tests {
             Match match = new Match(md);
 
             MoveResult result = match.MoveChessman(new MoveAttempt {
-                playerId = 0, pieceId = Constants.ID_WHITE_PAWN_1, tileId = 45,
+                playerId = 0,
+                pieceId = Constants.ID_WHITE_PAWN_1,
+                tileId = 45,
             });
 
             Assert.That(result, Is.Not.Null);

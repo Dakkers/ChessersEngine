@@ -109,8 +109,14 @@ namespace ChessersEngine.Tests {
             // moves diagonally; kinged, so it can move back toward row 0. Moving to a3 (24, row 3 =
             // home half) flips its polarity back to a chess piece - now a real queen.
             ChessmanSchema checkerQueen = new ChessmanSchema {
-                id = Constants.ID_WHITE_PAWN_1, colorId = 0, location = 33,
-                kind = (int) ChessmanKindEnum.QUEEN, isChecker = true, isKinged = true, isPromoted = true, hasMoved = true,
+                id = Constants.ID_WHITE_PAWN_1,
+                colorId = 0,
+                location = 33,
+                kind = (int) ChessmanKindEnum.QUEEN,
+                isChecker = true,
+                isKinged = true,
+                isPromoted = true,
+                hasMoved = true,
             };
             Match match = MakeMatch(new List<ChessmanSchema> {
                 TestScenarios.CreateWhiteKing(4),

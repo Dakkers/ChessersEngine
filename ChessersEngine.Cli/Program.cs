@@ -28,7 +28,7 @@ namespace ChessersEngine.Cli {
     }
 
     /// <summary>Parsed command-line options for a run.</summary>
-    class Options {
+    sealed class Options {
         public PlayerKind White = PlayerKind.Human;
         public PlayerKind Black = PlayerKind.Ai;
         public int Level = 2;
@@ -598,9 +598,9 @@ namespace ChessersEngine.Cli {
 
             // Compact "e2e4" / "e7e8q" form (explicit from+to, pure algebraic).
             if (parts.Length == 1 && Regex.IsMatch(parts[0], "^[a-h][1-8][a-h][1-8][qrbn]?$")) {
-                BoardRenderer.TryParseTile(parts[0].Substring(0, 2), out fromTile);
-                BoardRenderer.TryParseTile(parts[0].Substring(2, 2), out toTile);
-                if (parts[0].Length == 5) TryParsePromo(parts[0].Substring(4, 1), out promo);
+                _ = BoardRenderer.TryParseTile(parts[0].Substring(0, 2), out fromTile);
+                _ = BoardRenderer.TryParseTile(parts[0].Substring(2, 2), out toTile);
+                if (parts[0].Length == 5) _ = TryParsePromo(parts[0].Substring(4, 1), out promo);
                 hasFrom = true;
                 return true;
             }
@@ -861,7 +861,7 @@ namespace ChessersEngine.Cli {
 
         #region Argument parsing
 
-        class ArgException : Exception {
+        sealed class ArgException : Exception {
             public ArgException (string message) : base(message) { }
         }
 

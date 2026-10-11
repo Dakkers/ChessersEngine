@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 #if UNITY_EDITOR
 using UnityEngine;
@@ -348,7 +348,7 @@ namespace ChessersEngine {
 
         #region Move generation
 
-        class MoveOptimizationConfig {
+        sealed class MoveOptimizationConfig {
             public bool allowMultijumps;
             public bool allowCapturejumps;
             public int maxDepth;
