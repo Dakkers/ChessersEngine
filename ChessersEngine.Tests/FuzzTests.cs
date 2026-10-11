@@ -67,7 +67,10 @@ namespace ChessersEngine.Tests {
             if (FullSnapshot(copy) != FullSnapshot(b)) fail("copy differs from original");
         }
 
-        // Castle notation carries no rows, so only isCastle and toColumn are recoverable.
+        /// <summary>
+        /// Reports every field of <paramref name="mr"/> that does not survive a notation round-trip.
+        /// Castle notation carries no rows, so castles are checked only for isCastle and toColumn.
+        /// </summary>
         static void CheckNotation (MoveResult mr, Action<string> fail) {
             string notation;
             try { notation = mr.CreateNotation(); }
