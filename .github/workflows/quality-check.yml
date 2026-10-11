@@ -6,6 +6,25 @@ on:
   pull_request:
 
 jobs:
+  csharp:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore
+        run: dotnet restore ChessersEngine.sln
+
+      - name: Format check
+        run: dotnet format ChessersEngine.sln --verify-no-changes --no-restore
+
+      - name: Lint check
+        run: dotnet build ChessersEngine.sln --no-restore -warnaserror
+
   quality:
     runs-on: ubuntu-latest
     defaults:
