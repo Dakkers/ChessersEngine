@@ -130,31 +130,33 @@ namespace ChessersEngine.Tests {
 
         /// <summary>
         /// Plays one seeded random-legal game, recording every invariant violation.
-        /// Returns the committed move list, or null if the game was aborted by a violation.
+        /// Returns the notation of every applied move, committed or pending. Includes an "abort:" entry per recorded violation. Never null.
         /// </summary>
         static List<string> PlayGame (int seed, DeathjumpSetting setting, List<string> failures) {
-            void Record (string cat, string detail) => failures.Add($"[{cat}] seed={seed} dj={setting}: {detail}");
+            var trace = new List<string>();
+            void Record (string cat, string detail) { failures.Add($"[{cat}] seed={seed} dj={setting}: {detail}"); trace.Add("abort:" + cat); }
+            void Applied (MoveResult mr) { try { trace.Add(mr.CreateNotation()); } catch (Exception) { trace.Add("notation-throw"); } }
 
             var rng = new System.Random(seed);
             Match match;
             try { match = new Match(MakeMatchData(setting), null, seed); }
-            catch (Exception e) { Record("ctor-throw", e.GetType().Name + ": " + e.Message); return null; }
+            catch (Exception e) { Record("ctor-throw", e.GetType().Name + ": " + e.Message); return trace; }
 
             int lastPiece = -1;
             for (int step = 0; step < MoveCap; step++) {
-                if (match.IsGameOver()) return match.GetMoves();
+                if (match.IsGameOver()) return trace;
                 ColorEnum color = match.GetTurnColor();
                 Board board = match._GetPendingBoard();
                 bool midTurn = match.GetPendingMoveResults().Count > 0;
 
                 List<(int, int)> legal;
                 try { legal = CollectLegal(board, color, midTurn, midTurn ? lastPiece : -1); }
-                catch (Exception e) { Record("legal-gen-throw", $"step {step}: {e.GetType().Name}: {e.Message}"); return null; }
+                catch (Exception e) { Record("legal-gen-throw", $"step {step}: {e.GetType().Name}: {e.Message}"); return trace; }
 
                 if (legal.Count == 0) {
                     if (midTurn) Record("stuck-midturn", $"step {step}: no continuation but turn did not change (piece {lastPiece})");
                     else if (!match.IsGameOver()) Record("no-moves-not-over", $"step {step}: {color} has no legal move but game is not over");
-                    return match.GetMoves();
+                    return trace;
                 }
 
                 var (pieceId, tileId) = legal[rng.Next(legal.Count)];
@@ -168,15 +170,16 @@ namespace ChessersEngine.Tests {
                         copy.UndoMove(rr);
                         if (Snapshot(copy) != before) Record("undo-mismatch", $"step {step}: move {pieceId}->{tileId} not restored by UndoMove");
                     }
-                } catch (Exception e) { Record("undo-throw", $"step {step}: move {pieceId}->{tileId} {e.GetType().Name}: {e.Message}"); return null; }
+                } catch (Exception e) { Record("undo-throw", $"step {step}: move {pieceId}->{tileId} {e.GetType().Name}: {e.Message}"); return trace; }
 
                 // Play for real.
                 MoveResult result;
                 try { result = match.MoveChessman(new MoveAttempt { pieceId = pieceId, tileId = tileId, playerId = (color == ColorEnum.WHITE) ? 0 : 1 }); }
-                catch (Exception e) { Record("move-throw", $"step {step}: move {pieceId}->{tileId} {e.GetType().Name}: {e.Message}"); return null; }
+                catch (Exception e) { Record("move-throw", $"step {step}: move {pieceId}->{tileId} {e.GetType().Name}: {e.Message}"); return trace; }
 
-                if (result == null || !result.valid) { Record("valid-move-rejected", $"step {step}: {pieceId}->{tileId} was offered by GetValidTilesForMovement but is not valid"); return null; }
+                if (result == null || !result.valid) { Record("valid-move-rejected", $"step {step}: {pieceId}->{tileId} was offered by GetValidTilesForMovement but is not valid"); return trace; }
 
+                Applied(result);
                 lastPiece = pieceId;
                 CheckNotation(result, d => Record("notation-mismatch", $"step {step}: {d}"));
                 CheckClone(match._GetPendingBoard(), d => Record("clone-mismatch", $"step {step}: {d}"));
@@ -184,31 +187,33 @@ namespace ChessersEngine.Tests {
 
                 if (result.turnChanged) {
                     try { match.CommitTurn(); }
-                    catch (Exception e) { Record("commit-throw", $"step {step}: {e.GetType().Name}: {e.Message}"); return null; }
+                    catch (Exception e) { Record("commit-throw", $"step {step}: {e.GetType().Name}: {e.Message}"); return trace; }
                     CheckConsistency(match._GetCommittedBoard(), d => Record("consistency", $"step {step} (committed): {d}"));
                 }
             }
-            return match.GetMoves();
+            return trace;
         }
 
         /// <summary>
         /// Plays one seeded AI-vs-AI game at the given search level, recording every invariant
-        /// violation. Returns the committed move list, or null if the game was aborted by a violation.
+        /// violation. Returns the notation of every applied move, committed or pending. Includes an "abort:" entry per recorded violation. Never null.
         /// </summary>
         static List<string> PlayAiGame (int seed, DeathjumpSetting setting, int level, List<string> failures) {
-            void Record (string cat, string detail) => failures.Add($"[{cat}] seed={seed} dj={setting} ai{level}: {detail}");
+            var trace = new List<string>();
+            void Record (string cat, string detail) { failures.Add($"[{cat}] seed={seed} dj={setting} ai{level}: {detail}"); trace.Add("abort:" + cat); }
+            void Applied (MoveResult mr) { try { trace.Add(mr.CreateNotation()); } catch (Exception) { trace.Add("notation-throw"); } }
 
             Match match;
             try { match = new Match(MakeMatchData(setting), null, seed); }
-            catch (Exception e) { Record("ctor-throw", e.GetType().Name + ": " + e.Message); return null; }
+            catch (Exception e) { Record("ctor-throw", e.GetType().Name + ": " + e.Message); return trace; }
 
             for (int turn = 0; turn < AiTurnCap; turn++) {
-                if (match.IsGameOver()) return match.GetMoves();
+                if (match.IsGameOver()) return trace;
                 ColorEnum color = match.GetTurnColor();
 
                 bool hasLegal;
                 try { hasLegal = CollectLegal(match._GetCommittedBoard(), color, false, -1).Count > 0; }
-                catch (Exception e) { Record("legal-gen-throw", $"turn {turn}: {e.GetType().Name}: {e.Message}"); return null; }
+                catch (Exception e) { Record("legal-gen-throw", $"turn {turn}: {e.GetType().Name}: {e.Message}"); return trace; }
 
                 List<MoveResult> results = null;
                 try {
@@ -217,17 +222,18 @@ namespace ChessersEngine.Tests {
                         results = new List<MoveResult>();
                         foreach (var attempt in attempts) {
                             MoveResult mr = match.MoveChessman(attempt);
-                            if (mr == null) { Record("ai-null-move", $"turn {turn}: null MoveResult"); return null; }
-                            if (!mr.valid) { Record("ai-invalid-move", $"turn {turn}: {mr.pieceId}->{mr.tileId} is invalid"); return null; }
+                            if (mr == null) { Record("ai-null-move", $"turn {turn}: null MoveResult"); return trace; }
+                            if (!mr.valid) { Record("ai-invalid-move", $"turn {turn}: {mr.pieceId}->{mr.tileId} is invalid"); return trace; }
+                            Applied(mr);
                             results.Add(mr);
                         }
                     }
                 }
-                catch (Exception e) { Record("ai-move-throw", $"turn {turn}: {e.GetType().Name}: {e.Message}"); return null; }
+                catch (Exception e) { Record("ai-move-throw", $"turn {turn}: {e.GetType().Name}: {e.Message}"); return trace; }
 
                 if (results == null || results.Count == 0) {
                     if (hasLegal && !match.IsGameOver()) Record("ai-no-move", $"turn {turn}: {color} returned no moves but has a legal move");
-                    return match.GetMoves();
+                    return trace;
                 }
 
                 foreach (var mr in results) {
@@ -239,10 +245,10 @@ namespace ChessersEngine.Tests {
                 CheckConsistency(pending, d => Record("consistency", $"turn {turn} (pending): {d}"));
 
                 try { match.CommitTurn(); }
-                catch (Exception e) { Record("commit-throw", $"turn {turn}: {e.GetType().Name}: {e.Message}"); return null; }
+                catch (Exception e) { Record("commit-throw", $"turn {turn}: {e.GetType().Name}: {e.Message}"); return trace; }
                 CheckConsistency(match._GetCommittedBoard(), d => Record("consistency", $"turn {turn} (committed): {d}"));
             }
-            return match.GetMoves();
+            return trace;
         }
 
         [TestCase(DeathjumpSetting.OFF)]
@@ -287,7 +293,6 @@ namespace ChessersEngine.Tests {
             Assert.That(mismatches, Is.Empty, $"nondeterministic games [{setting}]");
         }
 
-        static bool SameMoves (List<string> a, List<string> b) =>
-            (a == null && b == null) || (a != null && b != null && a.SequenceEqual(b));
+        static bool SameMoves (List<string> a, List<string> b) => a.SequenceEqual(b);
     }
 }
