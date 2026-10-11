@@ -130,11 +130,11 @@ namespace ChessersEngine.Tests {
 
         /// <summary>
         /// Plays one seeded random-legal game, recording every invariant violation.
-        /// Returns the notation of every applied move, committed or pending. Includes an "abort:" entry per recorded violation. Never null.
+        /// Returns the notation of every applied move, committed or pending. Includes a "violation:" entry per recorded violation. Never null.
         /// </summary>
         static List<string> PlayGame (int seed, DeathjumpSetting setting, List<string> failures) {
             var trace = new List<string>();
-            void Record (string cat, string detail) { failures.Add($"[{cat}] seed={seed} dj={setting}: {detail}"); trace.Add("abort:" + cat); }
+            void Record (string cat, string detail) { failures.Add($"[{cat}] seed={seed} dj={setting}: {detail}"); trace.Add("violation:" + cat); }
             void Applied (MoveResult mr) { try { trace.Add(mr.CreateNotation()); } catch (Exception) { trace.Add("notation-throw"); } }
 
             var rng = new System.Random(seed);
@@ -196,11 +196,11 @@ namespace ChessersEngine.Tests {
 
         /// <summary>
         /// Plays one seeded AI-vs-AI game at the given search level, recording every invariant
-        /// violation. Returns the notation of every applied move, committed or pending. Includes an "abort:" entry per recorded violation. Never null.
+        /// violation. Returns the notation of every applied move, committed or pending. Includes a "violation:" entry per recorded violation. Never null.
         /// </summary>
         static List<string> PlayAiGame (int seed, DeathjumpSetting setting, int level, List<string> failures) {
             var trace = new List<string>();
-            void Record (string cat, string detail) { failures.Add($"[{cat}] seed={seed} dj={setting} ai{level}: {detail}"); trace.Add("abort:" + cat); }
+            void Record (string cat, string detail) { failures.Add($"[{cat}] seed={seed} dj={setting} ai{level}: {detail}"); trace.Add("violation:" + cat); }
             void Applied (MoveResult mr) { try { trace.Add(mr.CreateNotation()); } catch (Exception) { trace.Add("notation-throw"); } }
 
             Match match;
