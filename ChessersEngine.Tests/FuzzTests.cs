@@ -91,7 +91,7 @@ namespace ChessersEngine.Tests {
             int fromRt = Helpers.GetTileIdFromRowColumn(rt.fromRow, rt.fromColumn);
             if (fromRt != mr.fromTileId) fail($"'{notation}' fromTile {fromRt} != {mr.fromTileId}");
 
-            int toRt = (mr.tileId < 0) ? Helpers.GetTileIdFromRowColumn(rt.toRow, rt.toColumn) : (8 * rt.toRow + rt.toColumn);
+            int toRt = Helpers.GetTileIdFromRowColumn(rt.toRow, rt.toColumn);
             if (toRt != mr.tileId) fail($"'{notation}' toTile {toRt} != {mr.tileId}");
 
             if (rt.wasPieceCaptured != mr.WasPieceCaptured()) fail($"'{notation}' captured {rt.wasPieceCaptured} != {mr.WasPieceCaptured()}");
