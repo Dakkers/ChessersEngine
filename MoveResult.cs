@@ -168,8 +168,8 @@ namespace ChessersEngine {
             string notation = notationSplit[1];
 
             moveResult.pieceId = int.Parse(notationSplit[0]);
-            moveResult.isInCheck = notation.Contains("+");
-            moveResult.isWinningMove = notation.Contains("#");
+            moveResult.isInCheck = notation.Contains('+');
+            moveResult.isWinningMove = notation.Contains('#');
 
             bool _isCastle = notation.Contains("O-O");
 

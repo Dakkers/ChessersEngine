@@ -118,7 +118,7 @@ namespace ChessersEngine.Tests {
                 if (ut == null) { fail($"active piece {c.id} has null underlying tile"); continue; }
                 if (ut.GetPiece()?.id != c.id) fail($"tile {ut.id} occupant != piece {c.id}");
                 if (c.location != ut.id) fail($"piece {c.id} location {c.location} != tile {ut.id}");
-                if (seen.ContainsKey(ut.id)) fail($"tile {ut.id} shared by pieces {seen[ut.id]} and {c.id}");
+                if (seen.TryGetValue(ut.id, out int other)) fail($"tile {ut.id} shared by pieces {other} and {c.id}");
                 else seen[ut.id] = c.id;
             }
             for (int id = 0; id < 64; id++) {

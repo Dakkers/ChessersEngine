@@ -153,7 +153,7 @@ namespace ChessersEngine.Cli {
             token = token.Trim().ToLowerInvariant();
 
             if (token[0] == '#') {
-                return int.TryParse(token.Substring(1), out tileId);
+                return int.TryParse(token.AsSpan(1), out tileId);
             }
 
             if (token.Length == 2 && token[0] >= 'a' && token[0] <= 'h' && token[1] >= '1' && token[1] <= '8') {
