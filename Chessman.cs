@@ -1,4 +1,4 @@
-﻿namespace ChessersEngine {
+namespace ChessersEngine {
     public enum ColorEnum {
         WHITE = 0,
         BLACK,

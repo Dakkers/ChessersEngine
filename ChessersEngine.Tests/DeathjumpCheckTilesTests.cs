@@ -31,8 +31,11 @@ namespace ChessersEngine.Tests {
         static void PlayGame (int seed, DeathjumpSetting setting) {
             var rng = new System.Random(seed);
             var md = new MatchData {
-                currentTurn = ColorEnum.WHITE, matchId = 1,
-                whitePlayerId = 0, blackPlayerId = 1, deathjumpSetting = (int) setting,
+                currentTurn = ColorEnum.WHITE,
+                matchId = 1,
+                whitePlayerId = 0,
+                blackPlayerId = 1,
+                deathjumpSetting = (int) setting,
             };
             Match match = new Match(md, null, seed);
             int lastPiece = -1;

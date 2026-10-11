@@ -1,4 +1,4 @@
-﻿namespace ChessersEngine {
+namespace ChessersEngine {
     public static class Constants {
         public const int DEFAULT_WHITE_PLAYER_ID = 0;
         public const int DEFAULT_BLACK_PLAYER_ID = 1;

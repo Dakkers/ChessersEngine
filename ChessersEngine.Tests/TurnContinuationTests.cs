@@ -19,7 +19,8 @@ namespace ChessersEngine.Tests {
         // and the turn must end.
         static Match PinnedRookAboutToCross () {
             MatchData md = new MatchData {
-                currentTurn = ColorEnum.WHITE, matchId = 1,
+                currentTurn = ColorEnum.WHITE,
+                matchId = 1,
                 whitePlayerId = Constants.DEFAULT_WHITE_PLAYER_ID,
                 blackPlayerId = Constants.DEFAULT_BLACK_PLAYER_ID,
                 pieces = new List<ChessmanSchema> {

@@ -62,8 +62,7 @@ namespace ChessersEngine.Tests {
 
         static void CheckClone (Board b, Action<string> fail) {
             Board copy;
-            try { copy = b.CreateCopy(); }
-            catch (Exception e) { fail($"CreateCopy threw {e.GetType().Name}: {e.Message}"); return; }
+            try { copy = b.CreateCopy(); } catch (Exception e) { fail($"CreateCopy threw {e.GetType().Name}: {e.Message}"); return; }
             if (FullSnapshot(copy) != FullSnapshot(b)) fail("copy differs from original");
         }
 
@@ -73,12 +72,10 @@ namespace ChessersEngine.Tests {
         /// </summary>
         static void CheckNotation (MoveResult mr, Action<string> fail) {
             string notation;
-            try { notation = mr.CreateNotation(); }
-            catch (Exception e) { fail($"CreateNotation threw {e.GetType().Name}: {e.Message}"); return; }
+            try { notation = mr.CreateNotation(); } catch (Exception e) { fail($"CreateNotation threw {e.GetType().Name}: {e.Message}"); return; }
 
             MoveResult rt;
-            try { rt = MoveResult.CreatePartialMoveResultFromNotation(notation); }
-            catch (Exception e) { fail($"parse('{notation}') threw {e.GetType().Name}: {e.Message}"); return; }
+            try { rt = MoveResult.CreatePartialMoveResultFromNotation(notation); } catch (Exception e) { fail($"parse('{notation}') threw {e.GetType().Name}: {e.Message}"); return; }
 
             if (rt.pieceId != mr.pieceId) fail($"'{notation}' pieceId {rt.pieceId} != {mr.pieceId}");
 
@@ -107,8 +104,11 @@ namespace ChessersEngine.Tests {
         }
 
         static MatchData MakeMatchData (DeathjumpSetting setting) => new MatchData {
-            currentTurn = ColorEnum.WHITE, matchId = 1,
-            whitePlayerId = 0, blackPlayerId = 1, deathjumpSetting = (int) setting,
+            currentTurn = ColorEnum.WHITE,
+            matchId = 1,
+            whitePlayerId = 0,
+            blackPlayerId = 1,
+            deathjumpSetting = (int) setting,
         };
 
         static void CheckConsistency (Board b, Action<string> fail) {
@@ -151,8 +151,7 @@ namespace ChessersEngine.Tests {
 
             var rng = new System.Random(seed);
             Match match;
-            try { match = new Match(MakeMatchData(setting), null, seed); }
-            catch (Exception e) { Record("ctor-throw", e.GetType().Name + ": " + e.Message); return trace; }
+            try { match = new Match(MakeMatchData(setting), null, seed); } catch (Exception e) { Record("ctor-throw", e.GetType().Name + ": " + e.Message); return trace; }
 
             int lastPiece = -1;
             for (int step = 0; step < MoveCap; step++) {
@@ -162,8 +161,7 @@ namespace ChessersEngine.Tests {
                 bool midTurn = match.GetPendingMoveResults().Count > 0;
 
                 List<(int, int)> legal;
-                try { legal = CollectLegal(board, color, midTurn, midTurn ? lastPiece : -1); }
-                catch (Exception e) { Record("legal-gen-throw", $"step {step}: {e.GetType().Name}: {e.Message}"); return trace; }
+                try { legal = CollectLegal(board, color, midTurn, midTurn ? lastPiece : -1); } catch (Exception e) { Record("legal-gen-throw", $"step {step}: {e.GetType().Name}: {e.Message}"); return trace; }
 
                 if (legal.Count == 0) {
                     if (midTurn) Record("stuck-midturn", $"step {step}: no continuation but turn did not change (piece {lastPiece})");
@@ -186,8 +184,7 @@ namespace ChessersEngine.Tests {
 
                 // Play for real.
                 MoveResult result;
-                try { result = match.MoveChessman(new MoveAttempt { pieceId = pieceId, tileId = tileId, playerId = (color == ColorEnum.WHITE) ? 0 : 1 }); }
-                catch (Exception e) { Record("move-throw", $"step {step}: move {pieceId}->{tileId} {e.GetType().Name}: {e.Message}"); return trace; }
+                try { result = match.MoveChessman(new MoveAttempt { pieceId = pieceId, tileId = tileId, playerId = (color == ColorEnum.WHITE) ? 0 : 1 }); } catch (Exception e) { Record("move-throw", $"step {step}: move {pieceId}->{tileId} {e.GetType().Name}: {e.Message}"); return trace; }
 
                 if (result == null || !result.valid) { Record("valid-move-rejected", $"step {step}: {pieceId}->{tileId} was offered by GetValidTilesForMovement but is not valid"); return trace; }
 
@@ -198,8 +195,7 @@ namespace ChessersEngine.Tests {
                 CheckConsistency(match._GetPendingBoard(), d => Record("consistency", $"step {step} (pending): {d}"));
 
                 if (result.turnChanged) {
-                    try { match.CommitTurn(); }
-                    catch (Exception e) { Record("commit-throw", $"step {step}: {e.GetType().Name}: {e.Message}"); return trace; }
+                    try { match.CommitTurn(); } catch (Exception e) { Record("commit-throw", $"step {step}: {e.GetType().Name}: {e.Message}"); return trace; }
                     CheckConsistency(match._GetCommittedBoard(), d => Record("consistency", $"step {step} (committed): {d}"));
                 }
             }
@@ -216,16 +212,14 @@ namespace ChessersEngine.Tests {
             void Applied (MoveResult mr) { try { trace.Add(mr.CreateNotation()); } catch (Exception) { trace.Add("notation-throw"); } }
 
             Match match;
-            try { match = new Match(MakeMatchData(setting), null, seed); }
-            catch (Exception e) { Record("ctor-throw", e.GetType().Name + ": " + e.Message); return trace; }
+            try { match = new Match(MakeMatchData(setting), null, seed); } catch (Exception e) { Record("ctor-throw", e.GetType().Name + ": " + e.Message); return trace; }
 
             for (int turn = 0; turn < AiTurnCap; turn++) {
                 if (match.IsGameOver()) return trace;
                 ColorEnum color = match.GetTurnColor();
 
                 bool hasLegal;
-                try { hasLegal = CollectLegal(match._GetCommittedBoard(), color, false, -1).Count > 0; }
-                catch (Exception e) { Record("legal-gen-throw", $"turn {turn}: {e.GetType().Name}: {e.Message}"); return trace; }
+                try { hasLegal = CollectLegal(match._GetCommittedBoard(), color, false, -1).Count > 0; } catch (Exception e) { Record("legal-gen-throw", $"turn {turn}: {e.GetType().Name}: {e.Message}"); return trace; }
 
                 List<MoveResult> results = null;
                 try {
@@ -240,8 +234,7 @@ namespace ChessersEngine.Tests {
                             results.Add(mr);
                         }
                     }
-                }
-                catch (Exception e) { Record("ai-move-throw", $"turn {turn}: {e.GetType().Name}: {e.Message}"); return trace; }
+                } catch (Exception e) { Record("ai-move-throw", $"turn {turn}: {e.GetType().Name}: {e.Message}"); return trace; }
 
                 if (results == null || results.Count == 0) {
                     if (hasLegal && !match.IsGameOver()) Record("ai-no-move", $"turn {turn}: {color} returned no moves but has a legal move");
@@ -256,8 +249,7 @@ namespace ChessersEngine.Tests {
                 CheckClone(pending, d => Record("clone-mismatch", $"turn {turn}: {d}"));
                 CheckConsistency(pending, d => Record("consistency", $"turn {turn} (pending): {d}"));
 
-                try { match.CommitTurn(); }
-                catch (Exception e) { Record("commit-throw", $"turn {turn}: {e.GetType().Name}: {e.Message}"); return trace; }
+                try { match.CommitTurn(); } catch (Exception e) { Record("commit-throw", $"turn {turn}: {e.GetType().Name}: {e.Message}"); return trace; }
                 CheckConsistency(match._GetCommittedBoard(), d => Record("consistency", $"turn {turn} (committed): {d}"));
             }
             return trace;
