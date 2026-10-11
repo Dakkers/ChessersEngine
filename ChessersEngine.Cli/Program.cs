@@ -28,7 +28,7 @@ namespace ChessersEngine.Cli {
     }
 
     /// <summary>Parsed command-line options for a run.</summary>
-    class Options {
+    sealed class Options {
         public PlayerKind White = PlayerKind.Human;
         public PlayerKind Black = PlayerKind.Ai;
         public int Level = 2;
@@ -861,7 +861,7 @@ namespace ChessersEngine.Cli {
 
         #region Argument parsing
 
-        class ArgException : Exception {
+        sealed class ArgException : Exception {
             public ArgException (string message) : base(message) { }
         }
 

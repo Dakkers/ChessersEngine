@@ -13,7 +13,7 @@ namespace ChessersEngine.Cli {
     // NOT required to consume this -- the actual attempts are recorded, not re-derived.
     // ---------------------------------------------------------------------------
 
-    class OracleGame {
+    sealed class OracleGame {
         // The format version lives in this `$schema` URI (JSON Schema, draft 2020-12): it pins to
         // one immutable, versioned schema file under ChessersEngine.Cli/schemas/. Bump the path
         // (oracle.v2.schema.json, ...) for a breaking change and keep the old file in place.
@@ -37,7 +37,7 @@ namespace ChessersEngine.Cli {
         public List<RejectedAttemptDto> rejectedAttempts { get; set; } = new List<RejectedAttemptDto>();
     }
 
-    class GameConfigDto {
+    sealed class GameConfigDto {
         public string white { get; set; }       // "human" | "ai"
         public string black { get; set; }       // "human" | "ai"
         public int aiLevel { get; set; }
@@ -53,7 +53,7 @@ namespace ChessersEngine.Cli {
         public string scenario { get; set; }
     }
 
-    class OraclePlyDto {
+    sealed class OraclePlyDto {
         public int index { get; set; }           // 1-based ply (one full turn, may hold several jumps)
         public string turnColor { get; set; }    // color to move at the start of this turn
         public int playerId { get; set; }
@@ -63,13 +63,13 @@ namespace ChessersEngine.Cli {
         public List<ChessmanSchema> boardAfter { get; set; }
     }
 
-    class OracleMoveDto {
+    sealed class OracleMoveDto {
         public MoveAttempt attempt { get; set; } // the input handed to Match.MoveChessman
         public string notation { get; set; }     // MoveResult.CreateNotation()
         public MoveResult result { get; set; }   // the full engine output (every flag)
     }
 
-    class RejectedAttemptDto {
+    sealed class RejectedAttemptDto {
         public string turnColor { get; set; }    // whose turn it was
         public int playerId { get; set; }
         public MoveAttempt attempt { get; set; } // the rejected input
@@ -80,7 +80,7 @@ namespace ChessersEngine.Cli {
         public List<ChessmanSchema> board { get; set; } // the position the move was attempted against
     }
 
-    class GameOutcomeDto {
+    sealed class GameOutcomeDto {
         public bool gameOver { get; set; }
         public int winningPlayerId { get; set; } = -1;
         public string winningColor { get; set; } // null when there is no winner
@@ -89,7 +89,7 @@ namespace ChessersEngine.Cli {
         public string reason { get; set; }       // "checkmate" | "resignation" | "stalemate" | "move-limit" ...
     }
 
-    class OracleRecorder {
+    sealed class OracleRecorder {
         public OracleGame Game { get; }
 
         static readonly JsonSerializerOptions JsonOpts = new JsonSerializerOptions {

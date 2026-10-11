@@ -6,7 +6,7 @@ namespace ChessersEngine.Bench {
     // machine-readable `schemaVersion`; ChessersEngine.Cli/schemas/check-perf.ts enforces that the
     // two agree. Field names are the wire contract -- keep them lowerCamelCase and unabbreviated.
 
-    class PerfReport {
+    sealed class PerfReport {
         [JsonPropertyName("$schema")]
         public string Schema { get; set; } =
             "https://raw.githubusercontent.com/Dakkers/ChessersEngine/master/ChessersEngine.Cli/schemas/perf.v1.schema.json";
@@ -18,7 +18,7 @@ namespace ChessersEngine.Bench {
         public List<WorkloadResult> results { get; set; } = new List<WorkloadResult>();
     }
 
-    class EnvironmentDto {
+    sealed class EnvironmentDto {
         public string os { get; set; }          // "darwin" | "linux" | "windows" | "unknown"
         public string arch { get; set; }        // "arm64" | "x64" | ...
         public string cpuModel { get; set; }
@@ -30,12 +30,12 @@ namespace ChessersEngine.Bench {
         public bool countersEnabled { get; set; }
     }
 
-    class ManifestDto {
+    sealed class ManifestDto {
         public int version { get; set; }
         public string sha256 { get; set; }
     }
 
-    class WorkloadResult {
+    sealed class WorkloadResult {
         public string id { get; set; }
         public string layer { get; set; }
         public string description { get; set; }
@@ -45,13 +45,13 @@ namespace ChessersEngine.Bench {
         public CountersDto counters { get; set; }
     }
 
-    class IterationsDto {
+    sealed class IterationsDto {
         public int warmup { get; set; }
         public int measured { get; set; }
         public int samples { get; set; }
     }
 
-    class TimeDto {
+    sealed class TimeDto {
         public double minNsPerOp { get; set; }
         public double medianNsPerOp { get; set; }
         public double p90NsPerOp { get; set; }
@@ -61,7 +61,7 @@ namespace ChessersEngine.Bench {
         public double opsPerSecond { get; set; }
     }
 
-    class CountersDto {
+    sealed class CountersDto {
         public long nodes { get; set; }
         public long moveGen { get; set; }
         public long tilesProduced { get; set; }

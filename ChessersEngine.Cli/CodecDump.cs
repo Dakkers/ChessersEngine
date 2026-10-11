@@ -11,7 +11,7 @@ namespace ChessersEngine.Cli {
     // port can reproduce the negative-id "deathjump" coordinate arithmetic exactly. `ok` is false for
     // ids whose (row,col) does not map back to the id (the codec has lossy branches); the count is
     // surfaced as `roundTripMismatches`.
-    class CodecEntryDto {
+    sealed class CodecEntryDto {
         public int tileId { get; set; }
         public int row { get; set; }
         public int col { get; set; }
@@ -19,7 +19,7 @@ namespace ChessersEngine.Cli {
         public bool ok { get; set; }        // roundTrip == tileId
     }
 
-    class CodecDumpDto {
+    sealed class CodecDumpDto {
         // Version lives in the `$schema` URI, mirrored by `schemaVersion`; check-codec.ts enforces both.
         [JsonPropertyName("$schema")]
         public string Schema { get; set; } =
