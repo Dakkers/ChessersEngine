@@ -18,7 +18,7 @@ namespace ChessersEngine.Tests {
     ///   - if the player to move has no legal move, the game must be over;
     ///   - notation round-trip: CreateNotation parsed back recovers piece id, from/to tiles, promotion;
     ///   - clone fidelity: Board.CreateCopy serializes identically to the original;
-    ///   - AI liveness: DoBestMovesForCurrentPlayer returns valid moves whenever a legal
+    ///   - AI liveness: CalculateBestMove yields moves that all apply validly whenever a legal
     ///     move exists and the game is not over;
     ///   - determinism: the same seed replays the same game, for both random and AI play.
     ///
@@ -210,8 +210,19 @@ namespace ChessersEngine.Tests {
                 try { hasLegal = CollectLegal(match._GetCommittedBoard(), color, false, -1).Count > 0; }
                 catch (Exception e) { Record("legal-gen-throw", $"turn {turn}: {e.GetType().Name}: {e.Message}"); return null; }
 
-                List<MoveResult> results;
-                try { results = match.DoBestMovesForCurrentPlayer(level); }
+                List<MoveResult> results = null;
+                try {
+                    List<MoveAttempt> attempts = match.CalculateBestMove(level);
+                    if (attempts != null) {
+                        results = new List<MoveResult>();
+                        foreach (var attempt in attempts) {
+                            MoveResult mr = match.MoveChessman(attempt);
+                            if (mr == null) { Record("ai-null-move", $"turn {turn}: null MoveResult"); return null; }
+                            if (!mr.valid) { Record("ai-invalid-move", $"turn {turn}: {mr.pieceId}->{mr.tileId} is invalid"); return null; }
+                            results.Add(mr);
+                        }
+                    }
+                }
                 catch (Exception e) { Record("ai-move-throw", $"turn {turn}: {e.GetType().Name}: {e.Message}"); return null; }
 
                 if (results == null || results.Count == 0) {
@@ -220,8 +231,6 @@ namespace ChessersEngine.Tests {
                 }
 
                 foreach (var mr in results) {
-                    if (mr == null) { Record("ai-null-move", $"turn {turn}: null MoveResult"); return null; }
-                    if (!mr.valid) Record("ai-invalid-move", $"turn {turn}: {mr.pieceId}->{mr.tileId} is invalid");
                     CheckNotation(mr, d => Record("notation-mismatch", $"turn {turn}: {d}"));
                 }
 
