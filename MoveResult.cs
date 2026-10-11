@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace ChessersEngine {
     public class MoveAttempt {
@@ -104,7 +105,7 @@ namespace ChessersEngine {
         #region Notation
 
         public string CreateNotation () {
-            string moveNotation = pieceId.ToString() + "_";
+            string moveNotation = pieceId.ToString(CultureInfo.InvariantCulture) + "_";
 
             int colDelta = (toColumn - fromColumn);
             if (isCastle) {
@@ -133,7 +134,7 @@ namespace ChessersEngine {
 
                 if (tileId < 0) {
                     // Deathjump; "11_Qh4" becomes "11_Qh409"
-                    moveNotation += System.Math.Abs(tileId).ToString().PadLeft(2, '0');
+                    moveNotation += System.Math.Abs(tileId).ToString(CultureInfo.InvariantCulture).PadLeft(2, '0');
                 } else {
                     // "Qh4" becomes "Qh4e7"
                     moveNotation += (
@@ -167,7 +168,7 @@ namespace ChessersEngine {
             string[] notationSplit = _notation.Split('_');
             string notation = notationSplit[1];
 
-            moveResult.pieceId = int.Parse(notationSplit[0]);
+            moveResult.pieceId = int.Parse(notationSplit[0], CultureInfo.InvariantCulture);
             moveResult.isInCheck = notation.Contains('+');
             moveResult.isWinningMove = notation.Contains('#');
 
@@ -214,7 +215,7 @@ namespace ChessersEngine {
                 bool isInt = int.TryParse(nextChar.ToString(), out int charAsInt);
 
                 if (isInt) {
-                    int secondDigit = int.Parse(chars.Dequeue().ToString());
+                    int secondDigit = int.Parse(chars.Dequeue().ToString(), CultureInfo.InvariantCulture);
                     int deathjumpTileId = -1 * ((10 * charAsInt) + secondDigit);
 
                     moveResult.toColumn = Helpers.GetColumn(deathjumpTileId);

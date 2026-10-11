@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 
 namespace ChessersEngine {
@@ -244,7 +245,7 @@ namespace ChessersEngine {
         }
 
         public static string FormatTiles (List<Tile> tiles) {
-            return string.Join(",", (tiles ?? new List<Tile>()).Select((t) => t?.id.ToString() ?? "x"));
+            return string.Join(",", (tiles ?? new List<Tile>()).Select((t) => t?.id.ToString(CultureInfo.InvariantCulture) ?? "x"));
         }
 
         public static void PrintTiles (List<Tile> tiles, int indent = 0) {
@@ -256,11 +257,11 @@ namespace ChessersEngine {
         #region Notation
 
         public static string ConvertRowToRank (int row) {
-            return (row + 1).ToString();
+            return (row + 1).ToString(CultureInfo.InvariantCulture);
         }
 
         public static int ConvertRankToRow (char rank) {
-            return int.Parse(rank.ToString()) - 1;
+            return int.Parse(rank.ToString(), CultureInfo.InvariantCulture) - 1;
         }
 
         public static string ConvertColumnToFile (int column) {

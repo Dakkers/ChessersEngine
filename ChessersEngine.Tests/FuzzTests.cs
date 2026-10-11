@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using NUnit.Framework;
 
@@ -50,13 +51,13 @@ namespace ChessersEngine.Tests {
                 .OrderBy(cs => cs.id)
                 .Select(cs => $"{cs.id},{cs.kind},{cs.location},{(cs.isActive ? 1 : 0)},{(cs.isChecker ? 1 : 0)},{(cs.isKinged ? 1 : 0)},{(cs.isPromoted ? 1 : 0)},{(cs.hasMoved ? 1 : 0)},{cs.colorId}"));
             var occ = new List<string>();
-            for (int id = 0; id < 64; id++) occ.Add(b.GetTile(id).GetPiece()?.id.ToString() ?? "_");
+            for (int id = 0; id < 64; id++) occ.Add(b.GetTile(id).GetPiece()?.id.ToString(CultureInfo.InvariantCulture) ?? "_");
             return pieces + "|" + string.Join(",", occ);
         }
 
         static string FullSnapshot (Board b) {
             var occ = new List<string>();
-            for (int id = -36; id < 0; id++) occ.Add(b.GetTile(id).GetPiece()?.id.ToString() ?? "_");
+            for (int id = -36; id < 0; id++) occ.Add(b.GetTile(id).GetPiece()?.id.ToString(CultureInfo.InvariantCulture) ?? "_");
             return Snapshot(b) + "|" + string.Join(",", occ);
         }
 
