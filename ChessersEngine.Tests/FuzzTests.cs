@@ -33,6 +33,7 @@ namespace ChessersEngine.Tests {
         const int AiGamesPerSetting = 10;
         const int AiTurnCap = 120;
         const int DeterminismSeeds = 20;
+        const int DeterminismAiSeeds = 10;
 
         static void AssertNoFailures (List<string> failures, string label) {
             if (failures.Count == 0) return;
@@ -295,7 +296,7 @@ namespace ChessersEngine.Tests {
                 var ignored = new List<string>();
                 if (!SameMoves(PlayGame(seed, setting, ignored), PlayGame(seed, setting, ignored)))
                     mismatches.Add($"random seed={seed}");
-                if (seed < AiGamesPerSetting && !SameMoves(PlayAiGame(seed, setting, 0, ignored), PlayAiGame(seed, setting, 0, ignored)))
+                if (seed < DeterminismAiSeeds && !SameMoves(PlayAiGame(seed, setting, 0, ignored), PlayAiGame(seed, setting, 0, ignored)))
                     mismatches.Add($"ai0 seed={seed}");
             }
             Assert.That(mismatches, Is.Empty, $"nondeterministic games [{setting}]");
