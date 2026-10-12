@@ -34,9 +34,7 @@ namespace ChessersEngine {
             foreach (ChessmanSchema cs in pieces) {
                 Chessman newChessman = Chessman.CreateFromSchema(cs);
                 if (newChessman.isActive) {
-                    Tile underlyingTile = GetTile(cs.location);
-                    newChessman.SetUnderlyingTile(underlyingTile);
-                    underlyingTile.SetPiece(newChessman);
+                    Place(newChessman, GetTile(cs.location));
                 }
 
                 chessmen[newChessman.id] = newChessman;
