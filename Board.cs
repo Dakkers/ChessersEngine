@@ -1524,10 +1524,9 @@ namespace ChessersEngine {
             Tile toTile = GetTile(moveResult.tileId);
 
             movedChessman.SetActive(true);
-            toTile.RemovePiece();
+            Clear(toTile);
 
-            fromTile.SetPiece(movedChessman);
-            movedChessman.SetUnderlyingTile(fromTile);
+            Place(movedChessman, fromTile);
 
             if (moveResult.promotionOccurred) {
                 movedChessman.kind = ChessmanKindEnum.PAWN;
@@ -1551,16 +1550,14 @@ namespace ChessersEngine {
                 Tile jumpedOverTile = GetTile(moveResult.jumpedTileId);
                 jumpedChessman.isActive = true;
 
-                jumpedOverTile.SetPiece(jumpedChessman);
-                jumpedChessman.SetUnderlyingTile(jumpedOverTile);
+                Place(jumpedChessman, jumpedOverTile);
             }
 
             if (moveResult.WasPieceCaptured()) {
                 Chessman capturedChessman = GetChessman(moveResult.capturedPieceId);
                 capturedChessman.isActive = true;
 
-                toTile.SetPiece(capturedChessman);
-                capturedChessman.SetUnderlyingTile(toTile);
+                Place(capturedChessman, toTile);
             }
 
             if (moveResult.isCastle) {
@@ -1571,11 +1568,10 @@ namespace ChessersEngine {
 
                 Tile rookToTile = GetTileByRowColumn(row, rookToCol);
                 Chessman rookChessman = PieceAt(rookToTile);
-                rookToTile.RemovePiece();
+                Clear(rookToTile);
 
                 Tile rookFromTile = colDelta > 0 ? GetRightmostTileOfRow(row) : GetLeftmostTileOfRow(row);
-                rookFromTile.SetPiece(rookChessman);
-                rookChessman.SetUnderlyingTile(rookFromTile);
+                Place(rookChessman, rookFromTile);
                 // Castling is only legal when the rook has not moved, so undoing it always
                 // restores the rook to its unmoved state. (The king's hasMoved is restored
                 // above via moveResult.wasFirstMoveForPiece; the rook has no such flag.)
