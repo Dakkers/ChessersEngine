@@ -58,6 +58,65 @@ namespace ChessersEngine {
             return null;
         }
 
+        #region Occupancy
+
+        /// <summary>
+        /// Returns the chessman occupying the tile, or null if the tile is empty.
+        /// </summary>
+        public Chessman PieceAt (Tile tile) {
+            return tile.GetPiece();
+        }
+
+        /// <summary>
+        /// Returns whether any chessman occupies the tile.
+        /// </summary>
+        public bool IsOccupied (Tile tile) {
+            return tile.IsOccupied();
+        }
+
+        /// <summary>
+        /// Returns the tile the chessman stands on, or null if the chessman is inactive.
+        /// </summary>
+        public Tile TileOf (Chessman chessman) {
+            return chessman.GetUnderlyingTile();
+        }
+
+        /// <summary>
+        /// Puts the chessman on the tile and sets its location to the tile.
+        /// It does not empty the tile the chessman came from.
+        /// Callers MUST <see cref="Clear"/> the from-tile themselves.
+        /// </summary>
+        public void Place (Chessman chessman, Tile tile) {
+            tile.SetPiece(chessman);
+            chessman.SetUnderlyingTile(tile);
+        }
+
+        /// <summary>
+        /// Empties the tile. The chessman that stood there keeps its own location.
+        /// </summary>
+        public void Clear (Tile tile) {
+            tile.RemovePiece();
+        }
+
+        /// <summary>
+        /// Takes the chessman out of play.
+        /// It frees its tile only if the chessman still occupies it.
+        /// A tile held by another chessman MUST be left alone.
+        /// </summary>
+        public void Deactivate (Chessman chessman) {
+            chessman.Deactivate();
+        }
+
+        /// <summary>
+        /// Sets the occupant of the tile and leaves the chessman's location unchanged.
+        /// It exists for the deathjump case, where an inactive chessman stays on its deathjump tile.
+        /// </summary>
+        internal void SetOccupant (Tile tile, Chessman chessman) {
+            tile.SetPiece(chessman);
+        }
+
+        #endregion
+
         public void CopyState (Board otherBoard) {
             EngineCounters.CopyState();
             this.matchConfig = otherBoard.matchConfig;
