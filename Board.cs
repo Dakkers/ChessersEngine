@@ -1333,9 +1333,8 @@ namespace ChessersEngine {
                         Chessman kingCopy = kingChessman.IsWhite() ? boardCopy.GetWhiteKing() : boardCopy.GetBlackKing();
 
                         Tile iterTile = boardCopy.GetTileByRowColumn(row, colIter);
-                        kingCopy.GetUnderlyingTile().RemovePiece();
-                        iterTile.SetPiece(kingCopy);
-                        kingCopy.SetUnderlyingTile(iterTile);
+                        boardCopy.Clear(boardCopy.TileOf(kingCopy));
+                        boardCopy.Place(kingCopy, iterTile);
 
                         if (boardCopy.CanChessmanBeCaptured(kingCopy).Count > 0) {
                             isValid = false;
