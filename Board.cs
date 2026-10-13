@@ -1517,11 +1517,39 @@ namespace ChessersEngine {
             return result.moveResult;
         }
 
+        /// <summary>
+        /// Returns the tiles the castling rook moved from and to.
+        /// </summary>
+        Tile[] GetCastleRookTiles (Tile kingFromTile, Tile kingToTile) {
+            int row = GetRow(kingToTile);
+            int toCol = GetColumn(kingToTile);
+            int colDelta = toCol - GetColumn(kingFromTile);
+            int rookToCol = colDelta > 0 ? (toCol - 1) : (toCol + 1);
+
+            Tile rookToTile = GetTileByRowColumn(row, rookToCol);
+            Tile rookFromTile = colDelta > 0 ? GetRightmostTileOfRow(row) : GetLeftmostTileOfRow(row);
+            return new Tile[] { rookFromTile, rookToTile };
+        }
+
+        /// <summary>
+        /// Reverses the move described by the result.
+        /// The result MUST describe the last move made on this board.
+        /// It throws <see cref="InvalidOperationException"/> and leaves the board untouched
+        /// when the result is a castle and the rook is not on its castled tile.
+        /// </summary>
         public void UndoMove (MoveResult moveResult) {
             EngineCounters.MoveUndo();
             Chessman movedChessman = GetChessman(moveResult.pieceId);
             Tile fromTile = GetTile(moveResult.fromTileId);
             Tile toTile = GetTile(moveResult.tileId);
+
+            if (moveResult.isCastle) {
+                Tile castledRookTile = GetCastleRookTiles(fromTile, toTile)[1];
+                if (!IsOccupied(castledRookTile)) {
+                    throw new InvalidOperationException(
+                        "Cannot undo castle: no rook on tile " + castledRookTile.id + ".");
+                }
+            }
 
             movedChessman.SetActive(true);
             Clear(toTile);
@@ -1561,16 +1589,12 @@ namespace ChessersEngine {
             }
 
             if (moveResult.isCastle) {
-                int row = GetRow(toTile);
-                int toCol = GetColumn(toTile);
-                int colDelta = toCol - GetColumn(fromTile);
-                int rookToCol = colDelta > 0 ? (toCol - 1) : (toCol + 1);
-
-                Tile rookToTile = GetTileByRowColumn(row, rookToCol);
+                Tile[] rookTiles = GetCastleRookTiles(fromTile, toTile);
+                Tile rookFromTile = rookTiles[0];
+                Tile rookToTile = rookTiles[1];
                 Chessman rookChessman = PieceAt(rookToTile);
                 Clear(rookToTile);
 
-                Tile rookFromTile = colDelta > 0 ? GetRightmostTileOfRow(row) : GetLeftmostTileOfRow(row);
                 Place(rookChessman, rookFromTile);
                 // Castling is only legal when the rook has not moved, so undoing it always
                 // restores the rook to its unmoved state. (The king's hasMoved is restored

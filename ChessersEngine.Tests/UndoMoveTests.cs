@@ -1,3 +1,4 @@
+using System;
 using NUnit.Framework;
 
 namespace ChessersEngine.Tests {
@@ -32,6 +33,29 @@ namespace ChessersEngine.Tests {
             Assert.That(rook.hasMoved, Is.False, "the castling rook's hasMoved must be restored too");
             Assert.That(king.GetUnderlyingTile().id, Is.EqualTo(4), "king back on e1");
             Assert.That(rook.GetUnderlyingTile().id, Is.EqualTo(7), "rook back on h1");
+        }
+
+        [Test]
+        public void UndoCastle_WithEmptyRookTile_ThrowsAndLeavesBoardUntouched () {
+            Match match = new Match(TestScenarios.CastlingWhite());
+            Board board = match._GetPendingBoard();
+
+            MoveResult mr = board.MoveChessman(new MoveAttempt {
+                playerId = Constants.DEFAULT_WHITE_PLAYER_ID,
+                pieceId = Constants.ID_WHITE_KING,
+                tileId = 6,
+            });
+            Assert.That(mr.isCastle, Is.True);
+
+            board.Clear(board.GetTile(5));
+
+            Assert.Throws<InvalidOperationException>(() => board.UndoMove(mr));
+
+            Chessman king = board.GetChessman(Constants.ID_WHITE_KING);
+            Assert.That(king.GetUnderlyingTile().id, Is.EqualTo(6), "king stays on g1");
+            Assert.That(board.GetTile(6).GetPiece(), Is.SameAs(king), "g1 still holds the king");
+            Assert.That(board.GetTile(4).IsOccupied(), Is.False, "e1 stays empty");
+            Assert.That(king.hasMoved, Is.True, "king hasMoved is not reset");
         }
     }
 }
