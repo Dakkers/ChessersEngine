@@ -628,10 +628,6 @@ namespace ChessersEngine {
 
         public void UpdateMatch (MatchData newMatchData) {
             committedBoard.ClearAll();
-            foreach (var pair in GetAllCommittedChessmen()) {
-                pair.Value.RemoveUnderlyingTileReference();
-            }
-
             foreach (ChessmanSchema cs in newMatchData.pieces) {
                 Chessman committedChessman = GetCommittedChessman(cs.id);
                 //int currentloc = committedChessman.GetUnderlyingTile()?.id ?? -1;

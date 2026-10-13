@@ -97,7 +97,8 @@ namespace ChessersEngine.Tests {
         [Test]
         public void MovingAnInactivePieceIsRejectedWithoutThrowing () {
             Match match = MakeMatch();
-            match._GetPendingBoard().GetChessman(Constants.ID_WHITE_PAWN_1).Deactivate();
+            Board pending = match._GetPendingBoard();
+            pending.Deactivate(pending.GetChessman(Constants.ID_WHITE_PAWN_1));
 
             MoveResult result = null;
             Assert.DoesNotThrow(() => result = match.MoveChessman(new MoveAttempt {
