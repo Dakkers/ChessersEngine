@@ -85,6 +85,7 @@ namespace ChessersEngine {
         /// Puts the chessman on the tile and sets its location to the tile.
         /// It does not empty the tile the chessman came from.
         /// Callers MUST <see cref="Clear"/> the from-tile themselves.
+        /// The chessman and the tile MUST belong to this board.
         /// </summary>
         public void Place (Chessman chessman, Tile tile) {
             tile.SetPiece(chessman);
@@ -102,6 +103,7 @@ namespace ChessersEngine {
         /// Takes the chessman out of play.
         /// It frees its tile only if the chessman still occupies it.
         /// A tile held by another chessman MUST be left alone.
+        /// The chessman MUST belong to this board.
         /// </summary>
         public void Deactivate (Chessman chessman) {
             chessman.Deactivate();
@@ -110,6 +112,7 @@ namespace ChessersEngine {
         /// <summary>
         /// Sets the occupant of the tile and leaves the chessman's location unchanged.
         /// It exists for the deathjump case, where an inactive chessman stays on its deathjump tile.
+        /// The chessman and the tile MUST belong to this board.
         /// </summary>
         internal void SetOccupant (Tile tile, Chessman chessman) {
             tile.SetPiece(chessman);
