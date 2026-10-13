@@ -31,8 +31,8 @@ namespace ChessersEngine.Tests {
 
             Assert.That(king.hasMoved, Is.False, "the king's hasMoved is restored");
             Assert.That(rook.hasMoved, Is.False, "the castling rook's hasMoved must be restored too");
-            Assert.That(king.GetUnderlyingTile().id, Is.EqualTo(4), "king back on e1");
-            Assert.That(rook.GetUnderlyingTile().id, Is.EqualTo(7), "rook back on h1");
+            Assert.That(board.TileOf(king).id, Is.EqualTo(4), "king back on e1");
+            Assert.That(board.TileOf(rook).id, Is.EqualTo(7), "rook back on h1");
         }
 
         [Test]

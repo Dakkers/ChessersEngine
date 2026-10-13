@@ -51,13 +51,13 @@ namespace ChessersEngine.Tests {
                 .OrderBy(cs => cs.id)
                 .Select(cs => $"{cs.id},{cs.kind},{cs.location},{(cs.isActive ? 1 : 0)},{(cs.isChecker ? 1 : 0)},{(cs.isKinged ? 1 : 0)},{(cs.isPromoted ? 1 : 0)},{(cs.hasMoved ? 1 : 0)},{cs.colorId}"));
             var occ = new List<string>();
-            for (int id = 0; id < 64; id++) occ.Add(b.GetTile(id).GetPiece()?.id.ToString(CultureInfo.InvariantCulture) ?? "_");
+            for (int id = 0; id < 64; id++) occ.Add(b.PieceAt(b.GetTile(id))?.id.ToString(CultureInfo.InvariantCulture) ?? "_");
             return pieces + "|" + string.Join(",", occ);
         }
 
         static string FullSnapshot (Board b) {
             var occ = new List<string>();
-            for (int id = -36; id < 0; id++) occ.Add(b.GetTile(id).GetPiece()?.id.ToString(CultureInfo.InvariantCulture) ?? "_");
+            for (int id = -36; id < 0; id++) occ.Add(b.PieceAt(b.GetTile(id))?.id.ToString(CultureInfo.InvariantCulture) ?? "_");
             return Snapshot(b) + "|" + string.Join(",", occ);
         }
 
@@ -115,17 +115,17 @@ namespace ChessersEngine.Tests {
         static void CheckConsistency (Board b, Action<string> fail) {
             var seen = new Dictionary<int, int>();
             foreach (var c in b.GetActiveChessmen()) {
-                Tile ut = c.GetUnderlyingTile();
+                Tile ut = b.TileOf(c);
                 if (ut == null) { fail($"active piece {c.id} has null underlying tile"); continue; }
-                if (ut.GetPiece()?.id != c.id) fail($"tile {ut.id} occupant != piece {c.id}");
+                if (b.PieceAt(ut)?.id != c.id) fail($"tile {ut.id} occupant != piece {c.id}");
                 if (c.location != ut.id) fail($"piece {c.id} location {c.location} != tile {ut.id}");
                 if (seen.TryGetValue(ut.id, out int other)) fail($"tile {ut.id} shared by pieces {other} and {c.id}");
                 else seen[ut.id] = c.id;
             }
             for (int id = 0; id < 64; id++) {
                 Tile t = b.GetTile(id);
-                if (t.IsOccupied() && !t.GetPiece().isActive)
-                    fail($"real tile {id} holds inactive piece {t.GetPiece().id}");
+                if (b.IsOccupied(t) && !b.PieceAt(t).isActive)
+                    fail($"real tile {id} holds inactive piece {b.PieceAt(t).id}");
             }
         }
 
