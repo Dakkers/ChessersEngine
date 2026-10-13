@@ -608,9 +608,8 @@ namespace ChessersEngine {
 
                 Chessman rookChessman = board.PieceAt(rookFromTile);
                 if (rookChessman != null) {
-                    rookFromTile.RemovePiece();
-                    rookToTile.SetPiece(rookChessman);
-                    rookChessman.SetUnderlyingTile(rookToTile);
+                    board.Clear(rookFromTile);
+                    board.Place(rookChessman, rookToTile);
                     rookChessman.SetHasMoved(true);
 
                     moveResult.isCastle = true;
@@ -704,24 +703,23 @@ namespace ChessersEngine {
             }
 
             if (chessmanToRemove != null) {
-                chessmanToRemove.Deactivate();
+                board.Deactivate(chessmanToRemove);
                 if (chessmanToRemove.IsKing()) {
                     moveResult.isWinningMove = true;
                 }
 
                 if (moveResult.WasPieceJumped()) {
-                    board.GetTile(moveResult.jumpedTileId).RemovePiece();
+                    board.Clear(board.GetTile(moveResult.jumpedTileId));
                 }
             }
 
             // -- Actually move piece
-            fromTile.RemovePiece();
-            toTile.SetPiece(chessman);
-
+            board.Clear(fromTile);
             if (toTile.IsDeathjumpTile()) {
-                chessman.Deactivate();
+                board.SetOccupant(toTile, chessman);
+                board.Deactivate(chessman);
             } else {
-                chessman.SetUnderlyingTile(toTile);
+                board.Place(chessman, toTile);
             }
 
             // -- Validate promotion
