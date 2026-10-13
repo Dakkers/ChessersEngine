@@ -640,7 +640,10 @@ namespace ChessersEngine {
                     return otherChessman.IsBishop() || otherChessman.IsQueen();
                 };
             } else {
-                additionalValidator = (t) => PieceAt(t).IsQueen() || PieceAt(t).IsRook();
+                additionalValidator = (t) => {
+                    Chessman p = PieceAt(t);
+                    return p.IsQueen() || p.IsRook();
+                };
             }
 
             foreach (Directionality partialDir in directionalities) {
@@ -742,7 +745,10 @@ namespace ChessersEngine {
                     return otherChessman.IsBishop() || otherChessman.IsQueen();
                 };
             } else {
-                additionalValidator = (t) => PieceAt(t).IsQueen() || PieceAt(t).IsRook();
+                additionalValidator = (t) => {
+                    Chessman p = PieceAt(t);
+                    return p.IsQueen() || p.IsRook();
+                };
             }
 
             foreach (Directionality partialDir in directionalities) {
@@ -796,12 +802,15 @@ namespace ChessersEngine {
                 .Concat(CanChessmanBeCapturedDiagonally(chessman))
                 .Concat(
                     GetTilesForKnightMovement(TileOf(chessman))
-                    .Where((t) => (
-                        IsOccupied(t) &&
-                        PieceAt(t).IsKnight() &&
-                        !PieceAt(t).IsChecker() &&
-                        !PieceAt(t).IsSameColor(chessman)
-                    ))
+                    .Where((t) => {
+                        Chessman p = PieceAt(t);
+                        return (
+                            p != null &&
+                            p.IsKnight() &&
+                            !p.IsChecker() &&
+                            !p.IsSameColor(chessman)
+                        );
+                    })
                 )
                 .ToList()
             );
@@ -814,13 +823,19 @@ namespace ChessersEngine {
             if (chessman.IsKing()) {
                 result = result.Concat(
                     GetAdjacentTiles(TileOf(chessman))
-                    .Where((t) => (
-                        !t.IsDeathjumpTile() &&
-                        IsOccupied(t) &&
-                        PieceAt(t).IsKing() &&
-                        !PieceAt(t).IsChecker() &&
-                        !PieceAt(t).IsSameColor(chessman)
-                    ))
+                    .Where((t) => {
+                        if (t.IsDeathjumpTile()) {
+                            return false;
+                        }
+
+                        Chessman p = PieceAt(t);
+                        return (
+                            p != null &&
+                            p.IsKing() &&
+                            !p.IsChecker() &&
+                            !p.IsSameColor(chessman)
+                        );
+                    })
                 ).ToList();
             }
 
@@ -835,11 +850,10 @@ namespace ChessersEngine {
                 .Concat(CanTileBeMovedOnToByChessmanFromDirection(tile, Directionality.NEGATIVE_DIAGONAL))
                 .Concat(
                     GetTilesForKnightMovement(tile)
-                    .Where((t) => (
-                        IsOccupied(t) &&
-                        PieceAt(t).IsKnight() &&
-                        !PieceAt(t).IsChecker()
-                    ))
+                    .Where((t) => {
+                        Chessman p = PieceAt(t);
+                        return p != null && p.IsKnight() && !p.IsChecker();
+                    })
                 )
                 .ToList()
             );
@@ -1079,8 +1093,9 @@ namespace ChessersEngine {
             int maxIndex = -1;
             for (int i = 0; i < tiles.Count; i++) {
                 Tile t = tiles[i];
-                if (IsOccupied(t)) {
-                    if (!PieceAt(t).IsSameColor(chessman)) {
+                Chessman occupant = PieceAt(t);
+                if (occupant != null) {
+                    if (!occupant.IsSameColor(chessman)) {
                         maxIndex = i;
                     }
 
@@ -1184,7 +1199,12 @@ namespace ChessersEngine {
             Tile captureTile2 = GetTileByRowColumn(row + modifier, col - 1);
 
             foreach (Tile captureTile in new Tile[] { captureTile1, captureTile2 }) {
-                if (captureTile == null || !IsOccupied(captureTile) || PieceAt(captureTile).IsSameColor(chessman)) {
+                if (captureTile == null) {
+                    continue;
+                }
+
+                Chessman target = PieceAt(captureTile);
+                if (target == null || target.IsSameColor(chessman)) {
                     continue;
                 }
 
@@ -1200,7 +1220,10 @@ namespace ChessersEngine {
 
         List<Tile> GetPotentialTilesForKnightMovement (Chessman chessman) {
             return GetTilesForKnightMovement(TileOf(chessman))
-                .Where((t) => !IsOccupied(t) || (!PieceAt(t).IsSameColor(chessman.color)))
+                .Where((t) => {
+                    Chessman p = PieceAt(t);
+                    return p == null || !p.IsSameColor(chessman.color);
+                })
                 .ToList();
         }
 
