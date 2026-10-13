@@ -71,5 +71,38 @@ namespace ChessersEngine.Tests {
             Assert.That(WhiteKingValidTiles(match), Does.Contain(2),
                 "queenside castle is legal; b1 being attacked is irrelevant (king never crosses it)");
         }
+
+        static List<string> OccupancySnapshot (Board board) {
+            List<string> snapshot = new List<string>();
+            for (int id = 0; id < 64; id++) {
+                Tile tile = board.GetTile(id);
+                Chessman occupant = board.PieceAt(tile);
+                snapshot.Add($"tile {id}: occupied={board.IsOccupied(tile)} piece={(occupant == null ? -1 : occupant.id)}");
+            }
+            foreach (KeyValuePair<int, Chessman> entry in board.GetAllChessmen().OrderBy(e => e.Key)) {
+                Tile tile = board.TileOf(entry.Value);
+                snapshot.Add($"chessman {entry.Key}: tile={(tile == null ? -1 : tile.id)}");
+            }
+            return snapshot;
+        }
+
+        /// <summary>
+        /// Generating castling moves MUST NOT change the occupancy of the live board.
+        /// The safety simulation MUST run against a copy only.
+        /// </summary>
+        [Test]
+        public void CastlingSafetyCheckDoesNotMutateLiveBoardOccupancy () {
+            Match match = new Match(TestScenarios.CastlingWhite());
+            Board board = match._GetPendingBoard();
+            Chessman whiteKing = board.GetChessman(Constants.ID_WHITE_KING);
+            List<string> before = OccupancySnapshot(board);
+
+            List<int> potential = board.GetPotentialTilesForMovement(whiteKing).Select(t => t.id).ToList();
+
+            Assert.That(potential, Does.Contain(6), "kingside castle must be offered so the safety loop runs");
+            Assert.That(potential, Does.Contain(2), "queenside castle must be offered so the safety loop runs");
+            Assert.That(OccupancySnapshot(board), Is.EqualTo(before));
+            Assert.That(board.TileOf(whiteKing).id, Is.EqualTo(4));
+        }
     }
 }
