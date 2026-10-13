@@ -416,7 +416,7 @@ namespace ChessersEngine.Cli {
                 if (continuationPieceId >= 0) {
                     Chessman cont = match.GetPendingChessman(continuationPieceId);
                     var jumps = board.GetValidTilesForMovement(cont, jumpsOnly: true);
-                    Console.WriteLine($"  Multi-jump in progress with {BoardRenderer.TileToSquare(cont.GetUnderlyingTile().id)} " +
+                    Console.WriteLine($"  Multi-jump in progress with {BoardRenderer.TileToSquare(board.TileOf(cont).id)} " +
                         $"-> continue to: {FormatTargets(jumps)}");
                 }
 
@@ -467,7 +467,8 @@ namespace ChessersEngine.Cli {
 
                 Chessman piece;
                 if (hasFrom) {
-                    piece = board.GetTileIfExists(fromTile)?.GetPiece();
+                    Tile fromTileObj = board.GetTileIfExists(fromTile);
+                    piece = fromTileObj != null ? board.PieceAt(fromTileObj) : null;
                     if (piece == null) {
                         Console.WriteLine($"  No piece on {BoardRenderer.TileToSquare(fromTile)}.");
                         continue;
@@ -490,7 +491,7 @@ namespace ChessersEngine.Cli {
                     continue;
                 }
 
-                string fromSquare = BoardRenderer.TileToSquare(piece.GetUnderlyingTile().id);
+                string fromSquare = BoardRenderer.TileToSquare(board.TileOf(piece).id);
                 int promo = ResolvePromotion(piece, moverColor, toTile, explicitPromo);
 
                 var attempt = new MoveAttempt {
@@ -667,7 +668,7 @@ namespace ChessersEngine.Cli {
                 return null;
             }
             if (candidates.Count > 1) {
-                var froms = candidates.Select(c => BoardRenderer.TileToSquare(c.GetUnderlyingTile().id)).ToList();
+                var froms = candidates.Select(c => BoardRenderer.TileToSquare(board.TileOf(c).id)).ToList();
                 message = $"Ambiguous: {string.Join(", ", froms)} can all reach {dest}. " +
                           $"Name the piece, e.g. {froms[0]}{dest}.";
                 return null;
@@ -702,7 +703,8 @@ namespace ChessersEngine.Cli {
                 Console.WriteLine($"  '{squareTok}' is not a valid square.");
                 return;
             }
-            Chessman piece = board.GetTileIfExists(tileId)?.GetPiece();
+            Tile pieceTile = board.GetTileIfExists(tileId);
+            Chessman piece = pieceTile != null ? board.PieceAt(pieceTile) : null;
             if (piece == null) {
                 Console.WriteLine($"  No piece on {BoardRenderer.TileToSquare(tileId)}.");
                 return;
@@ -722,9 +724,11 @@ namespace ChessersEngine.Cli {
                 Console.WriteLine("  No suggestion available.");
                 return;
             }
+            Board committed = match._GetCommittedBoard();
             var parts = best.Select(a => {
                 Chessman c = match.GetCommittedChessman(a.pieceId);
-                string from = c?.GetUnderlyingTile() != null ? BoardRenderer.TileToSquare(c.GetUnderlyingTile().id) : "?";
+                Tile fromTile = c != null ? committed.TileOf(c) : null;
+                string from = fromTile != null ? BoardRenderer.TileToSquare(fromTile.id) : "?";
                 return $"{from}{BoardRenderer.TileToSquare(a.tileId)}";
             });
             Console.WriteLine("  Suggestion: " + string.Join(", ", parts));
