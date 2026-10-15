@@ -74,6 +74,16 @@ namespace ChessersEngine.Tests {
         }
 
         [Test]
+        public void TileOfReturnsNullForAChessmanMarkedInactive () {
+            Board board = MakeBoardWithTwoPawns();
+            Chessman pawn = board.GetChessman(Constants.ID_WHITE_PAWN_1);
+
+            pawn.SetActive(false);
+
+            Assert.That(board.TileOf(pawn), Is.Null);
+        }
+
+        [Test]
         public void PlaceMovesOccupancyAndLocationAndLeavesTheFromTileToTheCaller () {
             Board board = MakeBoard(TestScenarios.CreatePawn(Constants.ID_WHITE_PAWN_1, FromTileId));
             Chessman pawn = board.GetChessman(Constants.ID_WHITE_PAWN_1);

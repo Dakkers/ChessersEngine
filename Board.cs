@@ -78,7 +78,7 @@ namespace ChessersEngine {
         /// Returns the tile the chessman stands on, or null if the chessman is inactive.
         /// </summary>
         public Tile TileOf (Chessman chessman) {
-            return chessman.GetUnderlyingTile();
+            return chessman.isActive ? chessman.GetUnderlyingTile() : null;
         }
 
         /// <summary>
