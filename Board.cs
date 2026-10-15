@@ -109,6 +109,16 @@ namespace ChessersEngine {
         }
 
         /// <summary>
+        /// Empties every tile, including tiles held by inactive chessmen.
+        /// Chessmen keep their own locations.
+        /// </summary>
+        public void ClearAll () {
+            foreach (Tile tile in tiles) {
+                tile.RemovePiece();
+            }
+        }
+
+        /// <summary>
         /// Takes the chessman out of play.
         /// It frees its tile only if the chessman still occupies it.
         /// A tile held by another chessman MUST be left alone.
