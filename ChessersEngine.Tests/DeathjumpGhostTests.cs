@@ -108,5 +108,18 @@ namespace ChessersEngine.Tests {
 
             Assert.That(result == null || !result.valid, Is.True);
         }
+
+        [Test]
+        public void UpdateMatchEmptiesTheDeathTile () {
+            Match match = MakeMatch();
+            MatchData before = match.CreateMatchData();
+            DeathjumpWithChecker(match);
+            match.CommitTurn();
+
+            match.UpdateMatch(before);
+
+            Board board = match._GetCommittedBoard();
+            Assert.That(board.IsOccupied(board.GetTile(DeathTileId)), Is.False);
+        }
     }
 }
