@@ -1,3 +1,4 @@
+using System;
 using NUnit.Framework;
 
 namespace ChessersEngine.Tests {
@@ -32,6 +33,44 @@ namespace ChessersEngine.Tests {
             Assert.That(rook.hasMoved, Is.False, "the castling rook's hasMoved must be restored too");
             Assert.That(king.GetUnderlyingTile().id, Is.EqualTo(4), "king back on e1");
             Assert.That(rook.GetUnderlyingTile().id, Is.EqualTo(7), "rook back on h1");
+        }
+
+        static void AssertUndoCastleThrowsWhenRookReplacedBy (int replacementId) {
+            MatchData md = TestScenarios.CastlingWhite();
+            md.pieces.Add(TestScenarios.CreateWhiteQueen(3));
+            md.pieces.Add(TestScenarios.CreateRook(Constants.ID_BLACK_ROOK_1, 56));
+            Match match = new Match(md);
+            Board board = match._GetPendingBoard();
+
+            MoveResult mr = board.MoveChessman(new MoveAttempt {
+                playerId = Constants.DEFAULT_WHITE_PLAYER_ID,
+                pieceId = Constants.ID_WHITE_KING,
+                tileId = 6,
+            });
+            Assert.That(mr.isCastle, Is.True);
+
+            Tile rookTile = board.GetTile(5);
+            Chessman replacement = board.GetChessman(replacementId);
+            rookTile.RemovePiece();
+            replacement.GetUnderlyingTile()?.RemovePiece();
+            rookTile.SetPiece(replacement);
+            replacement.SetUnderlyingTile(rookTile);
+
+            Assert.Throws<InvalidOperationException>(() => board.UndoMove(mr));
+
+            Chessman king = board.GetChessman(Constants.ID_WHITE_KING);
+            Assert.That(king.GetUnderlyingTile().id, Is.EqualTo(6), "king stays on g1");
+            Assert.That(rookTile.GetPiece().id, Is.EqualTo(replacementId), "f1 keeps the replacement");
+        }
+
+        [Test]
+        public void UndoCastle_WithQueenOnRookTile_Throws () {
+            AssertUndoCastleThrowsWhenRookReplacedBy(Constants.ID_WHITE_QUEEN);
+        }
+
+        [Test]
+        public void UndoCastle_WithOpponentRookOnRookTile_Throws () {
+            AssertUndoCastleThrowsWhenRookReplacedBy(Constants.ID_BLACK_ROOK_1);
         }
     }
 }

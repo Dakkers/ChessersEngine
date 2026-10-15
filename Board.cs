@@ -1289,10 +1289,10 @@ namespace ChessersEngine {
                     if (
                         rookChessman == null ||
                         !rookChessman.isActive ||
+                        !rookChessman.IsRook() ||
+                        !rookChessman.IsSameColor(kingChessman) ||
                         rookChessman.hasMoved
                     ) {
-                        // `hasMoved` is a sufficient check to determine if the piece on this tile
-                        // is actually a rook.
                         continue;
                     }
 
@@ -1520,11 +1520,40 @@ namespace ChessersEngine {
             return result.moveResult;
         }
 
+        /// <summary>
+        /// Returns the tiles the castling rook moved from and to.
+        /// </summary>
+        Tile[] GetCastleRookTiles (Tile kingFromTile, Tile kingToTile) {
+            int row = GetRow(kingToTile);
+            int toCol = GetColumn(kingToTile);
+            int colDelta = toCol - GetColumn(kingFromTile);
+            int rookToCol = colDelta > 0 ? (toCol - 1) : (toCol + 1);
+
+            Tile rookToTile = GetTileByRowColumn(row, rookToCol);
+            Tile rookFromTile = colDelta > 0 ? GetRightmostTileOfRow(row) : GetLeftmostTileOfRow(row);
+            return new Tile[] { rookFromTile, rookToTile };
+        }
+
+        /// <summary>
+        /// Reverses the move described by the result.
+        /// The result MUST describe the last move made on this board.
+        /// It throws <see cref="InvalidOperationException"/> and leaves the board untouched
+        /// when the result is a castle and no rook of the king's color is on its castled tile.
+        /// </summary>
         public void UndoMove (MoveResult moveResult) {
             EngineCounters.MoveUndo();
             Chessman movedChessman = GetChessman(moveResult.pieceId);
             Tile fromTile = GetTile(moveResult.fromTileId);
             Tile toTile = GetTile(moveResult.tileId);
+
+            if (moveResult.isCastle) {
+                Tile castledRookTile = GetCastleRookTiles(fromTile, toTile)[1];
+                Chessman castledRook = castledRookTile.GetPiece();
+                if (castledRook == null || !castledRook.IsRook() || !castledRook.IsSameColor(movedChessman)) {
+                    throw new InvalidOperationException(
+                        "Cannot undo castle: no rook on tile " + castledRookTile.id + ".");
+                }
+            }
 
             movedChessman.SetActive(true);
             toTile.RemovePiece();
