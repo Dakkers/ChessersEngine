@@ -57,5 +57,42 @@ namespace ChessersEngine.Tests {
             Assert.That(board.IsOccupied(board.GetTile(4)), Is.False, "e1 stays empty");
             Assert.That(king.hasMoved, Is.True, "king hasMoved is not reset");
         }
+
+        static void AssertUndoCastleThrowsWhenRookReplacedBy (int replacementId) {
+            MatchData md = TestScenarios.CastlingWhite();
+            md.pieces.Add(TestScenarios.CreateWhiteQueen(3));
+            md.pieces.Add(TestScenarios.CreateRook(Constants.ID_BLACK_ROOK_1, 56));
+            Match match = new Match(md);
+            Board board = match._GetPendingBoard();
+
+            MoveResult mr = board.MoveChessman(new MoveAttempt {
+                playerId = Constants.DEFAULT_WHITE_PLAYER_ID,
+                pieceId = Constants.ID_WHITE_KING,
+                tileId = 6,
+            });
+            Assert.That(mr.isCastle, Is.True);
+
+            Tile rookTile = board.GetTile(5);
+            Chessman replacement = board.GetChessman(replacementId);
+            board.Clear(rookTile);
+            board.Clear(board.TileOf(replacement));
+            board.Place(replacement, rookTile);
+
+            Assert.Throws<InvalidOperationException>(() => board.UndoMove(mr));
+
+            Chessman king = board.GetChessman(Constants.ID_WHITE_KING);
+            Assert.That(board.TileOf(king).id, Is.EqualTo(6), "king stays on g1");
+            Assert.That(board.PieceAt(rookTile).id, Is.EqualTo(replacementId), "f1 keeps the replacement");
+        }
+
+        [Test]
+        public void UndoCastle_WithQueenOnRookTile_Throws () {
+            AssertUndoCastleThrowsWhenRookReplacedBy(Constants.ID_WHITE_QUEEN);
+        }
+
+        [Test]
+        public void UndoCastle_WithOpponentRookOnRookTile_Throws () {
+            AssertUndoCastleThrowsWhenRookReplacedBy(Constants.ID_BLACK_ROOK_1);
+        }
     }
 }

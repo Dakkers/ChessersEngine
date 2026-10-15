@@ -1309,10 +1309,10 @@ namespace ChessersEngine {
                     if (
                         rookChessman == null ||
                         !rookChessman.isActive ||
+                        !rookChessman.IsRook() ||
+                        !rookChessman.IsSameColor(kingChessman) ||
                         rookChessman.hasMoved
                     ) {
-                        // `hasMoved` is a sufficient check to determine if the piece on this tile
-                        // is actually a rook.
                         continue;
                     }
 
@@ -1557,7 +1557,7 @@ namespace ChessersEngine {
         /// Reverses the move described by the result.
         /// The result MUST describe the last move made on this board.
         /// It throws <see cref="InvalidOperationException"/> and leaves the board untouched
-        /// when the result is a castle and the rook is not on its castled tile.
+        /// when the result is a castle and no rook of the king's color is on its castled tile.
         /// A rejected undo MUST NOT be counted in <see cref="EngineCounters"/>.
         /// </summary>
         public void UndoMove (MoveResult moveResult) {
@@ -1569,7 +1569,8 @@ namespace ChessersEngine {
             if (moveResult.isCastle) {
                 castleRookTiles = GetCastleRookTiles(fromTile, toTile);
                 Tile castledRookTile = castleRookTiles[1];
-                if (!IsOccupied(castledRookTile)) {
+                Chessman castledRook = PieceAt(castledRookTile);
+                if (castledRook == null || !castledRook.IsRook() || !castledRook.IsSameColor(movedChessman)) {
                     throw new InvalidOperationException(
                         "Cannot undo castle: no rook on tile " + castledRookTile.id + ".");
                 }

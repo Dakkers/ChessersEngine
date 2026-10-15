@@ -104,5 +104,17 @@ namespace ChessersEngine.Tests {
             Assert.That(OccupancySnapshot(board), Is.EqualTo(before));
             Assert.That(board.TileOf(whiteKing).id, Is.EqualTo(4));
         }
+
+        [Test]
+        public void CannotCastleWithUnmovedQueenOnRookTile () {
+            Match match = MakeMatch(new List<ChessmanSchema> {
+                TestScenarios.CreateWhiteKing(4),
+                TestScenarios.CreateWhiteQueen(7),
+                TestScenarios.CreateBlackKing(60),
+            });
+
+            Assert.That(WhiteKingValidTiles(match), Does.Not.Contain(6),
+                "an unmoved queen on h1 is not a rook and must not enable castling");
+        }
     }
 }
