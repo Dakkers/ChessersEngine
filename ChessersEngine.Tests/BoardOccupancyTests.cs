@@ -130,5 +130,34 @@ namespace ChessersEngine.Tests {
 
             Assert.That(board.IsOccupied(tile), Is.False);
         }
+
+        [Test]
+        public void DeathjumpLeavesTheInactiveChessmanOnItsDeathjumpTile () {
+            MatchData md = TestScenarios.DeathJump1();
+            Match match = new Match(md);
+            Board board = match._GetPendingBoard();
+            Chessman queen = board.GetChessman(md.pieces[1].id);
+            Tile fromTile = board.TileOf(queen);
+
+            Tile deathTile = null;
+            foreach (Tile tile in board.GetValidTilesForMovement(queen, false)) {
+                if (tile.IsDeathjumpTile()) {
+                    deathTile = tile;
+                    break;
+                }
+            }
+            Assert.That(deathTile, Is.Not.Null, "scenario offers a deathjump");
+
+            match.MoveChessman(new MoveAttempt {
+                pieceId = queen.id,
+                tileId = deathTile.id,
+                playerId = Constants.DEFAULT_WHITE_PLAYER_ID,
+            });
+
+            Assert.That(board.PieceAt(deathTile), Is.SameAs(queen));
+            Assert.That(queen.isActive, Is.False);
+            Assert.That(board.TileOf(queen), Is.Null);
+            Assert.That(board.IsOccupied(fromTile), Is.False);
+        }
     }
 }
