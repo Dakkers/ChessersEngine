@@ -79,6 +79,8 @@ namespace ChessersEngine {
 
         /// <summary>
         /// Returns the tile the chessman stands on, or null if the chessman is inactive.
+        /// The result follows the chessman's own location, not the tile's occupant.
+        /// It MAY name a tile that <see cref="Clear"/> has emptied.
         /// </summary>
         public Tile TileOf (Chessman chessman) {
             AssertOwns(chessman);
@@ -102,6 +104,7 @@ namespace ChessersEngine {
 
         /// <summary>
         /// Empties the tile. The chessman that stood there keeps its own location.
+        /// <see cref="TileOf"/> still returns this tile for that chessman until it is placed or deactivated.
         /// </summary>
         public void Clear (Tile tile) {
             AssertOwns(tile);
