@@ -1558,20 +1558,24 @@ namespace ChessersEngine {
         /// The result MUST describe the last move made on this board.
         /// It throws <see cref="InvalidOperationException"/> and leaves the board untouched
         /// when the result is a castle and the rook is not on its castled tile.
+        /// A rejected undo MUST NOT be counted in <see cref="EngineCounters"/>.
         /// </summary>
         public void UndoMove (MoveResult moveResult) {
-            EngineCounters.MoveUndo();
             Chessman movedChessman = GetChessman(moveResult.pieceId);
             Tile fromTile = GetTile(moveResult.fromTileId);
             Tile toTile = GetTile(moveResult.tileId);
 
+            Tile[] castleRookTiles = null;
             if (moveResult.isCastle) {
-                Tile castledRookTile = GetCastleRookTiles(fromTile, toTile)[1];
+                castleRookTiles = GetCastleRookTiles(fromTile, toTile);
+                Tile castledRookTile = castleRookTiles[1];
                 if (!IsOccupied(castledRookTile)) {
                     throw new InvalidOperationException(
                         "Cannot undo castle: no rook on tile " + castledRookTile.id + ".");
                 }
             }
+
+            EngineCounters.MoveUndo();
 
             movedChessman.SetActive(true);
             Clear(toTile);
@@ -1611,9 +1615,8 @@ namespace ChessersEngine {
             }
 
             if (moveResult.isCastle) {
-                Tile[] rookTiles = GetCastleRookTiles(fromTile, toTile);
-                Tile rookFromTile = rookTiles[0];
-                Tile rookToTile = rookTiles[1];
+                Tile rookFromTile = castleRookTiles[0];
+                Tile rookToTile = castleRookTiles[1];
                 Chessman rookChessman = PieceAt(rookToTile);
                 Clear(rookToTile);
 
