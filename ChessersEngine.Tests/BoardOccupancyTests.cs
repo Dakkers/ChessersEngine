@@ -111,6 +111,8 @@ namespace ChessersEngine.Tests {
             Chessman second = board.GetChessman(Constants.ID_WHITE_PAWN_2);
             Tile firstTile = board.GetTile(FromTileId);
 
+            board.Clear(firstTile);
+            board.Clear(board.GetTile(ToTileId));
             board.Place(second, firstTile);
             board.Deactivate(first);
 

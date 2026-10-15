@@ -86,8 +86,10 @@ namespace ChessersEngine {
         /// It does not empty the tile the chessman came from.
         /// Callers MUST <see cref="Clear"/> the from-tile themselves.
         /// The chessman and the tile MUST belong to this board.
+        /// The tile MUST be empty or already hold the chessman.
         /// </summary>
         public void Place (Chessman chessman, Tile tile) {
+            System.Diagnostics.Debug.Assert(!IsOccupied(tile) || PieceAt(tile) == chessman, "Place target tile is held by a different chessman.");
             tile.SetPiece(chessman);
             chessman.SetUnderlyingTile(tile);
         }
