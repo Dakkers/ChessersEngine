@@ -1289,10 +1289,10 @@ namespace ChessersEngine {
                     if (
                         rookChessman == null ||
                         !rookChessman.isActive ||
+                        !rookChessman.IsRook() ||
+                        !rookChessman.IsSameColor(kingChessman) ||
                         rookChessman.hasMoved
                     ) {
-                        // `hasMoved` is a sufficient check to determine if the piece on this tile
-                        // is actually a rook.
                         continue;
                     }
 

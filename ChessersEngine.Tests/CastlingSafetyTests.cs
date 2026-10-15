@@ -71,5 +71,17 @@ namespace ChessersEngine.Tests {
             Assert.That(WhiteKingValidTiles(match), Does.Contain(2),
                 "queenside castle is legal; b1 being attacked is irrelevant (king never crosses it)");
         }
+
+        [Test]
+        public void CannotCastleWithUnmovedQueenOnRookTile () {
+            Match match = MakeMatch(new List<ChessmanSchema> {
+                TestScenarios.CreateWhiteKing(4),
+                TestScenarios.CreateWhiteQueen(7),
+                TestScenarios.CreateBlackKing(60),
+            });
+
+            Assert.That(WhiteKingValidTiles(match), Does.Not.Contain(6),
+                "an unmoved queen on h1 is not a rook and must not enable castling");
+        }
     }
 }
