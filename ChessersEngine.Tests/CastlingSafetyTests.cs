@@ -74,7 +74,7 @@ namespace ChessersEngine.Tests {
 
         static List<string> OccupancySnapshot (Board board) {
             List<string> snapshot = new List<string>();
-            for (int id = 0; id < 64; id++) {
+            for (int id = Constants.MIN_TILE_ID; id < Constants.MIN_TILE_ID + Constants.NUM_TILES; id++) {
                 Tile tile = board.GetTile(id);
                 Chessman occupant = board.PieceAt(tile);
                 snapshot.Add($"tile {id}: occupied={board.IsOccupied(tile)} piece={(occupant == null ? -1 : occupant.id)}");
