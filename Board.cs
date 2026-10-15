@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace ChessersEngine {
@@ -57,6 +58,92 @@ namespace ChessersEngine {
             }
             return null;
         }
+
+        #region Occupancy
+
+        /// <summary>
+        /// Returns the chessman occupying the tile, or null if the tile is empty.
+        /// </summary>
+        public Chessman PieceAt (Tile tile) {
+            AssertOwns(tile);
+            return tile.GetPiece();
+        }
+
+        /// <summary>
+        /// Returns whether any chessman occupies the tile.
+        /// </summary>
+        public bool IsOccupied (Tile tile) {
+            AssertOwns(tile);
+            return tile.IsOccupied();
+        }
+
+        /// <summary>
+        /// Returns the tile the chessman stands on, or null if the chessman is inactive.
+        /// The result follows the chessman's own location, not the tile's occupant.
+        /// It MAY name a tile that <see cref="Clear"/> has emptied.
+        /// </summary>
+        public Tile TileOf (Chessman chessman) {
+            AssertOwns(chessman);
+            return chessman.isActive ? chessman.GetUnderlyingTile() : null;
+        }
+
+        /// <summary>
+        /// Puts the chessman on the tile and sets its location to the tile.
+        /// It does not empty the tile the chessman came from.
+        /// Callers MUST <see cref="Clear"/> the from-tile themselves.
+        /// The chessman and the tile MUST belong to this board.
+        /// The tile MUST be empty or already hold the chessman.
+        /// </summary>
+        public void Place (Chessman chessman, Tile tile) {
+            AssertOwns(chessman);
+            AssertOwns(tile);
+            Debug.Assert(!IsOccupied(tile) || PieceAt(tile) == chessman, "Place target tile is held by a different chessman.");
+            tile.SetPiece(chessman);
+            chessman.SetUnderlyingTile(tile);
+        }
+
+        /// <summary>
+        /// Empties the tile. The chessman that stood there keeps its own location.
+        /// <see cref="TileOf"/> still returns this tile for that chessman until it is placed or deactivated.
+        /// </summary>
+        public void Clear (Tile tile) {
+            AssertOwns(tile);
+            tile.RemovePiece();
+        }
+
+        /// <summary>
+        /// Takes the chessman out of play.
+        /// It frees its tile only if the chessman still occupies it.
+        /// A tile held by another chessman MUST be left alone.
+        /// The chessman MUST belong to this board.
+        /// </summary>
+        public void Deactivate (Chessman chessman) {
+            AssertOwns(chessman);
+            chessman.Deactivate();
+        }
+
+        /// <summary>
+        /// Sets the occupant of the tile and leaves the chessman's location unchanged.
+        /// It exists for the deathjump case, where an inactive chessman stays on its deathjump tile.
+        /// The chessman and the tile MUST belong to this board.
+        /// </summary>
+        internal void SetOccupant (Tile tile, Chessman chessman) {
+            AssertOwns(tile);
+            AssertOwns(chessman);
+            tile.SetPiece(chessman);
+        }
+
+        [Conditional("DEBUG")]
+        void AssertOwns (Tile tile) {
+            Debug.Assert(tile != null && GetTileIfExists(tile.id) == tile, "Tile does not belong to this board.");
+        }
+
+        [Conditional("DEBUG")]
+        void AssertOwns (Chessman chessman) {
+            Debug.Assert(chessman != null && GetChessmanIfExists(chessman.id) == chessman, "Chessman does not belong to this board.");
+        }
+
+        #endregion
 
         public void CopyState (Board otherBoard) {
             EngineCounters.CopyState();
