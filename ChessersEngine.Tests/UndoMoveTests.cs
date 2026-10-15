@@ -52,9 +52,9 @@ namespace ChessersEngine.Tests {
             Assert.Throws<InvalidOperationException>(() => board.UndoMove(mr));
 
             Chessman king = board.GetChessman(Constants.ID_WHITE_KING);
-            Assert.That(king.GetUnderlyingTile().id, Is.EqualTo(6), "king stays on g1");
-            Assert.That(board.GetTile(6).GetPiece(), Is.SameAs(king), "g1 still holds the king");
-            Assert.That(board.GetTile(4).IsOccupied(), Is.False, "e1 stays empty");
+            Assert.That(board.TileOf(king).id, Is.EqualTo(6), "king stays on g1");
+            Assert.That(board.PieceAt(board.GetTile(6)), Is.SameAs(king), "g1 still holds the king");
+            Assert.That(board.IsOccupied(board.GetTile(4)), Is.False, "e1 stays empty");
             Assert.That(king.hasMoved, Is.True, "king hasMoved is not reset");
         }
     }
