@@ -33,12 +33,11 @@ namespace ChessersEngine {
 
             foreach (ChessmanSchema cs in pieces) {
                 Chessman newChessman = Chessman.CreateFromSchema(cs);
+                chessmen[newChessman.id] = newChessman;
+                chessmenInOrder.Add(newChessman);
                 if (newChessman.isActive) {
                     Place(newChessman, GetTile(cs.location));
                 }
-
-                chessmen[newChessman.id] = newChessman;
-                chessmenInOrder.Add(newChessman);
             }
         }
 
