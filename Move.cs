@@ -217,7 +217,7 @@ namespace ChessersEngine {
                         result.Add(new List<int>(currentPath) { capturableTile.id });
                     }
 
-                    if (board.CanChessmanBeCaptured(board.PieceAt(tile)).Count > 0) {
+                    if (capturableTiles.Count > 0) {
                         result.Add(new List<int>(currentPath));
                     }
                 }
