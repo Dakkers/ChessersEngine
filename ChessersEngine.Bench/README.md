@@ -98,13 +98,14 @@ A Rust port MUST increment at semantically equivalent points, behind a
 | `moveGen`       | every return of `Board.GetPotentialTilesForMovement` | call |
 | `tilesProduced` | same site, by the returned list's length          | tile     |
 | `boardClones`   | `Board.CreateCopy`                                | call     |
-| `copyStates`    | `Board.CopyState`                                 | call     |
+| `copyStates`    | `Board.Assign`                                    | call     |
 | `moveApplies`   | `Move.GetPseudoLegalMoveResult`                   | call     |
 | `moveUndos`     | `Board.UndoMove`                                  | call     |
 | `evals`         | `Board.CalculateBoardValue`                       | call     |
 
-`CreateCopy` calls `CopyState`, so `copyStates >= boardClones` always holds. That
-relationship is part of the contract, not an accident of the current code.
+`boardClones` counts fresh copies; `copyStates` counts in-place overwrites of an
+existing board (Rust: `*board = other.clone()`). `CreateCopy` does not call
+`Assign`, so the two counters are independent.
 
 Counters stay live during the timed runs — there is one build, not two. Rather
 than assume that is free, the suite includes a `counter.overhead` workload that
@@ -150,7 +151,7 @@ bench MUST time exactly these bodies, with everything else done in untimed setup
 | `movegen.potential` | `board.GetActiveChessmen()` — **inside** the timed region — then one `GetPotentialTilesForMovement` per returned piece. |
 | `movegen.valid` | the same, with `GetValidTilesForMovement`. |
 | `board.clone` | one `board.CreateCopy()`. |
-| `board.copystate` | one `target.CopyState(board)`, where `target` is a clone built once during setup. |
+| `board.copystate` | one `target.Assign(board)`, where `target` is a clone built once during setup. |
 | `board.apply-undo` | construct a `Move`, call `GetPseudoLegalMoveResult()`, then `board.UndoMove(result)`. |
 | `eval.boardvalue` | one `board.CalculateBoardValue(0)`. |
 | `notation.create` | one `result.CreateNotation()` on a `MoveResult` produced during setup. |

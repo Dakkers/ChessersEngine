@@ -49,7 +49,7 @@
     {
       "id": "board.copystate.opening",
       "layer": "micro",
-      "description": "Board.CopyState onto a pre-built board.",
+      "description": "Board.Assign onto a pre-built board.",
       "fixture": null,
       "warmup": 100,
       "measured": 2000,
