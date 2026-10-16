@@ -627,11 +627,8 @@ namespace ChessersEngine {
         #endregion
 
         public void UpdateMatch (MatchData newMatchData) {
+            committedBoard.ClearAll();
             foreach (var pair in GetAllCommittedChessmen()) {
-                Tile tile = committedBoard.TileOf(pair.Value);
-                if (tile != null) {
-                    committedBoard.Clear(tile);
-                }
                 pair.Value.RemoveUnderlyingTileReference();
             }
 
