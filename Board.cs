@@ -188,20 +188,18 @@ namespace ChessersEngine {
 
         #endregion
 
-        public void CopyState (Board otherBoard) {
+        /// <summary>
+        /// Overwrites this board's state with the source board's state.
+        /// Chessman and tile objects of this board keep their identity.
+        /// The source MUST hold the same chessman ids as this board.
+        /// </summary>
+        public void Assign (Board source) {
             EngineCounters.CopyState();
-            this.matchConfig = otherBoard.matchConfig;
-
-            // Update the states of the Chessmen
-            foreach (Chessman entry in chessmenInOrder) {
-                int chessmanId = entry.id;
-                Chessman otherChessman = otherBoard.GetChessman(chessmanId);
-                Chessman chessman = GetChessman(chessmanId);
-
-                chessman.CopyFrom(otherChessman);
+            matchConfig = source.matchConfig;
+            foreach (Chessman chessman in chessmenInOrder) {
+                chessman.CopyFrom(source.chessmen[chessman.id]);
             }
-
-            Array.Copy(otherBoard.occupantIds, occupantIds, occupantIds.Length);
+            Array.Copy(source.occupantIds, occupantIds, occupantIds.Length);
         }
 
         /// <summary>
@@ -1567,7 +1565,7 @@ namespace ChessersEngine {
             }
 
             result.moveResult.playerId = moveAttempt.playerId;
-            this.CopyState(result.modifiedBoard);
+            Assign(result.modifiedBoard);
 
             return result.moveResult;
         }

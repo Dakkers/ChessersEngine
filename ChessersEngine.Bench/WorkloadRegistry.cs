@@ -141,7 +141,7 @@ namespace ChessersEngine.Bench {
         static Action BuildBoardCopyState (WorkloadSpec spec) {
             Board board = FixtureBoard(spec);
             Board target = board.CreateCopy();
-            return () => target.CopyState(board);
+            return () => target.Assign(board);
         }
 
         static Action BuildApplyUndo (WorkloadSpec spec) {
