@@ -707,10 +707,6 @@ namespace ChessersEngine {
                 if (chessmanToRemove.IsKing()) {
                     moveResult.isWinningMove = true;
                 }
-
-                if (moveResult.WasPieceJumped()) {
-                    board.Clear(board.GetTile(moveResult.jumpedTileId));
-                }
             }
 
             // -- Actually move piece
