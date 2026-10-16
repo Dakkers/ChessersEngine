@@ -123,9 +123,9 @@ namespace ChessersEngine.Tests {
                 else seen[ut.id] = c.id;
             }
             for (int id = 0; id < 64; id++) {
-                Tile t = b.GetTile(id);
-                if (b.IsOccupied(t) && !b.PieceAt(t).isActive)
-                    fail($"real tile {id} holds inactive piece {b.PieceAt(t).id}");
+                Chessman p = b.PieceAt(b.GetTile(id));
+                if (p != null && !p.isActive)
+                    fail($"real tile {id} holds inactive piece {p.id}");
             }
         }
 
