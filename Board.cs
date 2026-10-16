@@ -1522,6 +1522,15 @@ namespace ChessersEngine {
         #region Movements
 
         public MoveResult MoveChessman (MoveAttempt moveAttempt, bool jumpsOnly = false) {
+            Chessman movingChessman = GetChessman(moveAttempt.pieceId);
+            if (movingChessman == null || TileOf(movingChessman) == null) {
+                return new MoveResult {
+                    pieceId = moveAttempt.pieceId,
+                    tileId = moveAttempt.tileId,
+                    valid = false,
+                };
+            }
+
             Board boardCopy = CreateCopy();
 
             // This is a "real" move being committed, so its turn-change decision must consider

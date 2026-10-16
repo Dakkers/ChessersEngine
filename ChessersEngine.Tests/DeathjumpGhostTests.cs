@@ -93,5 +93,20 @@ namespace ChessersEngine.Tests {
             Assert.That(board.IsOccupied(board.GetTile(EnemyTileId)), Is.False);
             Assert.That(enemy.isActive, Is.False);
         }
+
+        [Test]
+        public void MovingAnInactivePieceIsRejectedWithoutThrowing () {
+            Match match = MakeMatch();
+            match._GetPendingBoard().GetChessman(Constants.ID_WHITE_PAWN_1).Deactivate();
+
+            MoveResult result = null;
+            Assert.DoesNotThrow(() => result = match.MoveChessman(new MoveAttempt {
+                playerId = Constants.DEFAULT_WHITE_PLAYER_ID,
+                pieceId = Constants.ID_WHITE_PAWN_1,
+                tileId = CheckerFromTileId + 8,
+            }));
+
+            Assert.That(result == null || !result.valid, Is.True);
+        }
     }
 }
