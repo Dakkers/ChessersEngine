@@ -27,10 +27,10 @@ namespace ChessersEngine {
             leftDiagonalDelta = numRealColumns + 1;
 
             for (int i = Constants.MIN_TILE_ID; i < Constants.MIN_TILE_ID + Constants.NUM_TILES; i++) {
-                tiles[i - Constants.MIN_TILE_ID] = new Tile {
+                tiles[IndexOf(i)] = new Tile {
                     id = i
                 };
-                occupantIds[i - Constants.MIN_TILE_ID] = Constants.NO_PIECE;
+                occupantIds[IndexOf(i)] = Constants.NO_PIECE;
             }
 
             foreach (ChessmanSchema cs in pieces) {
@@ -65,7 +65,7 @@ namespace ChessersEngine {
         /// </summary>
         public Chessman PieceAt (Tile tile) {
             AssertOwns(tile);
-            int occupantId = occupantIds[tile.id - Constants.MIN_TILE_ID];
+            int occupantId = occupantIds[IndexOf(tile.id)];
             return occupantId == Constants.NO_PIECE ? null : chessmen[occupantId];
         }
 
@@ -83,7 +83,7 @@ namespace ChessersEngine {
         /// </summary>
         public bool IsOccupied (Tile tile) {
             AssertOwns(tile);
-            return occupantIds[tile.id - Constants.MIN_TILE_ID] != Constants.NO_PIECE;
+            return occupantIds[IndexOf(tile.id)] != Constants.NO_PIECE;
         }
 
         /// <summary>
@@ -107,7 +107,7 @@ namespace ChessersEngine {
             AssertOwns(chessman);
             AssertOwns(tile);
             Debug.Assert(!IsOccupied(tile) || PieceAt(tile) == chessman, "Place target tile is held by a different chessman.");
-            occupantIds[tile.id - Constants.MIN_TILE_ID] = chessman.id;
+            occupantIds[IndexOf(tile.id)] = chessman.id;
             chessman.location = tile.id;
         }
 
@@ -117,7 +117,7 @@ namespace ChessersEngine {
         /// </summary>
         public void Clear (Tile tile) {
             AssertOwns(tile);
-            occupantIds[tile.id - Constants.MIN_TILE_ID] = Constants.NO_PIECE;
+            occupantIds[IndexOf(tile.id)] = Constants.NO_PIECE;
         }
 
         /// <summary>
@@ -137,7 +137,7 @@ namespace ChessersEngine {
         public void Deactivate (Chessman chessman) {
             AssertOwns(chessman);
             if (chessman.isActive) {
-                int index = chessman.location - Constants.MIN_TILE_ID;
+                int index = IndexOf(chessman.location);
                 if (occupantIds[index] == chessman.id) {
                     occupantIds[index] = Constants.NO_PIECE;
                 }
@@ -153,7 +153,7 @@ namespace ChessersEngine {
         internal void SetOccupant (Tile tile, Chessman chessman) {
             AssertOwns(tile);
             AssertOwns(chessman);
-            occupantIds[tile.id - Constants.MIN_TILE_ID] = chessman.id;
+            occupantIds[IndexOf(tile.id)] = chessman.id;
         }
 
         [Conditional("DEBUG")]
@@ -284,12 +284,19 @@ namespace ChessersEngine {
 
         #region Tile-getters
 
+        /// <summary>
+        /// Returns the arena index of the tile id.
+        /// </summary>
+        static int IndexOf (int tileId) {
+            return tileId - Constants.MIN_TILE_ID;
+        }
+
         public Tile GetTile (int id) {
-            return tiles[id - Constants.MIN_TILE_ID];
+            return tiles[IndexOf(id)];
         }
 
         public Tile GetTileIfExists (int id) {
-            int index = id - Constants.MIN_TILE_ID;
+            int index = IndexOf(id);
             if (index >= 0 && index < tiles.Length) {
                 return tiles[index];
             }
