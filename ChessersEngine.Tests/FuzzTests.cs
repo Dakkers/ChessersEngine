@@ -14,7 +14,8 @@ namespace ChessersEngine.Tests {
     ///   - no move / commit / legal-generation ever throws;
     ///   - MoveChessman followed by UndoMove restores the board (real-board state);
     ///   - board consistency: active piece &lt;-&gt; tile agree, no two pieces share a tile, no inactive
-    ///     piece sits on a live (real) tile, no active occupant of a tile disagrees about its location;
+    ///     piece sits on a live (real) tile, no active occupant of any tile (deathjump included)
+    ///     disagrees about its location;
     ///   - every move offered by GetValidTilesForMovement is actually playable (valid);
     ///   - if the player to move has no legal move, the game must be over;
     ///   - notation round-trip: CreateNotation parsed back recovers piece id, from/to tiles, promotion;
@@ -120,12 +121,13 @@ namespace ChessersEngine.Tests {
                 if (seen.TryGetValue(ut.id, out int other)) fail($"tile {ut.id} shared by pieces {other} and {c.id}");
                 else seen[ut.id] = c.id;
             }
-            for (int id = 0; id < 64; id++) {
+            for (int id = Constants.MIN_TILE_ID; id < Constants.MIN_TILE_ID + Constants.NUM_TILES; id++) {
                 Tile t = b.GetTile(id);
                 if (!b.IsOccupied(t)) continue;
                 Chessman occupant = b.PieceAt(t);
-                if (!occupant.isActive) fail($"real tile {id} holds inactive piece {occupant.id}");
-                else if (occupant.location != id) fail($"real tile {id} holds piece {occupant.id} at location {occupant.location}");
+                if (!occupant.isActive) {
+                    if (!t.IsDeathjumpTile()) fail($"real tile {id} holds inactive piece {occupant.id}");
+                } else if (occupant.location != id) fail($"tile {id} holds piece {occupant.id} at location {occupant.location}");
             }
         }
 
