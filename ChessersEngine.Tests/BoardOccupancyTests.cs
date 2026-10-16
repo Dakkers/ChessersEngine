@@ -41,6 +41,29 @@ namespace ChessersEngine.Tests {
         }
 
         [Test]
+        public void PieceAtIfExistsReturnsTheOccupant () {
+            Board board = MakeBoardWithTwoPawns();
+            Chessman pawn = board.GetChessman(Constants.ID_WHITE_PAWN_1);
+
+            Assert.That(board.PieceAtIfExists(FromTileId), Is.SameAs(pawn));
+        }
+
+        [Test]
+        public void PieceAtIfExistsReturnsNullForAnEmptyTile () {
+            Board board = MakeBoardWithTwoPawns();
+
+            Assert.That(board.PieceAtIfExists(EmptyTileId), Is.Null);
+        }
+
+        [Test]
+        public void PieceAtIfExistsReturnsNullForAnIdWithNoTile () {
+            Board board = MakeBoardWithTwoPawns();
+
+            Assert.That(board.PieceAtIfExists(-1), Is.Null);
+            Assert.That(board.PieceAtIfExists(64), Is.Null);
+        }
+
+        [Test]
         public void IsOccupiedIsTrueForAnOccupiedTile () {
             Board board = MakeBoardWithTwoPawns();
 

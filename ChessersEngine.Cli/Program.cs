@@ -467,8 +467,7 @@ namespace ChessersEngine.Cli {
 
                 Chessman piece;
                 if (hasFrom) {
-                    Tile fromTileObj = board.GetTileIfExists(fromTile);
-                    piece = fromTileObj != null ? board.PieceAt(fromTileObj) : null;
+                    piece = board.PieceAtIfExists(fromTile);
                     if (piece == null) {
                         Console.WriteLine($"  No piece on {BoardRenderer.TileToSquare(fromTile)}.");
                         continue;
@@ -703,8 +702,7 @@ namespace ChessersEngine.Cli {
                 Console.WriteLine($"  '{squareTok}' is not a valid square.");
                 return;
             }
-            Tile pieceTile = board.GetTileIfExists(tileId);
-            Chessman piece = pieceTile != null ? board.PieceAt(pieceTile) : null;
+            Chessman piece = board.PieceAtIfExists(tileId);
             if (piece == null) {
                 Console.WriteLine($"  No piece on {BoardRenderer.TileToSquare(tileId)}.");
                 return;

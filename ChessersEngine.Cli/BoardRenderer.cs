@@ -104,8 +104,7 @@ namespace ChessersEngine.Cli {
                 int rank = row + 1;
                 sb.Append(Line($" {rank}  ")).Append(bar);
                 for (int col = 0; col < 8; col++) {
-                    Tile tile = board.GetTile((row * 8) + col);
-                    Chessman piece = tile != null ? board.PieceAt(tile) : null;
+                    Chessman piece = board.PieceAtIfExists((row * 8) + col);
                     sb.Append(piece != null ? PieceCell(piece) : EmptyCell(row, col));
                     sb.Append(bar);
                 }

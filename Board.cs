@@ -67,6 +67,15 @@ namespace ChessersEngine {
         }
 
         /// <summary>
+        /// Returns the chessman occupying the tile with the given id.
+        /// Returns null if no such tile exists or the tile is empty.
+        /// </summary>
+        public Chessman PieceAtIfExists (int tileId) {
+            Tile tile = GetTileIfExists(tileId);
+            return tile != null ? tile.GetPiece() : null;
+        }
+
+        /// <summary>
         /// Returns whether any chessman occupies the tile.
         /// </summary>
         public bool IsOccupied (Tile tile) {
