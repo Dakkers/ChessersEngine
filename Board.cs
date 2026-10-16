@@ -43,6 +43,26 @@ namespace ChessersEngine {
             }
         }
 
+        Board (Board other) {
+            id = other.id;
+            matchConfig = other.matchConfig;
+            rightDiagonalDelta = other.rightDiagonalDelta;
+            leftDiagonalDelta = other.leftDiagonalDelta;
+
+            for (int i = 0; i < tiles.Length; i++) {
+                tiles[i] = new Tile {
+                    id = other.tiles[i].id
+                };
+            }
+            Array.Copy(other.occupantIds, occupantIds, occupantIds.Length);
+
+            foreach (Chessman otherChessman in other.chessmenInOrder) {
+                Chessman chessman = otherChessman.Clone();
+                chessmen[chessman.id] = chessman;
+                chessmenInOrder.Add(chessman);
+            }
+        }
+
         public List<ChessmanSchema> GetChessmanSchemas () {
             return chessmenInOrder.Select((c) => c.CreateSchema()).ToList();
         }
@@ -184,11 +204,13 @@ namespace ChessersEngine {
             Array.Copy(otherBoard.occupantIds, occupantIds, occupantIds.Length);
         }
 
-        public Board CreateCopy (List<ChessmanSchema> _pieces = null) {
+        /// <summary>
+        /// Returns an independent board with the same state.
+        /// Changes to either board MUST NOT affect the other.
+        /// </summary>
+        public Board CreateCopy () {
             EngineCounters.BoardClone();
-            Board otherBoard = new Board(_pieces ?? this.GetChessmanSchemas(), this.matchConfig);
-            otherBoard.CopyState(this);
-            return otherBoard;
+            return new Board(this);
         }
 
         #region Board dimensions
