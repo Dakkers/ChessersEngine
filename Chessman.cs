@@ -32,8 +32,6 @@ namespace ChessersEngine {
         public int location = -1;
         public ChessmanKindEnum kind;
 
-        Tile underlyingTile;
-
         public Chessman (ChessmanSchema cs) {
             guid = cs.guid == 0 ?
                      cs.id :
@@ -56,14 +54,6 @@ namespace ChessersEngine {
 
         public void SetActive (bool val) {
             isActive = val;
-        }
-
-        public void Deactivate () {
-            if (underlyingTile?.GetPiece()?.id == this.id) {
-                underlyingTile.RemovePiece();
-            }
-            RemoveUnderlyingTileReference();
-            SetActive(false);
         }
 
         public void SetHasMoved (bool val) {
@@ -159,19 +149,6 @@ namespace ChessersEngine {
 
         public bool IsKinged () {
             return isKinged;
-        }
-
-        public Tile GetUnderlyingTile () {
-            return underlyingTile;
-        }
-
-        public void SetUnderlyingTile (Tile tile) {
-            underlyingTile = tile;
-            location = tile.id;
-        }
-
-        public void RemoveUnderlyingTileReference () {
-            underlyingTile = null;
         }
 
         public void TogglePolarity () {

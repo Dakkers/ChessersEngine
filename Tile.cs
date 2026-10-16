@@ -5,31 +5,6 @@ namespace ChessersEngine {
         /// Tile identifier. On-board tiles are [0 ... 63]; deathjump tiles use negative ids.
         /// </summary>
         public int id;
-        public Chessman occupant;
-
-        public Tile Clone () {
-            return new Tile { id = id };
-        }
-
-        public void CopyFrom (Tile tile) {
-            this.id = tile.id;
-        }
-
-        public Chessman GetPiece () {
-            return occupant;
-        }
-
-        public void SetPiece (Chessman chessman) {
-            occupant = chessman;
-        }
-
-        public void RemovePiece () {
-            occupant = null;
-        }
-
-        public bool IsOccupied () {
-            return occupant != null;
-        }
 
         public bool IsDeathjumpTile () {
             return this.id < 0;

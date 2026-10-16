@@ -121,6 +121,11 @@ namespace ChessersEngine {
         /// </summary>
         public const int NUM_TILES = 100;
 
+        /// <summary>
+        /// Occupancy value of a tile that no chessman occupies.
+        /// </summary>
+        public const int NO_PIECE = -1;
+
         #endregion
 
     }

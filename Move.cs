@@ -189,7 +189,7 @@ namespace ChessersEngine {
             if (tile.IsDeathjumpTile()) {
                 // A jump path never continues FROM a death tile: a piece that lands there is off the
                 // board. (Such a tile may also still "hold" the deactivated piece that died on it,
-                // which has a null underlying tile and would crash the capture checks below.)
+                // which has no tile (inactive) and would crash the capture checks below.)
                 return;
             }
 
@@ -438,7 +438,7 @@ namespace ChessersEngine {
                         if (movingChessman == null || !movingChessman.isActive) {
                             // No active piece to make this step. This happens when the path would
                             // originate a move from a death tile, whose occupant is an already
-                            // deactivated piece (with a null underlying tile). Such a path is not a
+                            // deactivated piece (which has no tile). Such a path is not a
                             // real threat, so bail out instead of dereferencing the dead piece.
                             isGood = false;
                             break;
