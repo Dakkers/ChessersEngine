@@ -92,5 +92,24 @@ namespace ChessersEngine.Tests {
             Assert.That(ghost, Is.SameAs(copy.GetChessman(Constants.ID_WHITE_PAWN_1)));
             Assert.That(ghost.isActive, Is.False);
         }
+
+        [Test]
+        public void AssignCopiesStateAndKeepsObjectIdentity () {
+            Board board = new Match(null)._GetCommittedBoard();
+            Chessman pawn = board.GetChessman(Constants.ID_WHITE_PAWN_1);
+            Tile fromTile = board.TileOf(pawn);
+
+            Board source = board.CreateCopy();
+            Chessman sourcePawn = source.GetChessman(Constants.ID_WHITE_PAWN_1);
+            source.Clear(source.TileOf(sourcePawn));
+            source.Deactivate(sourcePawn);
+
+            board.Assign(source);
+
+            Assert.That(board.GetChessman(Constants.ID_WHITE_PAWN_1), Is.SameAs(pawn));
+            Assert.That(pawn.isActive, Is.False);
+            Assert.That(board.IsOccupied(fromTile), Is.False);
+            Assert.That(Describe(board), Is.EqualTo(Describe(source)));
+        }
     }
 }
