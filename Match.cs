@@ -269,7 +269,7 @@ namespace ChessersEngine {
 
             Tile toTile = GetPendingTile(moveAttempt.tileId);
 
-            Chessman targetChessman = toTile.GetPiece();
+            Chessman targetChessman = pendingBoard.PieceAt(toTile);
             //Log($"{moveAttempt.pieceId} - {toTile.id} - {targetChessman?.id} - {toTile.IsDeathjumpTile()}");
             if (
                 !toTile.IsDeathjumpTile() &&
@@ -627,10 +627,8 @@ namespace ChessersEngine {
         #endregion
 
         public void UpdateMatch (MatchData newMatchData) {
+            committedBoard.ClearAll();
             foreach (var pair in GetAllCommittedChessmen()) {
-                if (pair.Value.GetUnderlyingTile() != null) {
-                    pair.Value.GetUnderlyingTile().RemovePiece();
-                }
                 pair.Value.RemoveUnderlyingTileReference();
             }
 
@@ -644,8 +642,7 @@ namespace ChessersEngine {
                 committedChessman.CopyFrom(cs);
 
                 if (committedChessman.isActive) {
-                    committedChessman.SetUnderlyingTile(GetCommittedTile(cs.location));
-                    committedChessman.GetUnderlyingTile().SetPiece(committedChessman);
+                    committedBoard.Place(committedChessman, GetCommittedTile(cs.location));
                 }
             }
 
