@@ -59,7 +59,7 @@ namespace ChessersEngine {
 
             chessman = board.GetChessman(moveAttempt.pieceId);
             toTile = board.GetTile(moveAttempt.tileId);
-            fromTile = chessman.GetUnderlyingTile();
+            fromTile = board.TileOf(chessman);
 
             delta = toTile.id - fromTile.id;
 
@@ -196,11 +196,11 @@ namespace ChessersEngine {
             (int row, int col) = board.GetRowColumn(tile);
             //Match.Log($"Current: {tile.id} {tile.IsOccupied()} {board.IsTileOnOtherHalfOfBoard(tile, targetColor)} {targetColor}", depth);
 
-            if (tile.IsOccupied()) {
+            if (board.IsOccupied(tile)) {
                 // Regardless of which color piece is occupying the tile, this branch of the search
                 // tree ends as there is no way to jump onto an occupied tile.
 
-                if (!tile.GetPiece().IsSameColor(targetColor)) {
+                if (!board.PieceAt(tile).IsSameColor(targetColor)) {
                     //Match.Log("Found a potential multijump...", depth + 1);
                     // This is the piece that could capture the king!
                     result.Add(new List<int>(currentPath));
@@ -208,7 +208,7 @@ namespace ChessersEngine {
                     //Match.Log("Found a potential capturejump...", depth + 1);
                     // This piece could lead to a capture jump if it has the potential to be captured
 
-                    List<Tile> capturableTiles = board.CanChessmanBeCaptured(tile.GetPiece());
+                    List<Tile> capturableTiles = board.CanChessmanBeCaptured(board.PieceAt(tile));
                     foreach (Tile capturableTile in capturableTiles) {
                         // For each of the tiles this piece can be captured from, add a copy of the
                         // current path with this capturable tile included - we care about all potential
@@ -217,7 +217,7 @@ namespace ChessersEngine {
                         result.Add(new List<int>(currentPath) { capturableTile.id });
                     }
 
-                    if (board.CanChessmanBeCaptured(tile.GetPiece()).Count > 0) {
+                    if (capturableTiles.Count > 0) {
                         result.Add(new List<int>(currentPath));
                     }
                 }
@@ -226,17 +226,15 @@ namespace ChessersEngine {
             }
 
             // The tile is not occupied. Can a chess piece move here and perform a move-jump?
-            if (!tile.IsDeathjumpTile()) {
-                List<Tile> moveableOntoTiles = board.CanTileBeMovedOnToByChessman(tile);
-                foreach (Tile otherTile in moveableOntoTiles) {
-                    Chessman occupant = otherTile.GetPiece();
+            List<Tile> moveableOntoTiles = board.CanTileBeMovedOnToByChessman(tile);
+            foreach (Tile otherTile in moveableOntoTiles) {
+                Chessman occupant = board.PieceAt(otherTile);
 
-                    if (occupant != null && occupant.IsSameColor(targetColor)) {
-                        continue;
-                    }
-
-                    result.Add(new List<int>(currentPath) { otherTile.id });
+                if (occupant != null && occupant.IsSameColor(targetColor)) {
+                    continue;
                 }
+
+                result.Add(new List<int>(currentPath) { otherTile.id });
             }
 
             // Generate tiles that are 2 diagonal spaces away - tiles that the piece would land on
@@ -275,7 +273,7 @@ namespace ChessersEngine {
 
                 if (
                     tilesToIgnore.Contains(tileToLandOn.id) ||
-                    !tileToJumpOver.IsOccupied() ||
+                    !board.IsOccupied(tileToJumpOver) ||
                     tileToJumpOver.IsDeathjumpTile()
                 ) {
                     continue;
@@ -363,7 +361,7 @@ namespace ChessersEngine {
             }
 
             // -- Validate jumping (multijumping AND capture-jumping)
-            Tile kingTile = kingChessman.GetUnderlyingTile();
+            Tile kingTile = board.TileOf(kingChessman);
 
             List<Tile> diagTilesOfKing = board.GetDiagonallyAdjacentTiles(kingTile);
             //Helpers.PrintTiles(diagTilesOfKing);
@@ -402,7 +400,7 @@ namespace ChessersEngine {
                 if (tileToLandOn == null) {
                     // out of bounds
                     continue;
-                } else if (tileToLandOn.IsOccupied()) {
+                } else if (board.IsOccupied(tileToLandOn)) {
                     // Can't jump onto an occupied tile!
                     continue;
                 }
@@ -435,7 +433,7 @@ namespace ChessersEngine {
                     for (int i = 0; i < path.Count - 1; i++) {
                         Tile startTile = boardCopy.GetTile(path[i]);
                         Tile endTile = boardCopy.GetTile(path[i + 1]);
-                        Chessman movingChessman = startTile.GetPiece();
+                        Chessman movingChessman = boardCopy.PieceAt(startTile);
 
                         if (movingChessman == null || !movingChessman.isActive) {
                             // No active piece to make this step. This happens when the path would
@@ -606,11 +604,10 @@ namespace ChessersEngine {
                     rookToTile = board.GetTileIfExists(toRow, toColumn + 1);
                 }
 
-                Chessman rookChessman = rookFromTile.GetPiece();
+                Chessman rookChessman = board.PieceAt(rookFromTile);
                 if (rookChessman != null) {
-                    rookFromTile.RemovePiece();
-                    rookToTile.SetPiece(rookChessman);
-                    rookChessman.SetUnderlyingTile(rookToTile);
+                    board.Clear(rookFromTile);
+                    board.Place(rookChessman, rookToTile);
                     rookChessman.SetHasMoved(true);
 
                     moveResult.isCastle = true;
@@ -638,13 +635,13 @@ namespace ChessersEngine {
                     //Match.Log($"{chessman.kind} | {fromTile.id} -> {toTile.id} | {jumpedTile.id} | delta={delta} | {Helpers.FormatTiles(potentialTilesForMovement)}");
 
                     moveResult.wasPieceJumped = true;
-                    moveResult.jumpedPieceId = jumpedOverTile.GetPiece().id;
+                    moveResult.jumpedPieceId = board.PieceAt(jumpedOverTile).id;
                     moveResult.jumpedTileId = jumpedOverTile.id;
                 }
             } else {
-                if (toTile.IsOccupied()) {
+                if (board.IsOccupied(toTile)) {
                     moveResult.wasPieceCaptured = true;
-                    moveResult.capturedPieceId = toTile.GetPiece().id;
+                    moveResult.capturedPieceId = board.PieceAt(toTile).id;
                 }
             }
 
@@ -704,24 +701,19 @@ namespace ChessersEngine {
             }
 
             if (chessmanToRemove != null) {
-                chessmanToRemove.Deactivate();
+                board.Deactivate(chessmanToRemove);
                 if (chessmanToRemove.IsKing()) {
                     moveResult.isWinningMove = true;
-                }
-
-                if (moveResult.WasPieceJumped()) {
-                    board.GetTile(moveResult.jumpedTileId).RemovePiece();
                 }
             }
 
             // -- Actually move piece
-            fromTile.RemovePiece();
-            toTile.SetPiece(chessman);
-
+            board.Clear(fromTile);
             if (toTile.IsDeathjumpTile()) {
-                chessman.Deactivate();
+                board.SetOccupant(toTile, chessman);
+                board.Deactivate(chessman);
             } else {
-                chessman.SetUnderlyingTile(toTile);
+                board.Place(chessman, toTile);
             }
 
             // -- Validate promotion
