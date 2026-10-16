@@ -509,7 +509,6 @@ namespace ChessersEngine {
         /// </summary>
         public List<MoveAttempt> CalculateBestMove (int level = 0) {
             Board boardClone = committedBoard.CreateCopy();
-            boardClone.Assign(committedBoard);
 
             MoveOptimizationConfig optimizationConfig = new MoveOptimizationConfig {
                 allowMultijumps = false,
