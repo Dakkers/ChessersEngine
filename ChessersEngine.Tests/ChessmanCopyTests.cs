@@ -1,3 +1,5 @@
+using System.Linq;
+using System.Reflection;
 using NUnit.Framework;
 
 namespace ChessersEngine.Tests {
@@ -57,6 +59,19 @@ namespace ChessersEngine.Tests {
             target.CopyFrom(source);
 
             AssertSameFields(target, source);
+        }
+
+        [Test]
+        public void CopyFromAndAssertSameFieldsCoverEveryInstanceField () {
+            string[] fields = typeof(Chessman)
+                .GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+                .Select((f) => f.Name)
+                .OrderBy((n) => n)
+                .ToArray();
+
+            Assert.That(fields, Is.EqualTo(new[] {
+                "color", "guid", "hasMoved", "id", "isActive", "isChecker", "isKinged", "isPromoted", "kind", "location",
+            }));
         }
     }
 }
