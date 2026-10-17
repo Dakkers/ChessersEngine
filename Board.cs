@@ -61,6 +61,8 @@ namespace ChessersEngine {
                 chessmen[chessman.id] = chessman;
                 chessmenInOrder.Add(chessman);
             }
+
+            AssertActiveChessmenOccupyTheirTiles();
         }
 
         public List<ChessmanSchema> GetChessmanSchemas () {
@@ -193,6 +195,16 @@ namespace ChessersEngine {
                     chessmenInOrder.All((c) => source.chessmen[c.id] != null),
                 "Source board does not hold the same chessman ids as this board."
             );
+        }
+
+        [Conditional("DEBUG")]
+        void AssertActiveChessmenOccupyTheirTiles () {
+            foreach (Chessman chessman in chessmenInOrder) {
+                Debug.Assert(
+                    !chessman.isActive || occupantIds[IndexOf(chessman.location)] == chessman.id,
+                    "Active chessman does not occupy its location's tile."
+                );
+            }
         }
 
         #endregion
