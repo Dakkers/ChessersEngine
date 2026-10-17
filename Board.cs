@@ -186,6 +186,15 @@ namespace ChessersEngine {
             Debug.Assert(chessman != null && GetChessmanIfExists(chessman.id) == chessman, "Chessman does not belong to this board.");
         }
 
+        [Conditional("DEBUG")]
+        void AssertSameChessmenIds (Board source) {
+            Debug.Assert(
+                chessmenInOrder.Count == source.chessmenInOrder.Count &&
+                    chessmenInOrder.All((c) => source.chessmen[c.id] != null),
+                "Source board does not hold the same chessman ids as this board."
+            );
+        }
+
         #endregion
 
         /// <summary>
@@ -195,6 +204,7 @@ namespace ChessersEngine {
         /// </summary>
         public void Assign (Board source) {
             EngineCounters.CopyState();
+            AssertSameChessmenIds(source);
             matchConfig = source.matchConfig;
             foreach (Chessman chessman in chessmenInOrder) {
                 chessman.CopyFrom(source.chessmen[chessman.id]);
