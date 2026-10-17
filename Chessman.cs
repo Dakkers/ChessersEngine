@@ -64,8 +64,11 @@ namespace ChessersEngine {
             return new Chessman(cs);
         }
 
+        /// <summary>
+        /// Returns a detached copy with the same field values.
+        /// </summary>
         public Chessman Clone () {
-            return new Chessman(CreateSchema());
+            return (Chessman) MemberwiseClone();
         }
 
         public void CopyFrom (ChessmanSchema chessmanSchema) {
@@ -81,8 +84,20 @@ namespace ChessersEngine {
             this.kind = (ChessmanKindEnum) chessmanSchema.kind;
         }
 
+        /// <summary>
+        /// Overwrites every field with the other chessman's value.
+        /// </summary>
         public void CopyFrom (Chessman chessman) {
-            this.CopyFrom(chessman.CreateSchema());
+            this.color = chessman.color;
+            this.guid = chessman.guid;
+            this.hasMoved = chessman.hasMoved;
+            this.id = chessman.id;
+            this.isActive = chessman.isActive;
+            this.isChecker = chessman.isChecker;
+            this.isKinged = chessman.isKinged;
+            this.isPromoted = chessman.isPromoted;
+            this.location = chessman.location;
+            this.kind = chessman.kind;
         }
 
         #region Color checks

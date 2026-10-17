@@ -141,7 +141,7 @@ namespace ChessersEngine {
 
             committedTurnColor = turnColor;
 
-            committedBoard.CopyState(pendingBoard);
+            committedBoard.Assign(pendingBoard);
 
             moves.Add(string.Join(",", pendingMoveResults.Select((mr) => mr.CreateNotation())));
 
@@ -158,7 +158,7 @@ namespace ChessersEngine {
             isDraw = false;
             winningPlayerId = -1;
 
-            pendingBoard.CopyState(committedBoard);
+            pendingBoard.Assign(committedBoard);
 
             pendingMoveResults.Clear();
         }
@@ -509,7 +509,6 @@ namespace ChessersEngine {
         /// </summary>
         public List<MoveAttempt> CalculateBestMove (int level = 0) {
             Board boardClone = committedBoard.CreateCopy();
-            boardClone.CopyState(committedBoard);
 
             MoveOptimizationConfig optimizationConfig = new MoveOptimizationConfig {
                 allowMultijumps = false,

@@ -43,6 +43,28 @@ namespace ChessersEngine {
             }
         }
 
+        Board (Board other) {
+            id = other.id;
+            matchConfig = other.matchConfig;
+            rightDiagonalDelta = other.rightDiagonalDelta;
+            leftDiagonalDelta = other.leftDiagonalDelta;
+
+            for (int i = 0; i < tiles.Length; i++) {
+                tiles[i] = new Tile {
+                    id = other.tiles[i].id
+                };
+            }
+            Array.Copy(other.occupantIds, occupantIds, occupantIds.Length);
+
+            foreach (Chessman otherChessman in other.chessmenInOrder) {
+                Chessman chessman = otherChessman.Clone();
+                chessmen[chessman.id] = chessman;
+                chessmenInOrder.Add(chessman);
+            }
+
+            AssertActiveChessmenOccupyTheirTiles();
+        }
+
         public List<ChessmanSchema> GetChessmanSchemas () {
             return chessmenInOrder.Select((c) => c.CreateSchema()).ToList();
         }
@@ -166,29 +188,49 @@ namespace ChessersEngine {
             Debug.Assert(chessman != null && GetChessmanIfExists(chessman.id) == chessman, "Chessman does not belong to this board.");
         }
 
-        #endregion
-
-        public void CopyState (Board otherBoard) {
-            EngineCounters.CopyState();
-            this.matchConfig = otherBoard.matchConfig;
-
-            // Update the states of the Chessmen
-            foreach (Chessman entry in chessmenInOrder) {
-                int chessmanId = entry.id;
-                Chessman otherChessman = otherBoard.GetChessman(chessmanId);
-                Chessman chessman = GetChessman(chessmanId);
-
-                chessman.CopyFrom(otherChessman);
-            }
-
-            Array.Copy(otherBoard.occupantIds, occupantIds, occupantIds.Length);
+        [Conditional("DEBUG")]
+        void AssertSameChessmenIds (Board source) {
+            Debug.Assert(
+                chessmenInOrder.Count == source.chessmenInOrder.Count &&
+                    chessmenInOrder.All((c) => source.chessmen[c.id] != null),
+                "Source board does not hold the same chessman ids as this board."
+            );
         }
 
-        public Board CreateCopy (List<ChessmanSchema> _pieces = null) {
+        [Conditional("DEBUG")]
+        void AssertActiveChessmenOccupyTheirTiles () {
+            foreach (Chessman chessman in chessmenInOrder) {
+                Debug.Assert(
+                    !chessman.isActive || occupantIds[IndexOf(chessman.location)] == chessman.id,
+                    "Active chessman does not occupy its location's tile."
+                );
+            }
+        }
+
+        #endregion
+
+        /// <summary>
+        /// Overwrites this board's state with the source board's state.
+        /// Chessman and tile objects of this board keep their identity.
+        /// The source MUST hold the same chessman ids as this board.
+        /// </summary>
+        public void Assign (Board source) {
+            EngineCounters.CopyState();
+            AssertSameChessmenIds(source);
+            matchConfig = source.matchConfig;
+            foreach (Chessman chessman in chessmenInOrder) {
+                chessman.CopyFrom(source.chessmen[chessman.id]);
+            }
+            Array.Copy(source.occupantIds, occupantIds, occupantIds.Length);
+        }
+
+        /// <summary>
+        /// Returns an independent board with the same state.
+        /// Changes to either board MUST NOT affect the other.
+        /// </summary>
+        public Board CreateCopy () {
             EngineCounters.BoardClone();
-            Board otherBoard = new Board(_pieces ?? this.GetChessmanSchemas(), this.matchConfig);
-            otherBoard.CopyState(this);
-            return otherBoard;
+            return new Board(this);
         }
 
         #region Board dimensions
@@ -1545,7 +1587,7 @@ namespace ChessersEngine {
             }
 
             result.moveResult.playerId = moveAttempt.playerId;
-            this.CopyState(result.modifiedBoard);
+            Assign(result.modifiedBoard);
 
             return result.moveResult;
         }
