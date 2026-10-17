@@ -5,6 +5,10 @@ using NUnit.Framework;
 namespace ChessersEngine.Tests {
     [TestFixture]
     public class ChessmanCopyTests {
+        static readonly string[] ExpectedFields = {
+            "color", "guid", "hasMoved", "id", "isActive", "isChecker", "isKinged", "isPromoted", "kind", "location",
+        };
+
         static Chessman MakeAlteredQueen () {
             Chessman chessman = Chessman.CreateFromSchema(TestScenarios.CreatePawn(Constants.ID_BLACK_PAWN_3, 40));
             chessman.guid = 777;
@@ -69,9 +73,7 @@ namespace ChessersEngine.Tests {
                 .OrderBy((n) => n)
                 .ToArray();
 
-            Assert.That(fields, Is.EqualTo(new[] {
-                "color", "guid", "hasMoved", "id", "isActive", "isChecker", "isKinged", "isPromoted", "kind", "location",
-            }));
+            Assert.That(fields, Is.EqualTo(ExpectedFields));
         }
     }
 }
