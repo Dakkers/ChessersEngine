@@ -9,7 +9,6 @@ namespace ChessersEngine {
         readonly Tile[] tiles = new Tile[Constants.NUM_TILES];
         readonly int[] occupantIds = new int[Constants.NUM_TILES];
         readonly Chessman[] chessmen = new Chessman[Constants.NUM_CHESSMEN];
-        readonly List<Chessman> chessmenInOrder = new List<Chessman>();
         MatchConfig matchConfig;
 
         readonly int numRealColumns = 8;
@@ -36,7 +35,6 @@ namespace ChessersEngine {
             foreach (ChessmanSchema cs in pieces) {
                 Chessman newChessman = Chessman.CreateFromSchema(cs);
                 chessmen[newChessman.id] = newChessman;
-                chessmenInOrder.Add(newChessman);
                 if (newChessman.isActive) {
                     Place(newChessman, GetTile(cs.location));
                 }
@@ -56,17 +54,22 @@ namespace ChessersEngine {
             }
             Array.Copy(other.occupantIds, occupantIds, occupantIds.Length);
 
-            foreach (Chessman otherChessman in other.chessmenInOrder) {
-                Chessman chessman = otherChessman.Clone();
-                chessmen[chessman.id] = chessman;
-                chessmenInOrder.Add(chessman);
+            foreach (Chessman otherChessman in other.ChessmenById()) {
+                chessmen[otherChessman.id] = otherChessman.Clone();
             }
 
             AssertActiveChessmenOccupyTheirTiles();
         }
 
         public List<ChessmanSchema> GetChessmanSchemas () {
-            return chessmenInOrder.Select((c) => c.CreateSchema()).ToList();
+            return ChessmenById().Select((c) => c.CreateSchema()).ToList();
+        }
+
+        /// <summary>
+        /// Returns every chessman on this board in ascending id order.
+        /// </summary>
+        IEnumerable<Chessman> ChessmenById () {
+            return chessmen.Where((c) => c != null);
         }
 
         public Chessman GetChessman (int id) {
@@ -191,15 +194,14 @@ namespace ChessersEngine {
         [Conditional("DEBUG")]
         void AssertSameChessmenIds (Board source) {
             Debug.Assert(
-                chessmenInOrder.Count == source.chessmenInOrder.Count &&
-                    chessmenInOrder.All((c) => source.chessmen[c.id] != null),
+                Enumerable.Range(0, chessmen.Length).All((i) => (chessmen[i] == null) == (source.chessmen[i] == null)),
                 "Source board does not hold the same chessman ids as this board."
             );
         }
 
         [Conditional("DEBUG")]
         void AssertActiveChessmenOccupyTheirTiles () {
-            foreach (Chessman chessman in chessmenInOrder) {
+            foreach (Chessman chessman in ChessmenById()) {
                 Debug.Assert(
                     !chessman.isActive || occupantIds[IndexOf(chessman.location)] == chessman.id,
                     "Active chessman does not occupy its location's tile."
@@ -218,7 +220,7 @@ namespace ChessersEngine {
             EngineCounters.CopyState();
             AssertSameChessmenIds(source);
             matchConfig = source.matchConfig;
-            foreach (Chessman chessman in chessmenInOrder) {
+            foreach (Chessman chessman in ChessmenById()) {
                 chessman.CopyFrom(source.chessmen[chessman.id]);
             }
             Array.Copy(source.occupantIds, occupantIds, occupantIds.Length);
@@ -278,7 +280,7 @@ namespace ChessersEngine {
         #region Chessman getters
 
         public List<Chessman> GetActiveChessmen () {
-            return chessmenInOrder.Where((c) => c.isActive).ToList();
+            return ChessmenById().Where((c) => c.isActive).ToList();
         }
 
         public List<Chessman> GetActiveChessmenOfColor (ColorEnum color) {
@@ -287,7 +289,7 @@ namespace ChessersEngine {
 
         public Dictionary<int, Chessman> GetAllChessmen () {
             var result = new Dictionary<int, Chessman>();
-            foreach (Chessman c in chessmenInOrder) {
+            foreach (Chessman c in ChessmenById()) {
                 result[c.id] = c;
             }
             return result;
@@ -1823,7 +1825,7 @@ namespace ChessersEngine {
 
         public void PrintPieces () {
             var result = new List<string>();
-            foreach (Chessman item in chessmenInOrder) {
+            foreach (Chessman item in ChessmenById()) {
                 if (item.isActive) {
                     result.Add($"{item.id} {item.kind} | {TileOf(item)?.id}");
                 }
