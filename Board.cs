@@ -1854,10 +1854,8 @@ namespace ChessersEngine {
 
         public void PrintPieces () {
             var result = new List<string>();
-            foreach (Chessman item in ChessmenById()) {
-                if (item.isActive) {
-                    result.Add($"{item.id} {item.kind} | {TileOf(item)?.id}");
-                }
+            foreach (Chessman item in GetActiveChessmen()) {
+                result.Add($"{item.id} {item.kind} | {TileOf(item)?.id}");
             }
             Match.Log(string.Join("\n", result));
         }
