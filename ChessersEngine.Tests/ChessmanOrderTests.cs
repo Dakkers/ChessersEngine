@@ -11,8 +11,9 @@ namespace ChessersEngine.Tests {
             return new Board(pieces, new MatchConfig());
         }
 
-        static List<int> SortedIds (IEnumerable<int> ids) {
-            return ids.OrderBy((id) => id).ToList();
+        static void AssertStrictlyAscending (List<int> ids) {
+            Assert.That(ids, Is.Ordered.Ascending);
+            Assert.That(ids, Is.Unique);
         }
 
         [Test]
@@ -21,8 +22,19 @@ namespace ChessersEngine.Tests {
 
             List<int> ids = board.GetActiveChessmen().Select((c) => c.id).ToList();
 
-            Assert.That(ids, Is.EqualTo(SortedIds(ids)));
+            AssertStrictlyAscending(ids);
             Assert.That(ids, Has.Count.EqualTo(Constants.NUM_CHESSMEN));
+        }
+
+        [TestCase(ColorEnum.WHITE)]
+        [TestCase(ColorEnum.BLACK)]
+        public void ActiveChessmenOfColorAreInAscendingIdOrder (ColorEnum color) {
+            Board board = MakeBoardFromReversedSchemas();
+
+            List<int> ids = board.GetActiveChessmenOfColor(color).Select((c) => c.id).ToList();
+
+            AssertStrictlyAscending(ids);
+            Assert.That(ids, Is.Not.Empty);
         }
 
         [Test]
@@ -31,7 +43,7 @@ namespace ChessersEngine.Tests {
 
             List<int> ids = board.GetChessmanSchemas().Select((cs) => cs.id).ToList();
 
-            Assert.That(ids, Is.EqualTo(SortedIds(ids)));
+            AssertStrictlyAscending(ids);
         }
 
         [Test]
@@ -40,7 +52,7 @@ namespace ChessersEngine.Tests {
 
             List<int> ids = board.GetAllChessmen().Keys.ToList();
 
-            Assert.That(ids, Is.EqualTo(SortedIds(ids)));
+            AssertStrictlyAscending(ids);
         }
 
         [Test]
@@ -49,7 +61,29 @@ namespace ChessersEngine.Tests {
 
             List<int> ids = copy.GetActiveChessmen().Select((c) => c.id).ToList();
 
-            Assert.That(ids, Is.EqualTo(SortedIds(ids)));
+            AssertStrictlyAscending(ids);
+        }
+
+        [Test]
+        public void AssignKeepsAscendingIdOrderAndMatchesSource () {
+            Board target = MakeBoardFromReversedSchemas();
+            Board source = MakeBoardFromReversedSchemas();
+            Chessman sourcePawn = source.GetChessman(Constants.ID_WHITE_PAWN_1);
+            source.Clear(source.TileOf(sourcePawn));
+            source.Deactivate(sourcePawn);
+
+            target.Assign(source);
+
+            List<int> activeIds = target.GetActiveChessmen().Select((c) => c.id).ToList();
+            List<int> sourceActiveIds = source.GetActiveChessmen().Select((c) => c.id).ToList();
+            List<int> whiteIds = target.GetActiveChessmenOfColor(ColorEnum.WHITE).Select((c) => c.id).ToList();
+            List<int> schemaIds = target.GetChessmanSchemas().Select((cs) => cs.id).ToList();
+            AssertStrictlyAscending(activeIds);
+            AssertStrictlyAscending(whiteIds);
+            AssertStrictlyAscending(schemaIds);
+            Assert.That(activeIds, Is.EqualTo(sourceActiveIds));
+            Assert.That(activeIds, Does.Not.Contain(Constants.ID_WHITE_PAWN_1));
+            Assert.That(activeIds, Has.Count.EqualTo(Constants.NUM_CHESSMEN - 1));
         }
     }
 }
