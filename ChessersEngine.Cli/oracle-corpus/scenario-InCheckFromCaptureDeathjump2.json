@@ -14,30 +14,6 @@
   },
   "initialPieces": [
     {
-      "colorId": 0,
-      "guid": 30,
-      "hasMoved": false,
-      "id": 30,
-      "isActive": true,
-      "isChecker": false,
-      "isKinged": false,
-      "isPromoted": false,
-      "kind": 5,
-      "location": 0
-    },
-    {
-      "colorId": 0,
-      "guid": 28,
-      "hasMoved": false,
-      "id": 28,
-      "isActive": true,
-      "isChecker": false,
-      "isKinged": false,
-      "isPromoted": false,
-      "kind": 4,
-      "location": 4
-    },
-    {
       "colorId": 1,
       "guid": 1,
       "hasMoved": false,
@@ -72,6 +48,30 @@
       "isPromoted": false,
       "kind": 0,
       "location": 56
+    },
+    {
+      "colorId": 0,
+      "guid": 28,
+      "hasMoved": false,
+      "id": 28,
+      "isActive": true,
+      "isChecker": false,
+      "isKinged": false,
+      "isPromoted": false,
+      "kind": 4,
+      "location": 4
+    },
+    {
+      "colorId": 0,
+      "guid": 30,
+      "hasMoved": false,
+      "id": 30,
+      "isActive": true,
+      "isChecker": false,
+      "isKinged": false,
+      "isPromoted": false,
+      "kind": 5,
+      "location": 0
     },
     {
       "colorId": 1,
@@ -137,30 +137,6 @@
       "committedNotation": "28_Qe1xe8#",
       "boardAfter": [
         {
-          "colorId": 0,
-          "guid": 30,
-          "hasMoved": false,
-          "id": 30,
-          "isActive": true,
-          "isChecker": false,
-          "isKinged": false,
-          "isPromoted": false,
-          "kind": 5,
-          "location": 0
-        },
-        {
-          "colorId": 0,
-          "guid": 28,
-          "hasMoved": true,
-          "id": 28,
-          "isActive": true,
-          "isChecker": true,
-          "isKinged": true,
-          "isPromoted": false,
-          "kind": 4,
-          "location": 60
-        },
-        {
           "colorId": 1,
           "guid": 1,
           "hasMoved": false,
@@ -195,6 +171,30 @@
           "isPromoted": false,
           "kind": 0,
           "location": 56
+        },
+        {
+          "colorId": 0,
+          "guid": 28,
+          "hasMoved": true,
+          "id": 28,
+          "isActive": true,
+          "isChecker": true,
+          "isKinged": true,
+          "isPromoted": false,
+          "kind": 4,
+          "location": 60
+        },
+        {
+          "colorId": 0,
+          "guid": 30,
+          "hasMoved": false,
+          "id": 30,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 5,
+          "location": 0
         },
         {
           "colorId": 1,

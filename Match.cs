@@ -181,11 +181,11 @@ namespace ChessersEngine {
             return committedBoard.GetChessman(id);
         }
 
-        public Dictionary<int, Chessman> GetAllCommittedChessmen () {
+        public IReadOnlyList<Chessman> GetAllCommittedChessmen () {
             return committedBoard.GetAllChessmen();
         }
 
-        public Dictionary<int, Chessman> GetAllPendingChessmen () {
+        public IReadOnlyList<Chessman> GetAllPendingChessmen () {
             return pendingBoard.GetAllChessmen();
         }
 

@@ -45,7 +45,7 @@ namespace ChessersEngine.Tests {
             Board copy = board.CreateCopy();
 
             Assert.That(Describe(copy), Is.EqualTo(Describe(board)));
-            Assert.That(Ids(copy.GetAllChessmen().Values), Is.EqualTo(Ids(board.GetAllChessmen().Values)));
+            Assert.That(Ids(copy.GetAllChessmen()), Is.EqualTo(Ids(board.GetAllChessmen())));
         }
 
         [Test]

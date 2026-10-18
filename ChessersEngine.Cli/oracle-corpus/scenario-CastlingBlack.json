@@ -14,18 +14,6 @@
   },
   "initialPieces": [
     {
-      "colorId": 0,
-      "guid": 30,
-      "hasMoved": false,
-      "id": 30,
-      "isActive": true,
-      "isChecker": false,
-      "isKinged": false,
-      "isPromoted": false,
-      "kind": 5,
-      "location": 4
-    },
-    {
       "colorId": 1,
       "guid": 17,
       "hasMoved": false,
@@ -48,6 +36,18 @@
       "isPromoted": false,
       "kind": 3,
       "location": 63
+    },
+    {
+      "colorId": 0,
+      "guid": 30,
+      "hasMoved": false,
+      "id": 30,
+      "isActive": true,
+      "isChecker": false,
+      "isKinged": false,
+      "isPromoted": false,
+      "kind": 5,
+      "location": 4
     },
     {
       "colorId": 1,
@@ -113,18 +113,6 @@
       "committedNotation": "19_Rh8g8",
       "boardAfter": [
         {
-          "colorId": 0,
-          "guid": 30,
-          "hasMoved": false,
-          "id": 30,
-          "isActive": true,
-          "isChecker": false,
-          "isKinged": false,
-          "isPromoted": false,
-          "kind": 5,
-          "location": 4
-        },
-        {
           "colorId": 1,
           "guid": 17,
           "hasMoved": false,
@@ -147,6 +135,18 @@
           "isPromoted": false,
           "kind": 3,
           "location": 62
+        },
+        {
+          "colorId": 0,
+          "guid": 30,
+          "hasMoved": false,
+          "id": 30,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 5,
+          "location": 4
         },
         {
           "colorId": 1,
@@ -212,18 +212,6 @@
       "committedNotation": "30_Ke1d2",
       "boardAfter": [
         {
-          "colorId": 0,
-          "guid": 30,
-          "hasMoved": true,
-          "id": 30,
-          "isActive": true,
-          "isChecker": false,
-          "isKinged": false,
-          "isPromoted": false,
-          "kind": 5,
-          "location": 11
-        },
-        {
           "colorId": 1,
           "guid": 17,
           "hasMoved": false,
@@ -246,6 +234,18 @@
           "isPromoted": false,
           "kind": 3,
           "location": 62
+        },
+        {
+          "colorId": 0,
+          "guid": 30,
+          "hasMoved": true,
+          "id": 30,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 5,
+          "location": 11
         },
         {
           "colorId": 1,
@@ -311,18 +311,6 @@
       "committedNotation": "31_Ke8d7",
       "boardAfter": [
         {
-          "colorId": 0,
-          "guid": 30,
-          "hasMoved": true,
-          "id": 30,
-          "isActive": true,
-          "isChecker": false,
-          "isKinged": false,
-          "isPromoted": false,
-          "kind": 5,
-          "location": 11
-        },
-        {
           "colorId": 1,
           "guid": 17,
           "hasMoved": false,
@@ -345,6 +333,18 @@
           "isPromoted": false,
           "kind": 3,
           "location": 62
+        },
+        {
+          "colorId": 0,
+          "guid": 30,
+          "hasMoved": true,
+          "id": 30,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 5,
+          "location": 11
         },
         {
           "colorId": 1,
@@ -410,18 +410,6 @@
       "committedNotation": "30_Kd2e3",
       "boardAfter": [
         {
-          "colorId": 0,
-          "guid": 30,
-          "hasMoved": true,
-          "id": 30,
-          "isActive": true,
-          "isChecker": false,
-          "isKinged": false,
-          "isPromoted": false,
-          "kind": 5,
-          "location": 20
-        },
-        {
           "colorId": 1,
           "guid": 17,
           "hasMoved": false,
@@ -444,6 +432,18 @@
           "isPromoted": false,
           "kind": 3,
           "location": 62
+        },
+        {
+          "colorId": 0,
+          "guid": 30,
+          "hasMoved": true,
+          "id": 30,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 5,
+          "location": 20
         },
         {
           "colorId": 1,
@@ -509,18 +509,6 @@
       "committedNotation": "19_Rg8h8",
       "boardAfter": [
         {
-          "colorId": 0,
-          "guid": 30,
-          "hasMoved": true,
-          "id": 30,
-          "isActive": true,
-          "isChecker": false,
-          "isKinged": false,
-          "isPromoted": false,
-          "kind": 5,
-          "location": 20
-        },
-        {
           "colorId": 1,
           "guid": 17,
           "hasMoved": false,
@@ -543,6 +531,18 @@
           "isPromoted": false,
           "kind": 3,
           "location": 63
+        },
+        {
+          "colorId": 0,
+          "guid": 30,
+          "hasMoved": true,
+          "id": 30,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 5,
+          "location": 20
         },
         {
           "colorId": 1,
@@ -608,18 +608,6 @@
       "committedNotation": "30_Ke3f4",
       "boardAfter": [
         {
-          "colorId": 0,
-          "guid": 30,
-          "hasMoved": true,
-          "id": 30,
-          "isActive": true,
-          "isChecker": false,
-          "isKinged": false,
-          "isPromoted": false,
-          "kind": 5,
-          "location": 29
-        },
-        {
           "colorId": 1,
           "guid": 17,
           "hasMoved": false,
@@ -642,6 +630,18 @@
           "isPromoted": false,
           "kind": 3,
           "location": 63
+        },
+        {
+          "colorId": 0,
+          "guid": 30,
+          "hasMoved": true,
+          "id": 30,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 5,
+          "location": 29
         },
         {
           "colorId": 1,
@@ -707,18 +707,6 @@
       "committedNotation": "17_Ra8e8",
       "boardAfter": [
         {
-          "colorId": 0,
-          "guid": 30,
-          "hasMoved": true,
-          "id": 30,
-          "isActive": true,
-          "isChecker": false,
-          "isKinged": false,
-          "isPromoted": false,
-          "kind": 5,
-          "location": 29
-        },
-        {
           "colorId": 1,
           "guid": 17,
           "hasMoved": true,
@@ -741,6 +729,18 @@
           "isPromoted": false,
           "kind": 3,
           "location": 63
+        },
+        {
+          "colorId": 0,
+          "guid": 30,
+          "hasMoved": true,
+          "id": 30,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 5,
+          "location": 29
         },
         {
           "colorId": 1,
@@ -806,18 +806,6 @@
       "committedNotation": "30_Kf4g5",
       "boardAfter": [
         {
-          "colorId": 0,
-          "guid": 30,
-          "hasMoved": true,
-          "id": 30,
-          "isActive": true,
-          "isChecker": true,
-          "isKinged": false,
-          "isPromoted": false,
-          "kind": 5,
-          "location": 38
-        },
-        {
           "colorId": 1,
           "guid": 17,
           "hasMoved": true,
@@ -840,6 +828,18 @@
           "isPromoted": false,
           "kind": 3,
           "location": 63
+        },
+        {
+          "colorId": 0,
+          "guid": 30,
+          "hasMoved": true,
+          "id": 30,
+          "isActive": true,
+          "isChecker": true,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 5,
+          "location": 38
         },
         {
           "colorId": 1,
@@ -905,18 +905,6 @@
       "committedNotation": "19_Rh8h7",
       "boardAfter": [
         {
-          "colorId": 0,
-          "guid": 30,
-          "hasMoved": true,
-          "id": 30,
-          "isActive": true,
-          "isChecker": true,
-          "isKinged": false,
-          "isPromoted": false,
-          "kind": 5,
-          "location": 38
-        },
-        {
           "colorId": 1,
           "guid": 17,
           "hasMoved": true,
@@ -939,6 +927,18 @@
           "isPromoted": false,
           "kind": 3,
           "location": 55
+        },
+        {
+          "colorId": 0,
+          "guid": 30,
+          "hasMoved": true,
+          "id": 30,
+          "isActive": true,
+          "isChecker": true,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 5,
+          "location": 38
         },
         {
           "colorId": 1,
@@ -1004,18 +1004,6 @@
       "committedNotation": "30_Kg5f6",
       "boardAfter": [
         {
-          "colorId": 0,
-          "guid": 30,
-          "hasMoved": true,
-          "id": 30,
-          "isActive": true,
-          "isChecker": true,
-          "isKinged": false,
-          "isPromoted": false,
-          "kind": 5,
-          "location": 45
-        },
-        {
           "colorId": 1,
           "guid": 17,
           "hasMoved": true,
@@ -1038,6 +1026,18 @@
           "isPromoted": false,
           "kind": 3,
           "location": 55
+        },
+        {
+          "colorId": 0,
+          "guid": 30,
+          "hasMoved": true,
+          "id": 30,
+          "isActive": true,
+          "isChecker": true,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 5,
+          "location": 45
         },
         {
           "colorId": 1,
@@ -1103,18 +1103,6 @@
       "committedNotation": "31_Kd7e6#",
       "boardAfter": [
         {
-          "colorId": 0,
-          "guid": 30,
-          "hasMoved": true,
-          "id": 30,
-          "isActive": true,
-          "isChecker": true,
-          "isKinged": false,
-          "isPromoted": false,
-          "kind": 5,
-          "location": 45
-        },
-        {
           "colorId": 1,
           "guid": 17,
           "hasMoved": true,
@@ -1137,6 +1125,18 @@
           "isPromoted": false,
           "kind": 3,
           "location": 55
+        },
+        {
+          "colorId": 0,
+          "guid": 30,
+          "hasMoved": true,
+          "id": 30,
+          "isActive": true,
+          "isChecker": true,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 5,
+          "location": 45
         },
         {
           "colorId": 1,

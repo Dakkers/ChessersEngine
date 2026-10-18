@@ -15,102 +15,6 @@
   "initialPieces": [
     {
       "colorId": 0,
-      "guid": 16,
-      "hasMoved": false,
-      "id": 16,
-      "isActive": true,
-      "isChecker": false,
-      "isKinged": false,
-      "isPromoted": false,
-      "kind": 3,
-      "location": 0
-    },
-    {
-      "colorId": 0,
-      "guid": 20,
-      "hasMoved": false,
-      "id": 20,
-      "isActive": true,
-      "isChecker": false,
-      "isKinged": false,
-      "isPromoted": false,
-      "kind": 1,
-      "location": 1
-    },
-    {
-      "colorId": 0,
-      "guid": 24,
-      "hasMoved": false,
-      "id": 24,
-      "isActive": true,
-      "isChecker": false,
-      "isKinged": false,
-      "isPromoted": false,
-      "kind": 2,
-      "location": 2
-    },
-    {
-      "colorId": 0,
-      "guid": 28,
-      "hasMoved": true,
-      "id": 28,
-      "isActive": true,
-      "isChecker": false,
-      "isKinged": false,
-      "isPromoted": false,
-      "kind": 4,
-      "location": 27
-    },
-    {
-      "colorId": 0,
-      "guid": 30,
-      "hasMoved": false,
-      "id": 30,
-      "isActive": true,
-      "isChecker": false,
-      "isKinged": false,
-      "isPromoted": false,
-      "kind": 5,
-      "location": 4
-    },
-    {
-      "colorId": 0,
-      "guid": 26,
-      "hasMoved": false,
-      "id": 26,
-      "isActive": true,
-      "isChecker": false,
-      "isKinged": false,
-      "isPromoted": false,
-      "kind": 2,
-      "location": 5
-    },
-    {
-      "colorId": 0,
-      "guid": 22,
-      "hasMoved": true,
-      "id": 22,
-      "isActive": true,
-      "isChecker": false,
-      "isKinged": false,
-      "isPromoted": false,
-      "kind": 1,
-      "location": 21
-    },
-    {
-      "colorId": 0,
-      "guid": 18,
-      "hasMoved": false,
-      "id": 18,
-      "isActive": true,
-      "isChecker": false,
-      "isKinged": false,
-      "isPromoted": false,
-      "kind": 3,
-      "location": 7
-    },
-    {
-      "colorId": 0,
       "guid": 0,
       "hasMoved": false,
       "id": 0,
@@ -120,6 +24,18 @@
       "isPromoted": false,
       "kind": 0,
       "location": 8
+    },
+    {
+      "colorId": 1,
+      "guid": 1,
+      "hasMoved": false,
+      "id": 1,
+      "isActive": true,
+      "isChecker": false,
+      "isKinged": false,
+      "isPromoted": false,
+      "kind": 0,
+      "location": 48
     },
     {
       "colorId": 0,
@@ -134,6 +50,18 @@
       "location": 9
     },
     {
+      "colorId": 1,
+      "guid": 3,
+      "hasMoved": false,
+      "id": 3,
+      "isActive": true,
+      "isChecker": false,
+      "isKinged": false,
+      "isPromoted": false,
+      "kind": 0,
+      "location": 49
+    },
+    {
       "colorId": 0,
       "guid": 4,
       "hasMoved": false,
@@ -144,6 +72,18 @@
       "isPromoted": false,
       "kind": 0,
       "location": 10
+    },
+    {
+      "colorId": 1,
+      "guid": 5,
+      "hasMoved": true,
+      "id": 5,
+      "isActive": true,
+      "isChecker": false,
+      "isKinged": false,
+      "isPromoted": false,
+      "kind": 0,
+      "location": 34
     },
     {
       "colorId": 0,
@@ -158,6 +98,18 @@
       "location": 11
     },
     {
+      "colorId": 1,
+      "guid": 7,
+      "hasMoved": true,
+      "id": 7,
+      "isActive": true,
+      "isChecker": false,
+      "isKinged": false,
+      "isPromoted": false,
+      "kind": 0,
+      "location": 35
+    },
+    {
       "colorId": 0,
       "guid": 8,
       "hasMoved": true,
@@ -168,6 +120,18 @@
       "isPromoted": false,
       "kind": 0,
       "location": 20
+    },
+    {
+      "colorId": 1,
+      "guid": 9,
+      "hasMoved": false,
+      "id": 9,
+      "isActive": true,
+      "isChecker": false,
+      "isKinged": false,
+      "isPromoted": false,
+      "kind": 0,
+      "location": 52
     },
     {
       "colorId": 0,
@@ -182,6 +146,18 @@
       "location": 13
     },
     {
+      "colorId": 1,
+      "guid": 11,
+      "hasMoved": true,
+      "id": 11,
+      "isActive": true,
+      "isChecker": false,
+      "isKinged": false,
+      "isPromoted": false,
+      "kind": 0,
+      "location": 37
+    },
+    {
       "colorId": 0,
       "guid": 12,
       "hasMoved": false,
@@ -192,6 +168,18 @@
       "isPromoted": false,
       "kind": 0,
       "location": 14
+    },
+    {
+      "colorId": 1,
+      "guid": 13,
+      "hasMoved": false,
+      "id": 13,
+      "isActive": true,
+      "isChecker": false,
+      "isKinged": false,
+      "isPromoted": false,
+      "kind": 0,
+      "location": 54
     },
     {
       "colorId": 0,
@@ -207,90 +195,6 @@
     },
     {
       "colorId": 1,
-      "guid": 1,
-      "hasMoved": false,
-      "id": 1,
-      "isActive": true,
-      "isChecker": false,
-      "isKinged": false,
-      "isPromoted": false,
-      "kind": 0,
-      "location": 48
-    },
-    {
-      "colorId": 1,
-      "guid": 3,
-      "hasMoved": false,
-      "id": 3,
-      "isActive": true,
-      "isChecker": false,
-      "isKinged": false,
-      "isPromoted": false,
-      "kind": 0,
-      "location": 49
-    },
-    {
-      "colorId": 1,
-      "guid": 5,
-      "hasMoved": true,
-      "id": 5,
-      "isActive": true,
-      "isChecker": false,
-      "isKinged": false,
-      "isPromoted": false,
-      "kind": 0,
-      "location": 34
-    },
-    {
-      "colorId": 1,
-      "guid": 7,
-      "hasMoved": true,
-      "id": 7,
-      "isActive": true,
-      "isChecker": false,
-      "isKinged": false,
-      "isPromoted": false,
-      "kind": 0,
-      "location": 35
-    },
-    {
-      "colorId": 1,
-      "guid": 9,
-      "hasMoved": false,
-      "id": 9,
-      "isActive": true,
-      "isChecker": false,
-      "isKinged": false,
-      "isPromoted": false,
-      "kind": 0,
-      "location": 52
-    },
-    {
-      "colorId": 1,
-      "guid": 11,
-      "hasMoved": true,
-      "id": 11,
-      "isActive": true,
-      "isChecker": false,
-      "isKinged": false,
-      "isPromoted": false,
-      "kind": 0,
-      "location": 37
-    },
-    {
-      "colorId": 1,
-      "guid": 13,
-      "hasMoved": false,
-      "id": 13,
-      "isActive": true,
-      "isChecker": false,
-      "isKinged": false,
-      "isPromoted": false,
-      "kind": 0,
-      "location": 54
-    },
-    {
-      "colorId": 1,
       "guid": 15,
       "hasMoved": false,
       "id": 15,
@@ -300,6 +204,18 @@
       "isPromoted": false,
       "kind": 0,
       "location": 55
+    },
+    {
+      "colorId": 0,
+      "guid": 16,
+      "hasMoved": false,
+      "id": 16,
+      "isActive": true,
+      "isChecker": false,
+      "isKinged": false,
+      "isPromoted": false,
+      "kind": 3,
+      "location": 0
     },
     {
       "colorId": 1,
@@ -314,6 +230,42 @@
       "location": 56
     },
     {
+      "colorId": 0,
+      "guid": 18,
+      "hasMoved": false,
+      "id": 18,
+      "isActive": true,
+      "isChecker": false,
+      "isKinged": false,
+      "isPromoted": false,
+      "kind": 3,
+      "location": 7
+    },
+    {
+      "colorId": 1,
+      "guid": 19,
+      "hasMoved": false,
+      "id": 19,
+      "isActive": true,
+      "isChecker": false,
+      "isKinged": false,
+      "isPromoted": false,
+      "kind": 3,
+      "location": 63
+    },
+    {
+      "colorId": 0,
+      "guid": 20,
+      "hasMoved": false,
+      "id": 20,
+      "isActive": true,
+      "isChecker": false,
+      "isKinged": false,
+      "isPromoted": false,
+      "kind": 1,
+      "location": 1
+    },
+    {
       "colorId": 1,
       "guid": 21,
       "hasMoved": true,
@@ -326,52 +278,16 @@
       "location": 40
     },
     {
-      "colorId": 1,
-      "guid": 25,
-      "hasMoved": false,
-      "id": 25,
+      "colorId": 0,
+      "guid": 22,
+      "hasMoved": true,
+      "id": 22,
       "isActive": true,
       "isChecker": false,
       "isKinged": false,
       "isPromoted": false,
-      "kind": 2,
-      "location": 58
-    },
-    {
-      "colorId": 1,
-      "guid": 29,
-      "hasMoved": false,
-      "id": 29,
-      "isActive": true,
-      "isChecker": false,
-      "isKinged": false,
-      "isPromoted": false,
-      "kind": 4,
-      "location": 59
-    },
-    {
-      "colorId": 1,
-      "guid": 31,
-      "hasMoved": false,
-      "id": 31,
-      "isActive": true,
-      "isChecker": false,
-      "isKinged": false,
-      "isPromoted": false,
-      "kind": 5,
-      "location": 60
-    },
-    {
-      "colorId": 1,
-      "guid": 27,
-      "hasMoved": false,
-      "id": 27,
-      "isActive": true,
-      "isChecker": false,
-      "isKinged": false,
-      "isPromoted": false,
-      "kind": 2,
-      "location": 61
+      "kind": 1,
+      "location": 21
     },
     {
       "colorId": 1,
@@ -386,16 +302,100 @@
       "location": 62
     },
     {
-      "colorId": 1,
-      "guid": 19,
+      "colorId": 0,
+      "guid": 24,
       "hasMoved": false,
-      "id": 19,
+      "id": 24,
       "isActive": true,
       "isChecker": false,
       "isKinged": false,
       "isPromoted": false,
-      "kind": 3,
-      "location": 63
+      "kind": 2,
+      "location": 2
+    },
+    {
+      "colorId": 1,
+      "guid": 25,
+      "hasMoved": false,
+      "id": 25,
+      "isActive": true,
+      "isChecker": false,
+      "isKinged": false,
+      "isPromoted": false,
+      "kind": 2,
+      "location": 58
+    },
+    {
+      "colorId": 0,
+      "guid": 26,
+      "hasMoved": false,
+      "id": 26,
+      "isActive": true,
+      "isChecker": false,
+      "isKinged": false,
+      "isPromoted": false,
+      "kind": 2,
+      "location": 5
+    },
+    {
+      "colorId": 1,
+      "guid": 27,
+      "hasMoved": false,
+      "id": 27,
+      "isActive": true,
+      "isChecker": false,
+      "isKinged": false,
+      "isPromoted": false,
+      "kind": 2,
+      "location": 61
+    },
+    {
+      "colorId": 0,
+      "guid": 28,
+      "hasMoved": true,
+      "id": 28,
+      "isActive": true,
+      "isChecker": false,
+      "isKinged": false,
+      "isPromoted": false,
+      "kind": 4,
+      "location": 27
+    },
+    {
+      "colorId": 1,
+      "guid": 29,
+      "hasMoved": false,
+      "id": 29,
+      "isActive": true,
+      "isChecker": false,
+      "isKinged": false,
+      "isPromoted": false,
+      "kind": 4,
+      "location": 59
+    },
+    {
+      "colorId": 0,
+      "guid": 30,
+      "hasMoved": false,
+      "id": 30,
+      "isActive": true,
+      "isChecker": false,
+      "isKinged": false,
+      "isPromoted": false,
+      "kind": 5,
+      "location": 4
+    },
+    {
+      "colorId": 1,
+      "guid": 31,
+      "hasMoved": false,
+      "id": 31,
+      "isActive": true,
+      "isChecker": false,
+      "isKinged": false,
+      "isPromoted": false,
+      "kind": 5,
+      "location": 60
     }
   ],
   "plies": [
@@ -450,102 +450,6 @@
       "boardAfter": [
         {
           "colorId": 0,
-          "guid": 16,
-          "hasMoved": false,
-          "id": 16,
-          "isActive": true,
-          "isChecker": false,
-          "isKinged": false,
-          "isPromoted": false,
-          "kind": 3,
-          "location": 0
-        },
-        {
-          "colorId": 0,
-          "guid": 20,
-          "hasMoved": false,
-          "id": 20,
-          "isActive": true,
-          "isChecker": false,
-          "isKinged": false,
-          "isPromoted": false,
-          "kind": 1,
-          "location": 1
-        },
-        {
-          "colorId": 0,
-          "guid": 24,
-          "hasMoved": false,
-          "id": 24,
-          "isActive": true,
-          "isChecker": false,
-          "isKinged": false,
-          "isPromoted": false,
-          "kind": 2,
-          "location": 2
-        },
-        {
-          "colorId": 0,
-          "guid": 28,
-          "hasMoved": true,
-          "id": 28,
-          "isActive": true,
-          "isChecker": false,
-          "isKinged": false,
-          "isPromoted": false,
-          "kind": 4,
-          "location": 24
-        },
-        {
-          "colorId": 0,
-          "guid": 30,
-          "hasMoved": false,
-          "id": 30,
-          "isActive": true,
-          "isChecker": false,
-          "isKinged": false,
-          "isPromoted": false,
-          "kind": 5,
-          "location": 4
-        },
-        {
-          "colorId": 0,
-          "guid": 26,
-          "hasMoved": false,
-          "id": 26,
-          "isActive": true,
-          "isChecker": false,
-          "isKinged": false,
-          "isPromoted": false,
-          "kind": 2,
-          "location": 5
-        },
-        {
-          "colorId": 0,
-          "guid": 22,
-          "hasMoved": true,
-          "id": 22,
-          "isActive": true,
-          "isChecker": false,
-          "isKinged": false,
-          "isPromoted": false,
-          "kind": 1,
-          "location": 21
-        },
-        {
-          "colorId": 0,
-          "guid": 18,
-          "hasMoved": false,
-          "id": 18,
-          "isActive": true,
-          "isChecker": false,
-          "isKinged": false,
-          "isPromoted": false,
-          "kind": 3,
-          "location": 7
-        },
-        {
-          "colorId": 0,
           "guid": 0,
           "hasMoved": false,
           "id": 0,
@@ -555,6 +459,18 @@
           "isPromoted": false,
           "kind": 0,
           "location": 8
+        },
+        {
+          "colorId": 1,
+          "guid": 1,
+          "hasMoved": false,
+          "id": 1,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 0,
+          "location": 48
         },
         {
           "colorId": 0,
@@ -569,6 +485,18 @@
           "location": 9
         },
         {
+          "colorId": 1,
+          "guid": 3,
+          "hasMoved": false,
+          "id": 3,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 0,
+          "location": 49
+        },
+        {
           "colorId": 0,
           "guid": 4,
           "hasMoved": false,
@@ -579,6 +507,18 @@
           "isPromoted": false,
           "kind": 0,
           "location": 10
+        },
+        {
+          "colorId": 1,
+          "guid": 5,
+          "hasMoved": true,
+          "id": 5,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 0,
+          "location": 34
         },
         {
           "colorId": 0,
@@ -593,6 +533,18 @@
           "location": 11
         },
         {
+          "colorId": 1,
+          "guid": 7,
+          "hasMoved": true,
+          "id": 7,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 0,
+          "location": 35
+        },
+        {
           "colorId": 0,
           "guid": 8,
           "hasMoved": true,
@@ -603,6 +555,18 @@
           "isPromoted": false,
           "kind": 0,
           "location": 20
+        },
+        {
+          "colorId": 1,
+          "guid": 9,
+          "hasMoved": false,
+          "id": 9,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 0,
+          "location": 52
         },
         {
           "colorId": 0,
@@ -617,6 +581,18 @@
           "location": 13
         },
         {
+          "colorId": 1,
+          "guid": 11,
+          "hasMoved": true,
+          "id": 11,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 0,
+          "location": 37
+        },
+        {
           "colorId": 0,
           "guid": 12,
           "hasMoved": false,
@@ -627,6 +603,18 @@
           "isPromoted": false,
           "kind": 0,
           "location": 14
+        },
+        {
+          "colorId": 1,
+          "guid": 13,
+          "hasMoved": false,
+          "id": 13,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 0,
+          "location": 54
         },
         {
           "colorId": 0,
@@ -642,90 +630,6 @@
         },
         {
           "colorId": 1,
-          "guid": 1,
-          "hasMoved": false,
-          "id": 1,
-          "isActive": true,
-          "isChecker": false,
-          "isKinged": false,
-          "isPromoted": false,
-          "kind": 0,
-          "location": 48
-        },
-        {
-          "colorId": 1,
-          "guid": 3,
-          "hasMoved": false,
-          "id": 3,
-          "isActive": true,
-          "isChecker": false,
-          "isKinged": false,
-          "isPromoted": false,
-          "kind": 0,
-          "location": 49
-        },
-        {
-          "colorId": 1,
-          "guid": 5,
-          "hasMoved": true,
-          "id": 5,
-          "isActive": true,
-          "isChecker": false,
-          "isKinged": false,
-          "isPromoted": false,
-          "kind": 0,
-          "location": 34
-        },
-        {
-          "colorId": 1,
-          "guid": 7,
-          "hasMoved": true,
-          "id": 7,
-          "isActive": true,
-          "isChecker": false,
-          "isKinged": false,
-          "isPromoted": false,
-          "kind": 0,
-          "location": 35
-        },
-        {
-          "colorId": 1,
-          "guid": 9,
-          "hasMoved": false,
-          "id": 9,
-          "isActive": true,
-          "isChecker": false,
-          "isKinged": false,
-          "isPromoted": false,
-          "kind": 0,
-          "location": 52
-        },
-        {
-          "colorId": 1,
-          "guid": 11,
-          "hasMoved": true,
-          "id": 11,
-          "isActive": true,
-          "isChecker": false,
-          "isKinged": false,
-          "isPromoted": false,
-          "kind": 0,
-          "location": 37
-        },
-        {
-          "colorId": 1,
-          "guid": 13,
-          "hasMoved": false,
-          "id": 13,
-          "isActive": true,
-          "isChecker": false,
-          "isKinged": false,
-          "isPromoted": false,
-          "kind": 0,
-          "location": 54
-        },
-        {
-          "colorId": 1,
           "guid": 15,
           "hasMoved": false,
           "id": 15,
@@ -735,6 +639,18 @@
           "isPromoted": false,
           "kind": 0,
           "location": 55
+        },
+        {
+          "colorId": 0,
+          "guid": 16,
+          "hasMoved": false,
+          "id": 16,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 3,
+          "location": 0
         },
         {
           "colorId": 1,
@@ -749,6 +665,42 @@
           "location": 56
         },
         {
+          "colorId": 0,
+          "guid": 18,
+          "hasMoved": false,
+          "id": 18,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 3,
+          "location": 7
+        },
+        {
+          "colorId": 1,
+          "guid": 19,
+          "hasMoved": false,
+          "id": 19,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 3,
+          "location": 63
+        },
+        {
+          "colorId": 0,
+          "guid": 20,
+          "hasMoved": false,
+          "id": 20,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 1,
+          "location": 1
+        },
+        {
           "colorId": 1,
           "guid": 21,
           "hasMoved": true,
@@ -761,52 +713,16 @@
           "location": 40
         },
         {
-          "colorId": 1,
-          "guid": 25,
-          "hasMoved": false,
-          "id": 25,
+          "colorId": 0,
+          "guid": 22,
+          "hasMoved": true,
+          "id": 22,
           "isActive": true,
           "isChecker": false,
           "isKinged": false,
           "isPromoted": false,
-          "kind": 2,
-          "location": 58
-        },
-        {
-          "colorId": 1,
-          "guid": 29,
-          "hasMoved": false,
-          "id": 29,
-          "isActive": true,
-          "isChecker": false,
-          "isKinged": false,
-          "isPromoted": false,
-          "kind": 4,
-          "location": 59
-        },
-        {
-          "colorId": 1,
-          "guid": 31,
-          "hasMoved": false,
-          "id": 31,
-          "isActive": true,
-          "isChecker": false,
-          "isKinged": false,
-          "isPromoted": false,
-          "kind": 5,
-          "location": 60
-        },
-        {
-          "colorId": 1,
-          "guid": 27,
-          "hasMoved": false,
-          "id": 27,
-          "isActive": true,
-          "isChecker": false,
-          "isKinged": false,
-          "isPromoted": false,
-          "kind": 2,
-          "location": 61
+          "kind": 1,
+          "location": 21
         },
         {
           "colorId": 1,
@@ -821,16 +737,100 @@
           "location": 62
         },
         {
-          "colorId": 1,
-          "guid": 19,
+          "colorId": 0,
+          "guid": 24,
           "hasMoved": false,
-          "id": 19,
+          "id": 24,
           "isActive": true,
           "isChecker": false,
           "isKinged": false,
           "isPromoted": false,
-          "kind": 3,
-          "location": 63
+          "kind": 2,
+          "location": 2
+        },
+        {
+          "colorId": 1,
+          "guid": 25,
+          "hasMoved": false,
+          "id": 25,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 2,
+          "location": 58
+        },
+        {
+          "colorId": 0,
+          "guid": 26,
+          "hasMoved": false,
+          "id": 26,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 2,
+          "location": 5
+        },
+        {
+          "colorId": 1,
+          "guid": 27,
+          "hasMoved": false,
+          "id": 27,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 2,
+          "location": 61
+        },
+        {
+          "colorId": 0,
+          "guid": 28,
+          "hasMoved": true,
+          "id": 28,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 4,
+          "location": 24
+        },
+        {
+          "colorId": 1,
+          "guid": 29,
+          "hasMoved": false,
+          "id": 29,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 4,
+          "location": 59
+        },
+        {
+          "colorId": 0,
+          "guid": 30,
+          "hasMoved": false,
+          "id": 30,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 5,
+          "location": 4
+        },
+        {
+          "colorId": 1,
+          "guid": 31,
+          "hasMoved": false,
+          "id": 31,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 5,
+          "location": 60
         }
       ]
     },
@@ -885,102 +885,6 @@
       "boardAfter": [
         {
           "colorId": 0,
-          "guid": 16,
-          "hasMoved": false,
-          "id": 16,
-          "isActive": true,
-          "isChecker": false,
-          "isKinged": false,
-          "isPromoted": false,
-          "kind": 3,
-          "location": 0
-        },
-        {
-          "colorId": 0,
-          "guid": 20,
-          "hasMoved": false,
-          "id": 20,
-          "isActive": true,
-          "isChecker": false,
-          "isKinged": false,
-          "isPromoted": false,
-          "kind": 1,
-          "location": 1
-        },
-        {
-          "colorId": 0,
-          "guid": 24,
-          "hasMoved": false,
-          "id": 24,
-          "isActive": true,
-          "isChecker": false,
-          "isKinged": false,
-          "isPromoted": false,
-          "kind": 2,
-          "location": 2
-        },
-        {
-          "colorId": 0,
-          "guid": 28,
-          "hasMoved": true,
-          "id": 28,
-          "isActive": true,
-          "isChecker": false,
-          "isKinged": false,
-          "isPromoted": false,
-          "kind": 4,
-          "location": 24
-        },
-        {
-          "colorId": 0,
-          "guid": 30,
-          "hasMoved": false,
-          "id": 30,
-          "isActive": true,
-          "isChecker": false,
-          "isKinged": false,
-          "isPromoted": false,
-          "kind": 5,
-          "location": 4
-        },
-        {
-          "colorId": 0,
-          "guid": 26,
-          "hasMoved": false,
-          "id": 26,
-          "isActive": true,
-          "isChecker": false,
-          "isKinged": false,
-          "isPromoted": false,
-          "kind": 2,
-          "location": 5
-        },
-        {
-          "colorId": 0,
-          "guid": 22,
-          "hasMoved": true,
-          "id": 22,
-          "isActive": true,
-          "isChecker": false,
-          "isKinged": false,
-          "isPromoted": false,
-          "kind": 1,
-          "location": 21
-        },
-        {
-          "colorId": 0,
-          "guid": 18,
-          "hasMoved": false,
-          "id": 18,
-          "isActive": true,
-          "isChecker": false,
-          "isKinged": false,
-          "isPromoted": false,
-          "kind": 3,
-          "location": 7
-        },
-        {
-          "colorId": 0,
           "guid": 0,
           "hasMoved": false,
           "id": 0,
@@ -990,6 +894,18 @@
           "isPromoted": false,
           "kind": 0,
           "location": 8
+        },
+        {
+          "colorId": 1,
+          "guid": 1,
+          "hasMoved": false,
+          "id": 1,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 0,
+          "location": 48
         },
         {
           "colorId": 0,
@@ -1004,6 +920,18 @@
           "location": 9
         },
         {
+          "colorId": 1,
+          "guid": 3,
+          "hasMoved": true,
+          "id": 3,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 0,
+          "location": 33
+        },
+        {
           "colorId": 0,
           "guid": 4,
           "hasMoved": false,
@@ -1014,6 +942,18 @@
           "isPromoted": false,
           "kind": 0,
           "location": 10
+        },
+        {
+          "colorId": 1,
+          "guid": 5,
+          "hasMoved": true,
+          "id": 5,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 0,
+          "location": 34
         },
         {
           "colorId": 0,
@@ -1028,6 +968,18 @@
           "location": 11
         },
         {
+          "colorId": 1,
+          "guid": 7,
+          "hasMoved": true,
+          "id": 7,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 0,
+          "location": 35
+        },
+        {
           "colorId": 0,
           "guid": 8,
           "hasMoved": true,
@@ -1038,6 +990,18 @@
           "isPromoted": false,
           "kind": 0,
           "location": 20
+        },
+        {
+          "colorId": 1,
+          "guid": 9,
+          "hasMoved": false,
+          "id": 9,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 0,
+          "location": 52
         },
         {
           "colorId": 0,
@@ -1052,6 +1016,18 @@
           "location": 13
         },
         {
+          "colorId": 1,
+          "guid": 11,
+          "hasMoved": true,
+          "id": 11,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 0,
+          "location": 37
+        },
+        {
           "colorId": 0,
           "guid": 12,
           "hasMoved": false,
@@ -1062,6 +1038,18 @@
           "isPromoted": false,
           "kind": 0,
           "location": 14
+        },
+        {
+          "colorId": 1,
+          "guid": 13,
+          "hasMoved": false,
+          "id": 13,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 0,
+          "location": 54
         },
         {
           "colorId": 0,
@@ -1077,90 +1065,6 @@
         },
         {
           "colorId": 1,
-          "guid": 1,
-          "hasMoved": false,
-          "id": 1,
-          "isActive": true,
-          "isChecker": false,
-          "isKinged": false,
-          "isPromoted": false,
-          "kind": 0,
-          "location": 48
-        },
-        {
-          "colorId": 1,
-          "guid": 3,
-          "hasMoved": true,
-          "id": 3,
-          "isActive": true,
-          "isChecker": false,
-          "isKinged": false,
-          "isPromoted": false,
-          "kind": 0,
-          "location": 33
-        },
-        {
-          "colorId": 1,
-          "guid": 5,
-          "hasMoved": true,
-          "id": 5,
-          "isActive": true,
-          "isChecker": false,
-          "isKinged": false,
-          "isPromoted": false,
-          "kind": 0,
-          "location": 34
-        },
-        {
-          "colorId": 1,
-          "guid": 7,
-          "hasMoved": true,
-          "id": 7,
-          "isActive": true,
-          "isChecker": false,
-          "isKinged": false,
-          "isPromoted": false,
-          "kind": 0,
-          "location": 35
-        },
-        {
-          "colorId": 1,
-          "guid": 9,
-          "hasMoved": false,
-          "id": 9,
-          "isActive": true,
-          "isChecker": false,
-          "isKinged": false,
-          "isPromoted": false,
-          "kind": 0,
-          "location": 52
-        },
-        {
-          "colorId": 1,
-          "guid": 11,
-          "hasMoved": true,
-          "id": 11,
-          "isActive": true,
-          "isChecker": false,
-          "isKinged": false,
-          "isPromoted": false,
-          "kind": 0,
-          "location": 37
-        },
-        {
-          "colorId": 1,
-          "guid": 13,
-          "hasMoved": false,
-          "id": 13,
-          "isActive": true,
-          "isChecker": false,
-          "isKinged": false,
-          "isPromoted": false,
-          "kind": 0,
-          "location": 54
-        },
-        {
-          "colorId": 1,
           "guid": 15,
           "hasMoved": false,
           "id": 15,
@@ -1170,6 +1074,18 @@
           "isPromoted": false,
           "kind": 0,
           "location": 55
+        },
+        {
+          "colorId": 0,
+          "guid": 16,
+          "hasMoved": false,
+          "id": 16,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 3,
+          "location": 0
         },
         {
           "colorId": 1,
@@ -1184,6 +1100,42 @@
           "location": 56
         },
         {
+          "colorId": 0,
+          "guid": 18,
+          "hasMoved": false,
+          "id": 18,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 3,
+          "location": 7
+        },
+        {
+          "colorId": 1,
+          "guid": 19,
+          "hasMoved": false,
+          "id": 19,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 3,
+          "location": 63
+        },
+        {
+          "colorId": 0,
+          "guid": 20,
+          "hasMoved": false,
+          "id": 20,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 1,
+          "location": 1
+        },
+        {
           "colorId": 1,
           "guid": 21,
           "hasMoved": true,
@@ -1196,52 +1148,16 @@
           "location": 40
         },
         {
-          "colorId": 1,
-          "guid": 25,
-          "hasMoved": false,
-          "id": 25,
+          "colorId": 0,
+          "guid": 22,
+          "hasMoved": true,
+          "id": 22,
           "isActive": true,
           "isChecker": false,
           "isKinged": false,
           "isPromoted": false,
-          "kind": 2,
-          "location": 58
-        },
-        {
-          "colorId": 1,
-          "guid": 29,
-          "hasMoved": false,
-          "id": 29,
-          "isActive": true,
-          "isChecker": false,
-          "isKinged": false,
-          "isPromoted": false,
-          "kind": 4,
-          "location": 59
-        },
-        {
-          "colorId": 1,
-          "guid": 31,
-          "hasMoved": false,
-          "id": 31,
-          "isActive": true,
-          "isChecker": false,
-          "isKinged": false,
-          "isPromoted": false,
-          "kind": 5,
-          "location": 60
-        },
-        {
-          "colorId": 1,
-          "guid": 27,
-          "hasMoved": false,
-          "id": 27,
-          "isActive": true,
-          "isChecker": false,
-          "isKinged": false,
-          "isPromoted": false,
-          "kind": 2,
-          "location": 61
+          "kind": 1,
+          "location": 21
         },
         {
           "colorId": 1,
@@ -1256,16 +1172,100 @@
           "location": 62
         },
         {
-          "colorId": 1,
-          "guid": 19,
+          "colorId": 0,
+          "guid": 24,
           "hasMoved": false,
-          "id": 19,
+          "id": 24,
           "isActive": true,
           "isChecker": false,
           "isKinged": false,
           "isPromoted": false,
-          "kind": 3,
-          "location": 63
+          "kind": 2,
+          "location": 2
+        },
+        {
+          "colorId": 1,
+          "guid": 25,
+          "hasMoved": false,
+          "id": 25,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 2,
+          "location": 58
+        },
+        {
+          "colorId": 0,
+          "guid": 26,
+          "hasMoved": false,
+          "id": 26,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 2,
+          "location": 5
+        },
+        {
+          "colorId": 1,
+          "guid": 27,
+          "hasMoved": false,
+          "id": 27,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 2,
+          "location": 61
+        },
+        {
+          "colorId": 0,
+          "guid": 28,
+          "hasMoved": true,
+          "id": 28,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 4,
+          "location": 24
+        },
+        {
+          "colorId": 1,
+          "guid": 29,
+          "hasMoved": false,
+          "id": 29,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 4,
+          "location": 59
+        },
+        {
+          "colorId": 0,
+          "guid": 30,
+          "hasMoved": false,
+          "id": 30,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 5,
+          "location": 4
+        },
+        {
+          "colorId": 1,
+          "guid": 31,
+          "hasMoved": false,
+          "id": 31,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 5,
+          "location": 60
         }
       ]
     },
@@ -1360,102 +1360,6 @@
       "boardAfter": [
         {
           "colorId": 0,
-          "guid": 16,
-          "hasMoved": false,
-          "id": 16,
-          "isActive": true,
-          "isChecker": false,
-          "isKinged": false,
-          "isPromoted": false,
-          "kind": 3,
-          "location": 0
-        },
-        {
-          "colorId": 0,
-          "guid": 20,
-          "hasMoved": false,
-          "id": 20,
-          "isActive": true,
-          "isChecker": false,
-          "isKinged": false,
-          "isPromoted": false,
-          "kind": 1,
-          "location": 1
-        },
-        {
-          "colorId": 0,
-          "guid": 24,
-          "hasMoved": false,
-          "id": 24,
-          "isActive": true,
-          "isChecker": false,
-          "isKinged": false,
-          "isPromoted": false,
-          "kind": 2,
-          "location": 2
-        },
-        {
-          "colorId": 0,
-          "guid": 28,
-          "hasMoved": true,
-          "id": 28,
-          "isActive": true,
-          "isChecker": false,
-          "isKinged": false,
-          "isPromoted": false,
-          "kind": 4,
-          "location": 24
-        },
-        {
-          "colorId": 0,
-          "guid": 30,
-          "hasMoved": false,
-          "id": 30,
-          "isActive": true,
-          "isChecker": false,
-          "isKinged": false,
-          "isPromoted": false,
-          "kind": 5,
-          "location": 4
-        },
-        {
-          "colorId": 0,
-          "guid": 26,
-          "hasMoved": true,
-          "id": 26,
-          "isActive": false,
-          "isChecker": true,
-          "isKinged": false,
-          "isPromoted": false,
-          "kind": 2,
-          "location": 33
-        },
-        {
-          "colorId": 0,
-          "guid": 22,
-          "hasMoved": true,
-          "id": 22,
-          "isActive": true,
-          "isChecker": false,
-          "isKinged": false,
-          "isPromoted": false,
-          "kind": 1,
-          "location": 21
-        },
-        {
-          "colorId": 0,
-          "guid": 18,
-          "hasMoved": false,
-          "id": 18,
-          "isActive": true,
-          "isChecker": false,
-          "isKinged": false,
-          "isPromoted": false,
-          "kind": 3,
-          "location": 7
-        },
-        {
-          "colorId": 0,
           "guid": 0,
           "hasMoved": false,
           "id": 0,
@@ -1465,6 +1369,18 @@
           "isPromoted": false,
           "kind": 0,
           "location": 8
+        },
+        {
+          "colorId": 1,
+          "guid": 1,
+          "hasMoved": false,
+          "id": 1,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 0,
+          "location": 48
         },
         {
           "colorId": 0,
@@ -1479,6 +1395,18 @@
           "location": 9
         },
         {
+          "colorId": 1,
+          "guid": 3,
+          "hasMoved": true,
+          "id": 3,
+          "isActive": false,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 0,
+          "location": 33
+        },
+        {
           "colorId": 0,
           "guid": 4,
           "hasMoved": false,
@@ -1489,6 +1417,18 @@
           "isPromoted": false,
           "kind": 0,
           "location": 10
+        },
+        {
+          "colorId": 1,
+          "guid": 5,
+          "hasMoved": true,
+          "id": 5,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 0,
+          "location": 34
         },
         {
           "colorId": 0,
@@ -1503,6 +1443,18 @@
           "location": 11
         },
         {
+          "colorId": 1,
+          "guid": 7,
+          "hasMoved": true,
+          "id": 7,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 0,
+          "location": 35
+        },
+        {
           "colorId": 0,
           "guid": 8,
           "hasMoved": true,
@@ -1513,6 +1465,18 @@
           "isPromoted": false,
           "kind": 0,
           "location": 20
+        },
+        {
+          "colorId": 1,
+          "guid": 9,
+          "hasMoved": false,
+          "id": 9,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 0,
+          "location": 52
         },
         {
           "colorId": 0,
@@ -1527,6 +1491,18 @@
           "location": 13
         },
         {
+          "colorId": 1,
+          "guid": 11,
+          "hasMoved": true,
+          "id": 11,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 0,
+          "location": 37
+        },
+        {
           "colorId": 0,
           "guid": 12,
           "hasMoved": false,
@@ -1537,6 +1513,18 @@
           "isPromoted": false,
           "kind": 0,
           "location": 14
+        },
+        {
+          "colorId": 1,
+          "guid": 13,
+          "hasMoved": false,
+          "id": 13,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 0,
+          "location": 54
         },
         {
           "colorId": 0,
@@ -1552,90 +1540,6 @@
         },
         {
           "colorId": 1,
-          "guid": 1,
-          "hasMoved": false,
-          "id": 1,
-          "isActive": true,
-          "isChecker": false,
-          "isKinged": false,
-          "isPromoted": false,
-          "kind": 0,
-          "location": 48
-        },
-        {
-          "colorId": 1,
-          "guid": 3,
-          "hasMoved": true,
-          "id": 3,
-          "isActive": false,
-          "isChecker": false,
-          "isKinged": false,
-          "isPromoted": false,
-          "kind": 0,
-          "location": 33
-        },
-        {
-          "colorId": 1,
-          "guid": 5,
-          "hasMoved": true,
-          "id": 5,
-          "isActive": true,
-          "isChecker": false,
-          "isKinged": false,
-          "isPromoted": false,
-          "kind": 0,
-          "location": 34
-        },
-        {
-          "colorId": 1,
-          "guid": 7,
-          "hasMoved": true,
-          "id": 7,
-          "isActive": true,
-          "isChecker": false,
-          "isKinged": false,
-          "isPromoted": false,
-          "kind": 0,
-          "location": 35
-        },
-        {
-          "colorId": 1,
-          "guid": 9,
-          "hasMoved": false,
-          "id": 9,
-          "isActive": true,
-          "isChecker": false,
-          "isKinged": false,
-          "isPromoted": false,
-          "kind": 0,
-          "location": 52
-        },
-        {
-          "colorId": 1,
-          "guid": 11,
-          "hasMoved": true,
-          "id": 11,
-          "isActive": true,
-          "isChecker": false,
-          "isKinged": false,
-          "isPromoted": false,
-          "kind": 0,
-          "location": 37
-        },
-        {
-          "colorId": 1,
-          "guid": 13,
-          "hasMoved": false,
-          "id": 13,
-          "isActive": true,
-          "isChecker": false,
-          "isKinged": false,
-          "isPromoted": false,
-          "kind": 0,
-          "location": 54
-        },
-        {
-          "colorId": 1,
           "guid": 15,
           "hasMoved": false,
           "id": 15,
@@ -1645,6 +1549,18 @@
           "isPromoted": false,
           "kind": 0,
           "location": 55
+        },
+        {
+          "colorId": 0,
+          "guid": 16,
+          "hasMoved": false,
+          "id": 16,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 3,
+          "location": 0
         },
         {
           "colorId": 1,
@@ -1659,6 +1575,42 @@
           "location": 56
         },
         {
+          "colorId": 0,
+          "guid": 18,
+          "hasMoved": false,
+          "id": 18,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 3,
+          "location": 7
+        },
+        {
+          "colorId": 1,
+          "guid": 19,
+          "hasMoved": false,
+          "id": 19,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 3,
+          "location": 63
+        },
+        {
+          "colorId": 0,
+          "guid": 20,
+          "hasMoved": false,
+          "id": 20,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 1,
+          "location": 1
+        },
+        {
           "colorId": 1,
           "guid": 21,
           "hasMoved": true,
@@ -1671,52 +1623,16 @@
           "location": 40
         },
         {
-          "colorId": 1,
-          "guid": 25,
-          "hasMoved": false,
-          "id": 25,
+          "colorId": 0,
+          "guid": 22,
+          "hasMoved": true,
+          "id": 22,
           "isActive": true,
           "isChecker": false,
           "isKinged": false,
           "isPromoted": false,
-          "kind": 2,
-          "location": 58
-        },
-        {
-          "colorId": 1,
-          "guid": 29,
-          "hasMoved": false,
-          "id": 29,
-          "isActive": true,
-          "isChecker": false,
-          "isKinged": false,
-          "isPromoted": false,
-          "kind": 4,
-          "location": 59
-        },
-        {
-          "colorId": 1,
-          "guid": 31,
-          "hasMoved": false,
-          "id": 31,
-          "isActive": true,
-          "isChecker": false,
-          "isKinged": false,
-          "isPromoted": false,
-          "kind": 5,
-          "location": 60
-        },
-        {
-          "colorId": 1,
-          "guid": 27,
-          "hasMoved": false,
-          "id": 27,
-          "isActive": true,
-          "isChecker": false,
-          "isKinged": false,
-          "isPromoted": false,
-          "kind": 2,
-          "location": 61
+          "kind": 1,
+          "location": 21
         },
         {
           "colorId": 1,
@@ -1731,16 +1647,100 @@
           "location": 62
         },
         {
-          "colorId": 1,
-          "guid": 19,
+          "colorId": 0,
+          "guid": 24,
           "hasMoved": false,
-          "id": 19,
+          "id": 24,
           "isActive": true,
           "isChecker": false,
           "isKinged": false,
           "isPromoted": false,
-          "kind": 3,
-          "location": 63
+          "kind": 2,
+          "location": 2
+        },
+        {
+          "colorId": 1,
+          "guid": 25,
+          "hasMoved": false,
+          "id": 25,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 2,
+          "location": 58
+        },
+        {
+          "colorId": 0,
+          "guid": 26,
+          "hasMoved": true,
+          "id": 26,
+          "isActive": false,
+          "isChecker": true,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 2,
+          "location": 33
+        },
+        {
+          "colorId": 1,
+          "guid": 27,
+          "hasMoved": false,
+          "id": 27,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 2,
+          "location": 61
+        },
+        {
+          "colorId": 0,
+          "guid": 28,
+          "hasMoved": true,
+          "id": 28,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 4,
+          "location": 24
+        },
+        {
+          "colorId": 1,
+          "guid": 29,
+          "hasMoved": false,
+          "id": 29,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 4,
+          "location": 59
+        },
+        {
+          "colorId": 0,
+          "guid": 30,
+          "hasMoved": false,
+          "id": 30,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 5,
+          "location": 4
+        },
+        {
+          "colorId": 1,
+          "guid": 31,
+          "hasMoved": false,
+          "id": 31,
+          "isActive": true,
+          "isChecker": false,
+          "isKinged": false,
+          "isPromoted": false,
+          "kind": 5,
+          "location": 60
         }
       ]
     }

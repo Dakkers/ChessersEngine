@@ -22,7 +22,7 @@ It is the gate that proves each structural step changed shape without changing b
 `--all-scenarios --ai-vs-ai --seed 1 --level 2 --quiet`
 
 The output is byte-reproducible from the seed alone: `board.id` is not serialized and
-`Dictionary` iteration is stable within a runtime, so the RNG is the only source of
+chessmen are iterated in ascending id order, so the RNG is the only source of
 nondeterminism reaching the corpus, and `--seed` pins it. Changing the seed, AI level,
 or fixture set invalidates the baseline.
 
@@ -38,8 +38,9 @@ so they cannot be played to completion:
 
 ## Re-baselining
 
-The arena refactor is staged so that every step keeps this corpus identical. Exactly one
-planned step is an intentional behavior change: switching piece iteration from the
-Dictionary's insertion order to canonical id-ascending order (what the Rust port will
-use). That step, and only that step, re-baselines via `./verify.sh --update`, with the
-resulting diff reviewed as the record of the behavior change.
+The arena refactor was staged so that every step kept this corpus identical, except one
+intentional behavior change: piece iteration switched from the schema insertion order to
+canonical id-ascending order (what the Rust port uses). That step re-baselined via
+`./verify.sh --update`; its diff is the record of the behavior change.
+
+Re-baseline again only for an intentional behavior change, and review the diff.

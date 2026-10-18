@@ -79,9 +79,9 @@ namespace ChessersEngine.Tests {
                 Chessman occupant = board.PieceAt(tile);
                 snapshot.Add($"tile {id}: occupied={board.IsOccupied(tile)} piece={(occupant == null ? -1 : occupant.id)}");
             }
-            foreach (KeyValuePair<int, Chessman> entry in board.GetAllChessmen().OrderBy(e => e.Key)) {
-                Tile tile = board.TileOf(entry.Value);
-                snapshot.Add($"chessman {entry.Key}: tile={(tile == null ? -1 : tile.id)}");
+            foreach (Chessman chessman in board.GetAllChessmen()) {
+                Tile tile = board.TileOf(chessman);
+                snapshot.Add($"chessman {chessman.id}: tile={(tile == null ? -1 : tile.id)}");
             }
             return snapshot;
         }

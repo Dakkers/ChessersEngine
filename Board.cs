@@ -9,7 +9,6 @@ namespace ChessersEngine {
         readonly Tile[] tiles = new Tile[Constants.NUM_TILES];
         readonly int[] occupantIds = new int[Constants.NUM_TILES];
         readonly Chessman[] chessmen = new Chessman[Constants.NUM_CHESSMEN];
-        readonly List<Chessman> chessmenInOrder = new List<Chessman>();
         MatchConfig matchConfig;
 
         readonly int numRealColumns = 8;
@@ -17,6 +16,11 @@ namespace ChessersEngine {
         readonly int rightDiagonalDelta;
         readonly int leftDiagonalDelta;
 
+        /// <summary>
+        /// Creates a board holding the given chessmen, or the default set if null.
+        /// Each schema MUST have a unique id.
+        /// Throws <see cref="ArgumentException"/> if two schemas share an id.
+        /// </summary>
         public Board (List<ChessmanSchema> _pieces, MatchConfig _matchConfig) {
             List<ChessmanSchema> pieces = _pieces ?? ChessmanSchema.CreateDefaults();
             matchConfig = _matchConfig;
@@ -35,12 +39,16 @@ namespace ChessersEngine {
 
             foreach (ChessmanSchema cs in pieces) {
                 Chessman newChessman = Chessman.CreateFromSchema(cs);
+                if (chessmen[newChessman.id] != null) {
+                    throw new ArgumentException($"Duplicate chessman id {newChessman.id}.", nameof(_pieces));
+                }
                 chessmen[newChessman.id] = newChessman;
-                chessmenInOrder.Add(newChessman);
                 if (newChessman.isActive) {
                     Place(newChessman, GetTile(cs.location));
                 }
             }
+
+            AssertActiveChessmenOccupyTheirTiles();
         }
 
         Board (Board other) {
@@ -56,17 +64,25 @@ namespace ChessersEngine {
             }
             Array.Copy(other.occupantIds, occupantIds, occupantIds.Length);
 
-            foreach (Chessman otherChessman in other.chessmenInOrder) {
-                Chessman chessman = otherChessman.Clone();
-                chessmen[chessman.id] = chessman;
-                chessmenInOrder.Add(chessman);
+            for (int i = 0; i < chessmen.Length; i++) {
+                if (other.chessmen[i] != null) {
+                    chessmen[i] = other.chessmen[i].Clone();
+                }
             }
 
             AssertActiveChessmenOccupyTheirTiles();
         }
 
         public List<ChessmanSchema> GetChessmanSchemas () {
-            return chessmenInOrder.Select((c) => c.CreateSchema()).ToList();
+            return ChessmenById().Select((c) => c.CreateSchema()).ToList();
+        }
+
+        /// <summary>
+        /// Returns every chessman on this board in ascending id order.
+        /// Allocates; hot paths SHOULD loop over the chessmen array directly.
+        /// </summary>
+        IEnumerable<Chessman> ChessmenById () {
+            return chessmen.Where((c) => c != null);
         }
 
         public Chessman GetChessman (int id) {
@@ -190,16 +206,17 @@ namespace ChessersEngine {
 
         [Conditional("DEBUG")]
         void AssertSameChessmenIds (Board source) {
-            Debug.Assert(
-                chessmenInOrder.Count == source.chessmenInOrder.Count &&
-                    chessmenInOrder.All((c) => source.chessmen[c.id] != null),
-                "Source board does not hold the same chessman ids as this board."
-            );
+            for (int i = 0; i < chessmen.Length; i++) {
+                Debug.Assert(
+                    (chessmen[i] == null) == (source.chessmen[i] == null),
+                    "Source board does not hold the same chessman ids as this board."
+                );
+            }
         }
 
         [Conditional("DEBUG")]
         void AssertActiveChessmenOccupyTheirTiles () {
-            foreach (Chessman chessman in chessmenInOrder) {
+            foreach (Chessman chessman in ChessmenById()) {
                 Debug.Assert(
                     !chessman.isActive || occupantIds[IndexOf(chessman.location)] == chessman.id,
                     "Active chessman does not occupy its location's tile."
@@ -218,8 +235,10 @@ namespace ChessersEngine {
             EngineCounters.CopyState();
             AssertSameChessmenIds(source);
             matchConfig = source.matchConfig;
-            foreach (Chessman chessman in chessmenInOrder) {
-                chessman.CopyFrom(source.chessmen[chessman.id]);
+            for (int i = 0; i < chessmen.Length; i++) {
+                if (chessmen[i] != null) {
+                    chessmen[i].CopyFrom(source.chessmen[i]);
+                }
             }
             Array.Copy(source.occupantIds, occupantIds, occupantIds.Length);
         }
@@ -278,19 +297,30 @@ namespace ChessersEngine {
         #region Chessman getters
 
         public List<Chessman> GetActiveChessmen () {
-            return chessmenInOrder.Where((c) => c.isActive).ToList();
+            var result = new List<Chessman>(chessmen.Length);
+            for (int i = 0; i < chessmen.Length; i++) {
+                if (chessmen[i] != null && chessmen[i].isActive) {
+                    result.Add(chessmen[i]);
+                }
+            }
+            return result;
         }
 
         public List<Chessman> GetActiveChessmenOfColor (ColorEnum color) {
-            return GetActiveChessmen().Where((c) => c.color == color).ToList();
-        }
-
-        public Dictionary<int, Chessman> GetAllChessmen () {
-            var result = new Dictionary<int, Chessman>();
-            foreach (Chessman c in chessmenInOrder) {
-                result[c.id] = c;
+            var result = new List<Chessman>(chessmen.Length / 2);
+            for (int i = 0; i < chessmen.Length; i++) {
+                if (chessmen[i] != null && chessmen[i].isActive && chessmen[i].color == color) {
+                    result.Add(chessmen[i]);
+                }
             }
             return result;
+        }
+
+        /// <summary>
+        /// Returns every chessman on this board, active or not, in ascending id order.
+        /// </summary>
+        public IReadOnlyList<Chessman> GetAllChessmen () {
+            return ChessmenById().ToList();
         }
 
         public Chessman GetBlackKing () {
@@ -1823,10 +1853,8 @@ namespace ChessersEngine {
 
         public void PrintPieces () {
             var result = new List<string>();
-            foreach (Chessman item in chessmenInOrder) {
-                if (item.isActive) {
-                    result.Add($"{item.id} {item.kind} | {TileOf(item)?.id}");
-                }
+            foreach (Chessman item in GetActiveChessmen()) {
+                result.Add($"{item.id} {item.kind} | {TileOf(item)?.id}");
             }
             Match.Log(string.Join("\n", result));
         }
