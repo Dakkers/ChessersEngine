@@ -64,8 +64,10 @@ namespace ChessersEngine {
             }
             Array.Copy(other.occupantIds, occupantIds, occupantIds.Length);
 
-            foreach (Chessman otherChessman in other.ChessmenById()) {
-                chessmen[otherChessman.id] = otherChessman.Clone();
+            for (int i = 0; i < chessmen.Length; i++) {
+                if (other.chessmen[i] != null) {
+                    chessmen[i] = other.chessmen[i].Clone();
+                }
             }
 
             AssertActiveChessmenOccupyTheirTiles();
@@ -77,6 +79,7 @@ namespace ChessersEngine {
 
         /// <summary>
         /// Returns every chessman on this board in ascending id order.
+        /// Allocates; hot paths SHOULD loop over the chessmen array directly.
         /// </summary>
         IEnumerable<Chessman> ChessmenById () {
             return chessmen.Where((c) => c != null);
@@ -230,8 +233,10 @@ namespace ChessersEngine {
             EngineCounters.CopyState();
             AssertSameChessmenIds(source);
             matchConfig = source.matchConfig;
-            foreach (Chessman chessman in ChessmenById()) {
-                chessman.CopyFrom(source.chessmen[chessman.id]);
+            for (int i = 0; i < chessmen.Length; i++) {
+                if (chessmen[i] != null) {
+                    chessmen[i].CopyFrom(source.chessmen[i]);
+                }
             }
             Array.Copy(source.occupantIds, occupantIds, occupantIds.Length);
         }
@@ -290,11 +295,23 @@ namespace ChessersEngine {
         #region Chessman getters
 
         public List<Chessman> GetActiveChessmen () {
-            return ChessmenById().Where((c) => c.isActive).ToList();
+            var result = new List<Chessman>(chessmen.Length);
+            for (int i = 0; i < chessmen.Length; i++) {
+                if (chessmen[i] != null && chessmen[i].isActive) {
+                    result.Add(chessmen[i]);
+                }
+            }
+            return result;
         }
 
         public List<Chessman> GetActiveChessmenOfColor (ColorEnum color) {
-            return GetActiveChessmen().Where((c) => c.color == color).ToList();
+            var result = new List<Chessman>(chessmen.Length / 2);
+            for (int i = 0; i < chessmen.Length; i++) {
+                if (chessmen[i] != null && chessmen[i].isActive && chessmen[i].color == color) {
+                    result.Add(chessmen[i]);
+                }
+            }
+            return result;
         }
 
         public Dictionary<int, Chessman> GetAllChessmen () {
