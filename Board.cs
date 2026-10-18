@@ -16,6 +16,11 @@ namespace ChessersEngine {
         readonly int rightDiagonalDelta;
         readonly int leftDiagonalDelta;
 
+        /// <summary>
+        /// Creates a board holding the given chessmen, or the default set if null.
+        /// Each schema MUST have a unique id.
+        /// Throws <see cref="ArgumentException"/> if two schemas share an id.
+        /// </summary>
         public Board (List<ChessmanSchema> _pieces, MatchConfig _matchConfig) {
             List<ChessmanSchema> pieces = _pieces ?? ChessmanSchema.CreateDefaults();
             matchConfig = _matchConfig;
@@ -34,11 +39,16 @@ namespace ChessersEngine {
 
             foreach (ChessmanSchema cs in pieces) {
                 Chessman newChessman = Chessman.CreateFromSchema(cs);
+                if (chessmen[newChessman.id] != null) {
+                    throw new ArgumentException($"Duplicate chessman id {newChessman.id}.", nameof(_pieces));
+                }
                 chessmen[newChessman.id] = newChessman;
                 if (newChessman.isActive) {
                     Place(newChessman, GetTile(cs.location));
                 }
             }
+
+            AssertActiveChessmenOccupyTheirTiles();
         }
 
         Board (Board other) {
