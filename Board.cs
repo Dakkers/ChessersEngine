@@ -206,10 +206,12 @@ namespace ChessersEngine {
 
         [Conditional("DEBUG")]
         void AssertSameChessmenIds (Board source) {
-            Debug.Assert(
-                Enumerable.Range(0, chessmen.Length).All((i) => (chessmen[i] == null) == (source.chessmen[i] == null)),
-                "Source board does not hold the same chessman ids as this board."
-            );
+            for (int i = 0; i < chessmen.Length; i++) {
+                Debug.Assert(
+                    (chessmen[i] == null) == (source.chessmen[i] == null),
+                    "Source board does not hold the same chessman ids as this board."
+                );
+            }
         }
 
         [Conditional("DEBUG")]
