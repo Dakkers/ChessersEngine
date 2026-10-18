@@ -316,12 +316,11 @@ namespace ChessersEngine {
             return result;
         }
 
-        public Dictionary<int, Chessman> GetAllChessmen () {
-            var result = new Dictionary<int, Chessman>();
-            foreach (Chessman c in ChessmenById()) {
-                result[c.id] = c;
-            }
-            return result;
+        /// <summary>
+        /// Returns every chessman on this board, active or not, in ascending id order.
+        /// </summary>
+        public IReadOnlyList<Chessman> GetAllChessmen () {
+            return ChessmenById().ToList();
         }
 
         public Chessman GetBlackKing () {

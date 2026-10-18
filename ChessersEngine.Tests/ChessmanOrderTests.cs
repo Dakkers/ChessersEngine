@@ -50,7 +50,7 @@ namespace ChessersEngine.Tests {
         public void AllChessmenAreInAscendingIdOrder () {
             Board board = MakeBoardFromReversedSchemas();
 
-            List<int> ids = board.GetAllChessmen().Keys.ToList();
+            List<int> ids = board.GetAllChessmen().Select((c) => c.id).ToList();
 
             AssertStrictlyAscending(ids);
         }
