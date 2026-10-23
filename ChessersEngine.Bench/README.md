@@ -64,8 +64,8 @@ The comparator keeps two signals apart:
 
 - **counter mismatch** — the two engines did different algorithmic work. That is a
   porting bug, not a performance result, and it exits non-zero. The exception is a
-  workload marked `countersComparable: false` (see below): its counter difference
-  is printed in its own section and does **not** fail the run.
+  workload marked `countersComparable: false` (none are, see below): its counter
+  difference is printed in its own section and does **not** fail the run.
 - **time delta** — reported as a speedup factor. It never fails on its own, and it
   is prefixed with a warning banner when the two `environment` blocks disagree on
   OS, architecture, CPU model, or `jitMode`.
@@ -111,34 +111,18 @@ Counters stay live during the timed runs — there is one build, not two. Rather
 than assume that is free, the suite includes a `counter.overhead` workload that
 times a bare increment loop, so the cost is a measured number in the output.
 
-### Counters that cannot be compared
+### Search counters are comparable
 
-Six workloads count work that depends on the host language's seeded RNG stream.
-`Match.MinimaxHelper` shuffles both the piece list and the tile list with the
-match RNG (`Helpers.Shuffle`) and prunes on alpha-beta cutoffs, so the node count
-follows the exact `rng.Next` sequence. A Rust port that does not bit-reproduce
-.NET's `System.Random` will search a differently-ordered move list and legitimately
-visit a different number of nodes.
+`Match.MinimaxHelper` shuffles both the piece list and the tile list with the match
+RNG and prunes on alpha-beta cutoffs, so a search's node count follows the exact
+`rng.Next` sequence. The RNG is `PortableRandom`, specified bit-for-bit in
+[`docs/portable-random.md`](../docs/portable-random.md), so a port that implements
+that spec visits the same nodes. Every workload, the search and self-play ones
+included, is therefore comparable and fails the comparison on any counter difference.
 
-Those workloads carry `"countersComparable": false` in the manifest:
-
-| Workload | Why |
-| -------- | --- |
-| `search.level0.opening` | minimax move ordering is RNG-shuffled |
-| `search.level1.Multijump1` | same |
-| `search.level2.opening` | same |
-| `search.level2.AlmostCheckmate1` | same |
-| `search.level2.Multijump1` | same |
-| `selfplay.level0` | every turn calls the search above |
-
-The field is optional and **defaults to true**, so every other workload — including
-`replay.game`, which replays a committed fixture rather than a fresh self-play game
-— still fails the comparison on any counter difference.
-
-A Rust port MUST carry the flag through from the manifest to its own
-`perf.v1.json`, so the comparator sees the same classification. It is not licence
-to ignore those workloads: their *times* remain fully comparable, and a wild
-difference in their counters is still worth reading, just not worth failing on.
+The manifest still accepts an optional `countersComparable` field (default `true`),
+and the comparator still honors `false`, but `check-workloads.ts` rejects it: an
+RNG-dependent workload that disagrees across languages is a porting bug.
 
 ## What one timed op is
 
