@@ -78,12 +78,12 @@ namespace ChessersEngine {
         int winningPlayerId = -1;
         bool isDraw = false;
         bool isResignation = false;
-        readonly System.Random rng;
+        readonly PortableRandom rng;
 
         /// <param name="data">The data to initialize the match with. If null, a new match is created.</param>
         /// <param name="randomSeed">Optional seed for the move-search RNG, for reproducible AI (e.g. in tests).</param>
         public Match (MatchData data, MatchConfig? _config = null, int? randomSeed = null) {
-            rng = randomSeed.HasValue ? new System.Random(randomSeed.Value) : new System.Random();
+            rng = new PortableRandom(randomSeed ?? new System.Random().Next());
 
             List<ChessmanSchema> pieces = null;
 
