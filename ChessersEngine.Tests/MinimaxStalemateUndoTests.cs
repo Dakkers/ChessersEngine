@@ -12,7 +12,7 @@ namespace ChessersEngine.Tests {
     /// move, so MinimaxHelper's board.MoveChessman applied it to the shared search board;
     /// the old code then skipped it with `continue` WITHOUT calling board.UndoMove, leaving
     /// the board mutated for every later candidate at that node. These seeds are ones where
-    /// that corruption changed the move the search returned (to 18->4 / 18->5 / 18->2 / 18->3 instead of the
+    /// that corruption changed the move the search returned (to 18->3 / 18->6 / 18->2 / 18->5 instead of the
     /// uncorrupted 18->15). The RNG is seeded so the search is deterministic.
     ///
     /// This pins the corrected choice for specific seeds; if the evaluation is intentionally
@@ -34,10 +34,10 @@ namespace ChessersEngine.Tests {
             },
         };
 
-        [TestCase(17)]
-        [TestCase(164)]
-        [TestCase(214)]
-        [TestCase(262)]
+        [TestCase(141)]
+        [TestCase(563)]
+        [TestCase(618)]
+        [TestCase(700)]
         public void SearchIsNotCorruptedByAnUnundoneStalemateMove (int seed) {
             List<MoveAttempt> best = new Match(Position(), null, seed).CalculateBestMove(0);
 

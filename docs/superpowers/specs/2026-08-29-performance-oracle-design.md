@@ -126,12 +126,10 @@ and fixture resolution — and a bad manifest exits 2 with every problem listed.
 
 `Match.MinimaxHelper` shuffles the piece and tile lists with the match RNG and
 prunes on alpha-beta cutoffs, so a search's node count follows the exact
-`rng.Next` sequence. A port that does not bit-reproduce .NET's `System.Random`
-will legitimately count differently. Workloads with that dependency — the five
-`search.*` entries and `selfplay.level0` — declare `"countersComparable": false`.
-The flag rides through to `perf.v1.json`; the comparator reports differences on
-those workloads in a separate section without failing. Every other workload
-defaults to `true` and still fails on any counter difference.
+`rng.Next` sequence. The RNG is `PortableRandom` (see `docs/portable-random.md`), which
+is specified exactly, so a port implementing the spec counts identically. Every
+workload is therefore counter-comparable. The optional `countersComparable` field
+(default `true`) remains in the format, but `check-workloads.ts` rejects `false`.
 
 ### micro
 

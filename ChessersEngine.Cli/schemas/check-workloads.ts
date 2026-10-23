@@ -32,20 +32,6 @@ const manifestV1 = z.strictObject({
 
 type ManifestV1 = z.infer<typeof manifestV1>;
 
-// Workloads whose counters depend on the engine's seeded System.Random stream: only MinimaxHelper
-// advances the RNG, so any workload that searches is affected. These opt out of counter comparison
-// (countersComparable:false); every other workload must stay comparable. Kept in lockstep with the
-// manifest -- this is the assertion the C# OnlyRngDependentWorkloadsOptOutOfCounterComparison test
-// used to make.
-const RNG_DEPENDENT_IDS = [
-  "search.level0.opening",
-  "search.level1.Multijump1",
-  "search.level2.opening",
-  "search.level2.AlmostCheckmate1",
-  "search.level2.Multijump1",
-  "selfplay.level0",
-];
-
 function duplicateIds(manifest: ManifestV1): string[] {
   const seen = new Set<string>();
   const dupes = new Set<string>();
@@ -56,24 +42,13 @@ function duplicateIds(manifest: ManifestV1): string[] {
   return [...dupes].toSorted();
 }
 
+// The engine's RNG (PortableRandom) is specified exactly, so every workload's counters are
+// reproducible from the seed in any language. No workload may opt out of counter comparison.
 function counterComparabilityErrors(manifest: ManifestV1): string[] {
-  const optedOut = new Set(
-    manifest.workloads.filter((w) => w.countersComparable === false).map((w) => w.id),
-  );
-  const expected = new Set(RNG_DEPENDENT_IDS);
-
-  const errs: string[] = [];
-  for (const id of [...optedOut].toSorted()) {
-    if (!expected.has(id)) {
-      errs.push(`${id}: marked countersComparable:false but is not a known RNG-dependent workload`);
-    }
-  }
-  for (const id of [...expected].toSorted()) {
-    if (!optedOut.has(id)) {
-      errs.push(`${id}: is RNG-dependent but is not marked countersComparable:false`);
-    }
-  }
-  return errs;
+  return manifest.workloads
+    .filter((w) => w.countersComparable === false)
+    .map((w) => `${w.id}: marked countersComparable:false, but the engine RNG is portable`)
+    .toSorted();
 }
 
 function check(filePath: string): number {

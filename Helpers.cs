@@ -350,7 +350,7 @@ namespace ChessersEngine {
 
         #endregion
 
-        public static void Shuffle<T> (Random rng, List<T> array) {
+        public static void Shuffle<T> (PortableRandom rng, List<T> array) {
             int n = array.Count;
             while (n > 1) {
                 int k = rng.Next(n--);

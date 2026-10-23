@@ -90,8 +90,7 @@
       "level": 0,
       "warmup": 2,
       "measured": 5,
-      "samples": 5,
-      "countersComparable": false
+      "samples": 5
     },
     {
       "id": "search.level1.Multijump1",
@@ -101,8 +100,7 @@
       "level": 1,
       "warmup": 2,
       "measured": 5,
-      "samples": 5,
-      "countersComparable": false
+      "samples": 5
     },
     {
       "id": "search.level2.opening",
@@ -112,8 +110,7 @@
       "level": 2,
       "warmup": 1,
       "measured": 2,
-      "samples": 3,
-      "countersComparable": false
+      "samples": 3
     },
     {
       "id": "search.level2.AlmostCheckmate1",
@@ -123,8 +120,7 @@
       "level": 2,
       "warmup": 1,
       "measured": 2,
-      "samples": 3,
-      "countersComparable": false
+      "samples": 3
     },
     {
       "id": "search.level2.Multijump1",
@@ -134,8 +130,7 @@
       "level": 2,
       "warmup": 1,
       "measured": 2,
-      "samples": 3,
-      "countersComparable": false
+      "samples": 3
     },
     {
       "id": "replay.game",
@@ -155,8 +150,7 @@
       "level": 0,
       "warmup": 1,
       "measured": 1,
-      "samples": 3,
-      "countersComparable": false
+      "samples": 3
     }
   ]
 }
